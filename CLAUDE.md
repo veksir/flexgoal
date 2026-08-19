@@ -46,6 +46,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [ ] Cambiar estado de meta (pausada/completada/abandonada)
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
+  - [x] Comparación estimado vs. real por tarea (primera pieza del ciclo adaptativo)
   - [ ] Historial detallado de sesiones (lista, no solo el total)
   - [ ] Pomodoro con duraciones configurables de trabajo/descanso
   - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
@@ -221,3 +222,23 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   parecidas — el supuesto incorrecto generó una feature no planeada que
   hubo que revisar aparte.
 - Merge a main (--ff-only): commit `8d3bfbd` (sobre `571fccc`).
+
+### 2026-08-19 — Historia 8: Comparación estimado vs. real por tarea
+
+- Primera entrega real de la promesa central del producto: comparar
+  tiempo planificado contra tiempo real, aunque sea al nivel más simple
+  (una tarea individual, sin agregados todavía).
+- Sin migración de BD — cálculo puro sobre datos que ya existían
+  (`duracion_estimada_minutos` + `tiempoTotalPorTarea`).
+- Tono verificado como neutro: solo signo numérico (+15 min / -10 min /
+  0 min), sin lenguaje de culpa ni alertas — coherente con el principio
+  de "no castigar al usuario imperfecto" del documento original.
+- Validadas las 6 combinaciones de datos/dirección de
+  `docs/historias/historia-008-comparacion-estimado-real.md`.
+- Merge a main (--ff-only): commit `b527ac2`.
+- Con esto, el modelo de datos completo (Idea→Meta→Objetivo→Tarea→Sesión)
+  ya entrega valor de punta a punta, aunque sea en su forma más mínima.
+  Siguiente: por definir — opciones abiertas son historial de sesiones,
+  Pomodoro configurable, agregación de la comparación a nivel de
+  meta/objetivo, o retomar el resto de Fase 1 (Áreas, prioridad, fecha
+  objetivo de meta, cambiar estado de meta).
