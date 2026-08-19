@@ -40,6 +40,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
   - [ ] Estados, fechas, prioridades
     - [x] Fecha planificada en tareas (opcional, validada)
+    - [x] Duración estimada en tareas (opcional, validada)
     - [ ] Fecha objetivo en meta
     - [ ] Prioridad (tarea y/o meta)
     - [ ] Cambiar estado de meta (pausada/completada/abandonada)
@@ -128,3 +129,22 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — queda pendiente Áreas, o continuar
   desglosando "Estados, fechas, prioridades" (fecha objetivo en meta,
   prioridad, o cambio de estado de meta).
+
+  ### 2026-08-19 — Historia 6: Duración estimada en tareas
+
+- Agregado campo opcional `duracion_estimada_minutos` a `tareas` vía
+  `ALTER TABLE` (segunda migración sobre tabla existente).
+- Validación con regex (entero positivo, rechaza 0/decimales/negativos),
+  sin librería adicional.
+- Verificado que tareas de historias 4 y 5 (con y sin fecha planificada)
+  sobreviven intactas tras la migración.
+- Con esto quedan capturados los dos lados de la comparación futura
+  planificado-vs-real (fecha + duración estimada), que es el prerequisito
+  para el sistema adaptativo (Fase 4) una vez exista tiempo real
+  trabajado (Fase 2).
+- Validados los 6 criterios de aceptación de
+  `docs/historias/historia-006-duracion-estimada-tareas.md`.
+- Merge a main (--ff-only): commit `bfd5a55`.
+- Siguiente: por definir — evaluar saltar a un timer mínimo de Fase 2
+  (registrar una sesión de tiempo real ligada a una tarea) en vez de
+  terminar todo el pulido restante de Fase 1.
