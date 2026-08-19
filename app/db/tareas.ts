@@ -71,3 +71,13 @@ export function esDuracionValida(texto: string): boolean {
 export function formatearDuracion(minutos: number): string {
   return `${minutos} min`;
 }
+
+export function calcularDiferencia(
+  estimado: number | null,
+  real: number
+): number | null {
+  if (estimado === null) {
+    return null;
+  }
+  return real - estimado;
+}

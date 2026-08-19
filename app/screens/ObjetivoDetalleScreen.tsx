@@ -8,6 +8,7 @@ import {
   eliminarTarea,
   formatearFecha,
   formatearDuracion,
+  calcularDiferencia,
   type EstadoTarea,
   type Tarea,
 } from '../db/tareas';
@@ -160,65 +161,74 @@ export default function ObjetivoDetalleScreen({
       <FlatList
         data={tareas}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <Pressable style={estilos.item} onPress={() => alternarTarea(item)}>
-            <View style={estilos.tareaContenido}>
-              <Text
-                style={[
-                  estilos.tareaCheck,
-                  item.estado === 'completada' && estilos.tareaCheckCompletado,
-                ]}
-              >
-                {item.estado === 'completada' ? '☑' : '☐'}
-              </Text>
-              <View style={estilos.itemTextoWrapper}>
+        renderItem={({ item }) => {
+          const realMinutos = totalesTareas[item.id] ?? 0;
+          const estimado = item.duracion_estimada_minutos;
+          const diferencia = calcularDiferencia(estimado, realMinutos);
+          return (
+            <Pressable style={estilos.item} onPress={() => alternarTarea(item)}>
+              <View style={estilos.tareaContenido}>
                 <Text
                   style={[
-                    estilos.itemTexto,
-                    item.estado === 'completada' && estilos.tareaCompletada,
+                    estilos.tareaCheck,
+                    item.estado === 'completada' && estilos.tareaCheckCompletado,
                   ]}
                 >
-                  {item.nombre}
-                  {item.fecha_planificada
-                    ? ` — ${formatearFecha(item.fecha_planificada)}`
-                    : ''}
-                  {item.duracion_estimada_minutos != null
-                    ? ` — ${formatearDuracion(item.duracion_estimada_minutos)}`
-                    : ''}
+                  {item.estado === 'completada' ? '☑' : '☐'}
                 </Text>
-                {totalesTareas[item.id] > 0 ? (
-                  <Text style={estilos.sesionTotal}>
-                    Total: {formatearDuracion(totalesTareas[item.id])}
+                <View style={estilos.itemTextoWrapper}>
+                  <Text
+                    style={[
+                      estilos.itemTexto,
+                      item.estado === 'completada' && estilos.tareaCompletada,
+                    ]}
+                  >
+                    {item.nombre}
+                    {item.fecha_planificada
+                      ? ` — ${formatearFecha(item.fecha_planificada)}`
+                      : ''}
+                    {estimado != null && realMinutos === 0
+                      ? ` — ${formatearDuracion(estimado)}`
+                      : ''}
                   </Text>
-                ) : null}
-              </View>
-              <Pressable
-                style={estilos.botonBasura}
-                onPress={() => confirmarEliminacionTarea(item)}
-                hitSlop={8}
-              >
-                <Text style={estilos.botonBasuraTexto}>🗑️</Text>
-              </Pressable>
-            </View>
-            {sesionActiva?.tareaId === item.id ? (
-              <View style={estilos.sesionContenido}>
-                <Text style={estilos.cronometro}>
-                  {formatearCronometro(tiempoSegundos)}
-                </Text>
-                <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
-                  <Text style={estilos.botonDetenerTexto}>Detener</Text>
+                  {estimado != null && realMinutos > 0 && diferencia != null ? (
+                    <Text style={estilos.sesionTotal}>
+                      {`Estimado: ${formatearDuracion(estimado)} · Real: ${formatearDuracion(realMinutos)} · ${formatearDiferencia(diferencia)}`}
+                    </Text>
+                  ) : realMinutos > 0 ? (
+                    <Text style={estilos.sesionTotal}>
+                      Total: {formatearDuracion(realMinutos)}
+                    </Text>
+                  ) : null}
+                </View>
+                <Pressable
+                  style={estilos.botonBasura}
+                  onPress={() => confirmarEliminacionTarea(item)}
+                  hitSlop={8}
+                >
+                  <Text style={estilos.botonBasuraTexto}>🗑️</Text>
                 </Pressable>
               </View>
-            ) : (
-              <Pressable
-                style={estilos.botonSesion}
-                onPress={() => onIniciarSesion(item)}
-              >
-                <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
-              </Pressable>
-            )}
-          </Pressable>
-        )}
+              {sesionActiva?.tareaId === item.id ? (
+                <View style={estilos.sesionContenido}>
+                  <Text style={estilos.cronometro}>
+                    {formatearCronometro(tiempoSegundos)}
+                  </Text>
+                  <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
+                    <Text style={estilos.botonDetenerTexto}>Detener</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={estilos.botonSesion}
+                  onPress={() => onIniciarSesion(item)}
+                >
+                  <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
+                </Pressable>
+              )}
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           <Text style={estilos.vacio}>
             Este objetivo no tiene tareas todavía. ¡Agrega la primera!
@@ -233,4 +243,12 @@ function formatearCronometro(segundos: number): string {
   const mm = Math.floor(segundos / 60);
   const ss = segundos % 60;
   return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
+
+function formatearDiferencia(diferencia: number): string {
+  if (diferencia === 0) {
+    return '0 min';
+  }
+  const signo = diferencia > 0 ? '+' : '-';
+  return `${signo}${Math.abs(diferencia)} min`;
 }
