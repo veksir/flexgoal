@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, Text, TextInput } from 'react-native';
 
 import {
@@ -13,15 +12,31 @@ interface Props {
     fechaPlanificada?: string,
     duracionEstimadaMinutos?: number
   ) => Promise<void>;
+  textoTarea: string;
+  setTextoTarea: (texto: string) => void;
+  textoFechaTarea: string;
+  setTextoFechaTarea: (texto: string) => void;
+  errorFechaTarea: string;
+  setErrorFechaTarea: (error: string) => void;
+  textoDuracionTarea: string;
+  setTextoDuracionTarea: (texto: string) => void;
+  errorDuracionTarea: string;
+  setErrorDuracionTarea: (error: string) => void;
 }
 
-export default function FormularioTarea({ onAgregarTarea }: Props) {
-  const [textoTarea, setTextoTarea] = useState('');
-  const [textoFechaTarea, setTextoFechaTarea] = useState('');
-  const [errorFechaTarea, setErrorFechaTarea] = useState('');
-  const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
-  const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
-
+export default function FormularioTarea({
+  onAgregarTarea,
+  textoTarea,
+  setTextoTarea,
+  textoFechaTarea,
+  setTextoFechaTarea,
+  errorFechaTarea,
+  setErrorFechaTarea,
+  textoDuracionTarea,
+  setTextoDuracionTarea,
+  errorDuracionTarea,
+  setErrorDuracionTarea,
+}: Props) {
   async function guardarTarea() {
     const textoLimpio = textoTarea.trim();
     if (!textoLimpio) {

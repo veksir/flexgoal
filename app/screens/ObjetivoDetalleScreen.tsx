@@ -23,6 +23,16 @@ interface Props {
   tiempoSegundos: number;
   onIniciarSesion: (tarea: Tarea) => void;
   onDetenerSesion: () => void;
+  textoTarea: string;
+  setTextoTarea: (texto: string) => void;
+  textoFechaTarea: string;
+  setTextoFechaTarea: (texto: string) => void;
+  errorFechaTarea: string;
+  setErrorFechaTarea: (error: string) => void;
+  textoDuracionTarea: string;
+  setTextoDuracionTarea: (texto: string) => void;
+  errorDuracionTarea: string;
+  setErrorDuracionTarea: (error: string) => void;
 }
 
 export default function ObjetivoDetalleScreen({
@@ -32,6 +42,16 @@ export default function ObjetivoDetalleScreen({
   tiempoSegundos,
   onIniciarSesion,
   onDetenerSesion,
+  textoTarea,
+  setTextoTarea,
+  textoFechaTarea,
+  setTextoFechaTarea,
+  errorFechaTarea,
+  setErrorFechaTarea,
+  textoDuracionTarea,
+  setTextoDuracionTarea,
+  errorDuracionTarea,
+  setErrorDuracionTarea,
 }: Props) {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
@@ -82,7 +102,19 @@ export default function ObjetivoDetalleScreen({
         <Text style={estilos.botonVolverTexto}>← Volver</Text>
       </Pressable>
       <Text style={estilos.subtitulo}>Objetivo: {objetivo.nombre}</Text>
-      <FormularioTarea onAgregarTarea={agregarTarea} />
+      <FormularioTarea
+        onAgregarTarea={agregarTarea}
+        textoTarea={textoTarea}
+        setTextoTarea={setTextoTarea}
+        textoFechaTarea={textoFechaTarea}
+        setTextoFechaTarea={setTextoFechaTarea}
+        errorFechaTarea={errorFechaTarea}
+        setErrorFechaTarea={setErrorFechaTarea}
+        textoDuracionTarea={textoDuracionTarea}
+        setTextoDuracionTarea={setTextoDuracionTarea}
+        errorDuracionTarea={errorDuracionTarea}
+        setErrorDuracionTarea={setErrorDuracionTarea}
+      />
       <FlatList
         data={tareas}
         keyExtractor={(item) => String(item.id)}

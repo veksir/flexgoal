@@ -13,15 +13,18 @@ interface Props {
   meta: Meta;
   onVolver: () => void;
   onSeleccionarObjetivo: (objetivo: Objetivo) => void;
+  textoObjetivo: string;
+  setTextoObjetivo: (texto: string) => void;
 }
 
 export default function MetaDetalleScreen({
   meta,
   onVolver,
   onSeleccionarObjetivo,
+  textoObjetivo,
+  setTextoObjetivo,
 }: Props) {
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
-  const [textoObjetivo, setTextoObjetivo] = useState('');
 
   useEffect(() => {
     cargarObjetivos();

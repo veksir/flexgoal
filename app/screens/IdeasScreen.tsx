@@ -12,8 +12,12 @@ import { crearIdea, eliminarIdea, listarIdeas, type Idea } from '../db/ideas';
 import { convertirIdeaEnMeta } from '../db/conversiones';
 import { estilos } from './estilos';
 
-export default function IdeasScreen() {
-  const [texto, setTexto] = useState('');
+interface Props {
+  texto: string;
+  setTexto: (texto: string) => void;
+}
+
+export default function IdeasScreen({ texto, setTexto }: Props) {
   const [ideas, setIdeas] = useState<Idea[]>([]);
 
   useEffect(() => {

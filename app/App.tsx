@@ -32,6 +32,13 @@ export default function App() {
     useState<Objetivo | null>(null);
   const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
   const [tiempoSegundos, setTiempoSegundos] = useState(0);
+  const [texto, setTexto] = useState('');
+  const [textoObjetivo, setTextoObjetivo] = useState('');
+  const [textoTarea, setTextoTarea] = useState('');
+  const [textoFechaTarea, setTextoFechaTarea] = useState('');
+  const [errorFechaTarea, setErrorFechaTarea] = useState('');
+  const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
+  const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
 
   useEffect(() => {
     if (!sesionActiva) {
@@ -88,18 +95,30 @@ export default function App() {
           tiempoSegundos={tiempoSegundos}
           onIniciarSesion={iniciarSesion}
           onDetenerSesion={detenerSesion}
+          textoTarea={textoTarea}
+          setTextoTarea={setTextoTarea}
+          textoFechaTarea={textoFechaTarea}
+          setTextoFechaTarea={setTextoFechaTarea}
+          errorFechaTarea={errorFechaTarea}
+          setErrorFechaTarea={setErrorFechaTarea}
+          textoDuracionTarea={textoDuracionTarea}
+          setTextoDuracionTarea={setTextoDuracionTarea}
+          errorDuracionTarea={errorDuracionTarea}
+          setErrorDuracionTarea={setErrorDuracionTarea}
         />
       ) : metaSeleccionada ? (
         <MetaDetalleScreen
           meta={metaSeleccionada}
           onVolver={() => setMetaSeleccionada(null)}
           onSeleccionarObjetivo={(objetivo) => setObjetivoSeleccionado(objetivo)}
+          textoObjetivo={textoObjetivo}
+          setTextoObjetivo={setTextoObjetivo}
         />
       ) : (
         <>
           <ViewToggle vista={vista} onChangeVista={setVista} />
           {vista === 'ideas' ? (
-            <IdeasScreen />
+            <IdeasScreen texto={texto} setTexto={setTexto} />
           ) : (
             <MetasScreen
               onSeleccionarMeta={(meta) => setMetaSeleccionada(meta)}
