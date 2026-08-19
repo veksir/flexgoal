@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 const DATABASE_NAME = 'flexgoal.db';
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -71,6 +71,12 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
         estado TEXT NOT NULL DEFAULT 'pendiente',
         creado_en TEXT NOT NULL
       );
+    `);
+  }
+
+  if (currentVersion < 5) {
+    await db.execAsync(`
+      ALTER TABLE tareas ADD COLUMN fecha_planificada TEXT;
     `);
   }
 

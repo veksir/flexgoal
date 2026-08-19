@@ -23,6 +23,8 @@ import {
   crearTarea,
   listarTareasPorObjetivo,
   alternarEstadoTarea,
+  esFechaValida,
+  formatearFecha,
   type EstadoTarea,
   type Tarea,
 } from './db/tareas';
@@ -41,6 +43,8 @@ export default function App() {
     useState<Objetivo | null>(null);
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [textoTarea, setTextoTarea] = useState('');
+  const [textoFechaTarea, setTextoFechaTarea] = useState('');
+  const [errorFechaTarea, setErrorFechaTarea] = useState('');
 
   useEffect(() => {
     if (vista === 'ideas') {
@@ -113,8 +117,17 @@ export default function App() {
     if (!textoLimpio || !objetivoSeleccionado) {
       return;
     }
-    await crearTarea(objetivoSeleccionado.id, textoLimpio);
+    const fechaLimpia = textoFechaTarea.trim();
+    if (fechaLimpia && !esFechaValida(fechaLimpia)) {
+      setErrorFechaTarea(
+        'Fecha inválida. Usa el formato AAAA-MM-DD (ej. 2026-08-20) o déjalo vacío.'
+      );
+      return;
+    }
+    setErrorFechaTarea('');
+    await crearTarea(objetivoSeleccionado.id, textoLimpio, fechaLimpia || undefined);
     setTextoTarea('');
+    setTextoFechaTarea('');
     await cargarTareas();
   }
 
@@ -167,6 +180,16 @@ export default function App() {
             placeholderTextColor="#999"
             multiline
           />
+          <TextInput
+            style={styles.input}
+            value={textoFechaTarea}
+            onChangeText={setTextoFechaTarea}
+            placeholder="AAAA-MM-DD (opcional)"
+            placeholderTextColor="#999"
+          />
+          {errorFechaTarea ? (
+            <Text style={styles.textoError}>{errorFechaTarea}</Text>
+          ) : null}
           <Pressable style={styles.boton} onPress={guardarTarea}>
             <Text style={styles.botonTexto}>Agregar tarea</Text>
           </Pressable>
@@ -193,6 +216,9 @@ export default function App() {
                       ]}
                     >
                       {item.nombre}
+                      {item.fecha_planificada
+                        ? ` — ${formatearFecha(item.fecha_planificada)}`
+                        : ''}
                     </Text>
                     <Text style={styles.itemFecha}>
                       {new Date(item.creado_en).toLocaleString()}
@@ -487,5 +513,10 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 16,
     marginTop: 32,
+  },
+  textoError: {
+    color: '#e03131',
+    fontSize: 14,
+    marginBottom: 12,
   },
 });
