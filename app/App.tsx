@@ -25,6 +25,8 @@ import {
   alternarEstadoTarea,
   esFechaValida,
   formatearFecha,
+  esDuracionValida,
+  formatearDuracion,
   type EstadoTarea,
   type Tarea,
 } from './db/tareas';
@@ -45,6 +47,8 @@ export default function App() {
   const [textoTarea, setTextoTarea] = useState('');
   const [textoFechaTarea, setTextoFechaTarea] = useState('');
   const [errorFechaTarea, setErrorFechaTarea] = useState('');
+  const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
+  const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
 
   useEffect(() => {
     if (vista === 'ideas') {
@@ -124,10 +128,24 @@ export default function App() {
       );
       return;
     }
+    const duracionLimpia = textoDuracionTarea.trim();
+    if (duracionLimpia && !esDuracionValida(duracionLimpia)) {
+      setErrorDuracionTarea(
+        'Duración inválida. Usa un número entero de minutos mayor a 0 (ej. 30) o déjalo vacío.'
+      );
+      return;
+    }
     setErrorFechaTarea('');
-    await crearTarea(objetivoSeleccionado.id, textoLimpio, fechaLimpia || undefined);
+    setErrorDuracionTarea('');
+    await crearTarea(
+      objetivoSeleccionado.id,
+      textoLimpio,
+      fechaLimpia || undefined,
+      duracionLimpia ? parseInt(duracionLimpia, 10) : undefined
+    );
     setTextoTarea('');
     setTextoFechaTarea('');
+    setTextoDuracionTarea('');
     await cargarTareas();
   }
 
@@ -190,6 +208,17 @@ export default function App() {
           {errorFechaTarea ? (
             <Text style={styles.textoError}>{errorFechaTarea}</Text>
           ) : null}
+          <TextInput
+            style={styles.input}
+            value={textoDuracionTarea}
+            onChangeText={setTextoDuracionTarea}
+            placeholder="Duración estimada en minutos (opcional)"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+          />
+          {errorDuracionTarea ? (
+            <Text style={styles.textoError}>{errorDuracionTarea}</Text>
+          ) : null}
           <Pressable style={styles.boton} onPress={guardarTarea}>
             <Text style={styles.botonTexto}>Agregar tarea</Text>
           </Pressable>
@@ -218,6 +247,9 @@ export default function App() {
                       {item.nombre}
                       {item.fecha_planificada
                         ? ` — ${formatearFecha(item.fecha_planificada)}`
+                        : ''}
+                      {item.duracion_estimada_minutos != null
+                        ? ` — ${formatearDuracion(item.duracion_estimada_minutos)}`
                         : ''}
                     </Text>
                     <Text style={styles.itemFecha}>

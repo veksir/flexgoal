@@ -8,21 +8,24 @@ export interface Tarea {
   nombre: string;
   estado: EstadoTarea;
   fecha_planificada: string | null;
+  duracion_estimada_minutos: number | null;
   creado_en: string;
 }
 
 export async function crearTarea(
   objetivoId: number,
   nombre: string,
-  fechaPlanificada?: string
+  fechaPlanificada?: string,
+  duracionEstimadaMinutos?: number
 ): Promise<void> {
   const db = await getDb();
   await db.runAsync(
-    'INSERT INTO tareas (objetivo_id, nombre, estado, fecha_planificada, creado_en) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO tareas (objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en) VALUES (?, ?, ?, ?, ?, ?)',
     objetivoId,
     nombre,
     'pendiente',
     fechaPlanificada ?? null,
+    duracionEstimadaMinutos ?? null,
     new Date().toISOString()
   );
 }
@@ -30,7 +33,7 @@ export async function crearTarea(
 export async function listarTareasPorObjetivo(objetivoId: number): Promise<Tarea[]> {
   const db = await getDb();
   const rows = await db.getAllAsync<Tarea>(
-    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
+    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
     objetivoId
   );
   return rows;
@@ -51,4 +54,12 @@ export function esFechaValida(texto: string): boolean {
 export function formatearFecha(iso: string): string {
   const [anio, mes, dia] = iso.split('-');
   return `${dia}/${mes}/${anio}`;
+}
+
+export function esDuracionValida(texto: string): boolean {
+  return /^\d+$/.test(texto) && parseInt(texto, 10) > 0;
+}
+
+export function formatearDuracion(minutos: number): string {
+  return `${minutos} min`;
 }
