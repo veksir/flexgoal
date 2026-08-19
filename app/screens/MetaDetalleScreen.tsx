@@ -48,9 +48,9 @@ export default function MetaDetalleScreen({
   return (
     <>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
-        <Text style={estilos.botonVolverTexto}>← Volver</Text>
+        <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
-      <Text style={estilos.subtitulo}>Metas: {meta.nombre}</Text>
+      <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
       <TextInput
         style={estilos.input}
         value={textoObjetivo}
@@ -71,9 +71,6 @@ export default function MetaDetalleScreen({
             onPress={() => onSeleccionarObjetivo(item)}
           >
             <Text style={estilos.itemTexto}>{item.nombre}</Text>
-            <Text style={estilos.itemFecha}>
-              {new Date(item.creado_en).toLocaleString()}
-            </Text>
           </Pressable>
         )}
         ListEmptyComponent={

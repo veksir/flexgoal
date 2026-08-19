@@ -47,6 +47,14 @@ export async function alternarEstadoTarea(
   await db.runAsync('UPDATE tareas SET estado = ? WHERE id = ?', nuevoEstado, tareaId);
 }
 
+export async function eliminarTarea(id: number): Promise<void> {
+  const db = await getDb();
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.runAsync('DELETE FROM sesiones WHERE tarea_id = ?', id);
+    await txn.runAsync('DELETE FROM tareas WHERE id = ?', id);
+  });
+}
+
 export function esFechaValida(texto: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(texto);
 }

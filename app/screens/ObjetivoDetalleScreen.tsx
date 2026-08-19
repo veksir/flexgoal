@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, Text, View } from 'react-native';
 
 import {
   crearTarea,
   listarTareasPorObjetivo,
   alternarEstadoTarea,
+  eliminarTarea,
   formatearFecha,
   formatearDuracion,
   type EstadoTarea,
@@ -18,6 +19,7 @@ import FormularioTarea from './FormularioTarea';
 
 interface Props {
   objetivo: Objetivo;
+  nombreMeta: string;
   onVolver: () => void;
   sesionActiva: SesionActiva | null;
   tiempoSegundos: number;
@@ -37,6 +39,7 @@ interface Props {
 
 export default function ObjetivoDetalleScreen({
   objetivo,
+  nombreMeta,
   onVolver,
   sesionActiva,
   tiempoSegundos,
@@ -96,12 +99,30 @@ export default function ObjetivoDetalleScreen({
     await cargarTareas();
   }
 
+  function confirmarEliminacionTarea(tarea: Tarea) {
+    Alert.alert('Eliminar tarea', '¿Seguro que quieres eliminar esta tarea?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          await eliminarTarea(tarea.id);
+          await cargarTareas();
+        },
+      },
+    ]);
+  }
+
   return (
     <>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
-        <Text style={estilos.botonVolverTexto}>← Volver</Text>
+        <Text style={estilos.botonVolverTexto}>
+          ← Volver a {nombreMeta}
+        </Text>
       </Pressable>
-      <Text style={estilos.subtitulo}>Objetivo: {objetivo.nombre}</Text>
+      <Text style={estilos.tituloDetalle}>
+        {nombreMeta} › {objetivo.nombre}
+      </Text>
       <FormularioTarea
         onAgregarTarea={agregarTarea}
         textoTarea={textoTarea}
@@ -144,15 +165,19 @@ export default function ObjetivoDetalleScreen({
                     ? ` — ${formatearDuracion(item.duracion_estimada_minutos)}`
                     : ''}
                 </Text>
-                <Text style={estilos.itemFecha}>
-                  {new Date(item.creado_en).toLocaleString()}
-                </Text>
                 {totalesTareas[item.id] > 0 ? (
                   <Text style={estilos.sesionTotal}>
                     Total: {formatearDuracion(totalesTareas[item.id])}
                   </Text>
                 ) : null}
               </View>
+              <Pressable
+                style={estilos.botonBasura}
+                onPress={() => confirmarEliminacionTarea(item)}
+                hitSlop={8}
+              >
+                <Text style={estilos.botonBasuraTexto}>🗑️</Text>
+              </Pressable>
             </View>
             {sesionActiva?.tareaId === item.id ? (
               <View style={estilos.sesionContenido}>

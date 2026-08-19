@@ -1,6 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 export const estilos = StyleSheet.create({
+  tituloDetalle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
   subtitulo: {
     fontSize: 18,
     fontWeight: '600',
@@ -131,6 +136,12 @@ export const estilos = StyleSheet.create({
     color: '#fff',
     fontSize: 13,
     fontWeight: '600',
+  },
+  botonBasura: {
+    padding: 8,
+  },
+  botonBasuraTexto: {
+    fontSize: 18,
   },
   vacio: {
     textAlign: 'center',

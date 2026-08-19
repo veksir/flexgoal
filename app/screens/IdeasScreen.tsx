@@ -83,9 +83,6 @@ export default function IdeasScreen({ texto, setTexto }: Props) {
             <View style={estilos.itemContenido}>
               <View style={estilos.itemTextoWrapper}>
                 <Text style={estilos.itemTexto}>{item.texto}</Text>
-                <Text style={estilos.itemFecha}>
-                  {new Date(item.creado_en).toLocaleString()}
-                </Text>
               </View>
               <Pressable
                 style={estilos.botonSecundario}
@@ -94,6 +91,13 @@ export default function IdeasScreen({ texto, setTexto }: Props) {
                 <Text style={estilos.botonSecundarioTexto}>
                   Convertir en meta
                 </Text>
+              </Pressable>
+              <Pressable
+                style={estilos.botonBasura}
+                onPress={() => confirmarEliminacion(item)}
+                hitSlop={8}
+              >
+                <Text style={estilos.botonBasuraTexto}>🗑️</Text>
               </Pressable>
             </View>
           </Pressable>

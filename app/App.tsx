@@ -87,9 +87,10 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.titulo}>Flexgoal</Text>
-      {objetivoSeleccionado ? (
+      {objetivoSeleccionado && metaSeleccionada ? (
         <ObjetivoDetalleScreen
           objetivo={objetivoSeleccionado}
+          nombreMeta={metaSeleccionada.nombre}
           onVolver={() => setObjetivoSeleccionado(null)}
           sesionActiva={sesionActiva}
           tiempoSegundos={tiempoSegundos}
