@@ -37,7 +37,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Convertir idea en meta
   - [ ] Áreas
   - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
-  - [ ] Tareas
+  - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
   - [ ] Estados, fechas, prioridades
 - [ ] **Fase 2 — Tiempo:** Pomodoro, time tracking, sesiones, historial
 - [ ] **Fase 3 — Planificación:** disponibilidad, horarios, reprogramación
@@ -91,3 +91,21 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   `docs/historias/historia-003-objetivos.md`.
 - Merge a main (--ff-only): commit `26cf316`.
 - Siguiente: Tareas (siguiente nivel de la jerarquía).
+
+### 2026-08-19 — Historia 4: Tareas dentro de un objetivo
+
+- Implementadas Tareas como hijas de Objetivo (tabla `tareas`, FK
+  `objetivo_id`), con estado pendiente/completada (a diferencia de
+  Objetivos, aquí sí se incluyó estado desde el inicio porque es
+  necesario para que la tarea cumpla su función).
+- Navegación de 3 niveles (Metas → Objetivo → Tareas) con dos estados
+  locales (`metaSeleccionada`, `objetivoSeleccionado`), sin librería de
+  navegación. "Volver" respeta el nivel anterior correctamente.
+- Toggle de estado verificado como persistente en SQLite (no solo en
+  memoria de React) — cada cambio relee desde la BD.
+- Validados los 6 criterios de aceptación de
+  `docs/historias/historia-004-tareas.md`.
+- Merge a main (--ff-only): commit `1da209a`.
+- Siguiente: Áreas, o cerrar Fase 1 con "Estados, fechas, prioridades"
+  (fecha objetivo, prioridad y categoría/área para Meta; fecha planificada
+  y duración estimada para Tarea).
