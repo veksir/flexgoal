@@ -99,7 +99,28 @@ export default function ObjetivoDetalleScreen({
     await cargarTareas();
   }
 
-  function confirmarEliminacionTarea(tarea: Tarea) {
+  async function confirmarEliminacionTarea(tarea: Tarea) {
+    const totalMinutos = await tiempoTotalPorTarea(tarea.id);
+    if (totalMinutos > 0) {
+      Alert.alert(
+        'Eliminar tarea',
+        `Esta tarea tiene ${formatearDuracion(
+          totalMinutos
+        )} registrados en sesiones. Si la eliminas, ese tiempo se pierde permanentemente. ¿Eliminar de todas formas?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar de todas formas',
+            style: 'destructive',
+            onPress: async () => {
+              await eliminarTarea(tarea.id);
+              await cargarTareas();
+            },
+          },
+        ]
+      );
+      return;
+    }
     Alert.alert('Eliminar tarea', '¿Seguro que quieres eliminar esta tarea?', [
       { text: 'Cancelar', style: 'cancel' },
       {
