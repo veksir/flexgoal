@@ -44,7 +44,11 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [ ] Fecha objetivo en meta
     - [ ] Prioridad (tarea y/o meta)
     - [ ] Cambiar estado de meta (pausada/completada/abandonada)
-- [ ] **Fase 2 — Tiempo:** Pomodoro, time tracking, sesiones, historial
+- [ ] **Fase 2 — Tiempo**
+  - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
+  - [ ] Historial detallado de sesiones (lista, no solo el total)
+  - [ ] Pomodoro con duraciones configurables de trabajo/descanso
+  - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación:** disponibilidad, horarios, reprogramación
 - [ ] **Fase 4 — Adaptación:** plan vs. realidad, modo mínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
@@ -148,3 +152,23 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — evaluar saltar a un timer mínimo de Fase 2
   (registrar una sesión de tiempo real ligada a una tarea) en vez de
   terminar todo el pulido restante de Fase 1.
+
+  ### 2026-08-19 — Historia 7: Sesiones de tiempo real
+
+- Implementado cronómetro manual (iniciar/detener) ligado a una tarea,
+  tabla `sesiones` con FK `tarea_id`.
+- Solo una sesión activa a la vez en toda la app (decisión deliberada,
+  simplicidad sobre paralelismo).
+- Sesiones que redondean a 0 minutos (menos de 30s) se descartan, no se
+  guardan.
+- `tiempoTotalPorTarea` suma en SQL (`SUM`), no en JavaScript.
+- Limitación conocida y aceptada: una sesión activa se pierde si se cierra
+  la app sin detenerla (sin persistencia de background todavía).
+- Validados los 7 criterios de aceptación de
+  `docs/historias/historia-007-sesiones-tiempo-real.md`.
+- Merge a main (--ff-only): commit `5488547`.
+- Con esto queda completo el modelo de datos central del producto:
+  Idea → Meta → Objetivo → Tarea → Sesión, con fecha planificada,
+  duración estimada, y tiempo real capturados. El siguiente paso natural
+  es empezar a *usar* esos datos (comparación planificado-vs-real,
+  Fase 4), o seguir puliendo Fase 1/2 primero — a decidir.
