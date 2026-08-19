@@ -19,6 +19,13 @@ import {
   listarObjetivosPorMeta,
   type Objetivo,
 } from './db/objetivos';
+import {
+  crearTarea,
+  listarTareasPorObjetivo,
+  alternarEstadoTarea,
+  type EstadoTarea,
+  type Tarea,
+} from './db/tareas';
 
 type Vista = 'ideas' | 'metas';
 
@@ -30,6 +37,10 @@ export default function App() {
   const [metaSeleccionada, setMetaSeleccionada] = useState<Meta | null>(null);
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
   const [textoObjetivo, setTextoObjetivo] = useState('');
+  const [objetivoSeleccionado, setObjetivoSeleccionado] =
+    useState<Objetivo | null>(null);
+  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [textoTarea, setTextoTarea] = useState('');
 
   useEffect(() => {
     if (vista === 'ideas') {
@@ -44,6 +55,12 @@ export default function App() {
       cargarObjetivos();
     }
   }, [metaSeleccionada]);
+
+  useEffect(() => {
+    if (objetivoSeleccionado) {
+      cargarTareas();
+    }
+  }, [objetivoSeleccionado]);
 
   async function cargarIdeas() {
     const lista = await listarIdeas();
@@ -61,6 +78,14 @@ export default function App() {
     }
     const lista = await listarObjetivosPorMeta(metaSeleccionada.id);
     setObjetivos(lista);
+  }
+
+  async function cargarTareas() {
+    if (!objetivoSeleccionado) {
+      return;
+    }
+    const lista = await listarTareasPorObjetivo(objetivoSeleccionado.id);
+    setTareas(lista);
   }
 
   async function guardarIdea() {
@@ -81,6 +106,23 @@ export default function App() {
     await crearObjetivo(metaSeleccionada.id, textoLimpio);
     setTextoObjetivo('');
     await cargarObjetivos();
+  }
+
+  async function guardarTarea() {
+    const textoLimpio = textoTarea.trim();
+    if (!textoLimpio || !objetivoSeleccionado) {
+      return;
+    }
+    await crearTarea(objetivoSeleccionado.id, textoLimpio);
+    setTextoTarea('');
+    await cargarTareas();
+  }
+
+  async function alternarTarea(tarea: Tarea) {
+    const nuevoEstado: EstadoTarea =
+      tarea.estado === 'completada' ? 'pendiente' : 'completada';
+    await alternarEstadoTarea(tarea.id, nuevoEstado);
+    await cargarTareas();
   }
 
   async function convertir(idea: Idea) {
@@ -106,7 +148,67 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.titulo}>Flexgoal</Text>
-      {metaSeleccionada ? (
+      {objetivoSeleccionado ? (
+        <>
+          <Pressable
+            style={styles.botonVolver}
+            onPress={() => setObjetivoSeleccionado(null)}
+          >
+            <Text style={styles.botonVolverTexto}>← Volver</Text>
+          </Pressable>
+          <Text style={styles.subtitulo}>
+            Objetivo: {objetivoSeleccionado.nombre}
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={textoTarea}
+            onChangeText={setTextoTarea}
+            placeholder="Nueva tarea..."
+            placeholderTextColor="#999"
+            multiline
+          />
+          <Pressable style={styles.boton} onPress={guardarTarea}>
+            <Text style={styles.botonTexto}>Agregar tarea</Text>
+          </Pressable>
+          <FlatList
+            data={tareas}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <Pressable style={styles.item} onPress={() => alternarTarea(item)}>
+                <View style={styles.tareaContenido}>
+                  <Text
+                    style={[
+                      styles.tareaCheck,
+                      item.estado === 'completada' &&
+                        styles.tareaCheckCompletado,
+                    ]}
+                  >
+                    {item.estado === 'completada' ? '☑' : '☐'}
+                  </Text>
+                  <View style={styles.itemTextoWrapper}>
+                    <Text
+                      style={[
+                        styles.itemTexto,
+                        item.estado === 'completada' && styles.tareaCompletada,
+                      ]}
+                    >
+                      {item.nombre}
+                    </Text>
+                    <Text style={styles.itemFecha}>
+                      {new Date(item.creado_en).toLocaleString()}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.vacio}>
+                Este objetivo no tiene tareas todavía. ¡Agrega la primera!
+              </Text>
+            }
+          />
+        </>
+      ) : metaSeleccionada ? (
         <>
           <Pressable
             style={styles.botonVolver}
@@ -130,12 +232,15 @@ export default function App() {
             data={objetivos}
             keyExtractor={(item) => String(item.id)}
             renderItem={({ item }) => (
-              <View style={styles.item}>
+              <Pressable
+                style={styles.item}
+                onPress={() => setObjetivoSeleccionado(item)}
+              >
                 <Text style={styles.itemTexto}>{item.nombre}</Text>
                 <Text style={styles.itemFecha}>
                   {new Date(item.creado_en).toLocaleString()}
                 </Text>
-              </View>
+              </Pressable>
             )}
             ListEmptyComponent={
               <Text style={styles.vacio}>
@@ -339,6 +444,24 @@ const styles = StyleSheet.create({
   },
   itemTextoWrapper: {
     flex: 1,
+  },
+  tareaContenido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  tareaCheck: {
+    fontSize: 20,
+    width: 24,
+    textAlign: 'center',
+    color: '#666',
+  },
+  tareaCheckCompletado: {
+    color: '#2b8a3e',
+  },
+  tareaCompletada: {
+    textDecorationLine: 'line-through',
+    color: '#888',
   },
   itemTexto: {
     fontSize: 16,
