@@ -81,3 +81,11 @@ export function calcularDiferencia(
   }
   return real - estimado;
 }
+
+export function formatearDiferencia(diferencia: number): string {
+  if (diferencia === 0) {
+    return '0 min';
+  }
+  const signo = diferencia > 0 ? '+' : '-';
+  return `${signo}${Math.abs(diferencia)} min`;
+}

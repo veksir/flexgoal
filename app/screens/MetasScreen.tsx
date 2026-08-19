@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, Text } from 'react-native';
 
-import { listarMetas, type Meta } from '../db/metas';
+import {
+  listarMetas,
+  progresoPorMeta,
+  type Meta,
+  type ProgresoMeta,
+} from '../db/metas';
+import {
+  calcularDiferencia,
+  formatearDuracion,
+  formatearDiferencia,
+} from '../db/tareas';
 import { estilos } from './estilos';
 
 interface Props {
@@ -10,6 +20,7 @@ interface Props {
 
 export default function MetasScreen({ onSeleccionarMeta }: Props) {
   const [metas, setMetas] = useState<Meta[]>([]);
+  const [progresos, setProgresos] = useState<Record<number, ProgresoMeta>>({});
 
   useEffect(() => {
     cargarMetas();
@@ -18,21 +29,51 @@ export default function MetasScreen({ onSeleccionarMeta }: Props) {
   async function cargarMetas() {
     const lista = await listarMetas();
     setMetas(lista);
+    const nuevosProgresos: Record<number, ProgresoMeta> = {};
+    for (const meta of lista) {
+      nuevosProgresos[meta.id] = await progresoPorMeta(meta.id);
+    }
+    setProgresos(nuevosProgresos);
+  }
+
+  function resumenProgreso(p: ProgresoMeta | undefined): string | null {
+    if (!p) {
+      return null;
+    }
+    const diferencia = calcularDiferencia(p.estimadoTotal, p.realTotal);
+    if (p.estimadoTotal != null && p.realTotal > 0 && diferencia != null) {
+      return `Estimado: ${formatearDuracion(p.estimadoTotal)} · Real: ${formatearDuracion(
+        p.realTotal
+      )} · ${formatearDiferencia(diferencia)}`;
+    }
+    if (p.estimadoTotal != null) {
+      return `Estimado: ${formatearDuracion(p.estimadoTotal)}`;
+    }
+    if (p.realTotal > 0) {
+      return `Real: ${formatearDuracion(p.realTotal)}`;
+    }
+    return null;
   }
 
   return (
     <FlatList
       data={metas}
       keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => (
-        <Pressable
-          style={estilos.item}
-          onPress={() => onSeleccionarMeta(item)}
-        >
-          <Text style={estilos.itemTexto}>{item.nombre}</Text>
-          <Text style={estilos.itemFecha}>Estado: {item.estado}</Text>
-        </Pressable>
-      )}
+      renderItem={({ item }) => {
+        const resumen = resumenProgreso(progresos[item.id]);
+        return (
+          <Pressable
+            style={estilos.item}
+            onPress={() => onSeleccionarMeta(item)}
+          >
+            <Text style={estilos.itemTexto}>{item.nombre}</Text>
+            <Text style={estilos.itemFecha}>Estado: {item.estado}</Text>
+            {resumen ? (
+              <Text style={estilos.sesionTotal}>{resumen}</Text>
+            ) : null}
+          </Pressable>
+        );
+      }}
       ListEmptyComponent={
         <Text style={estilos.vacio}>
           Aún no tienes metas. Convierte una idea en meta para empezar.

@@ -23,3 +23,33 @@ export async function listarMetas(): Promise<Meta[]> {
   );
   return rows;
 }
+
+export interface ProgresoMeta {
+  estimadoTotal: number | null;
+  realTotal: number;
+}
+
+export async function progresoPorMeta(metaId: number): Promise<ProgresoMeta> {
+  const db = await getDb();
+  const fila = await db.getFirstAsync<{
+    estimado_total: number | null;
+    real_total: number | null;
+  }>(
+    `SELECT
+      (SELECT SUM(t.duracion_estimada_minutos)
+       FROM tareas t
+       JOIN objetivos o ON t.objetivo_id = o.id
+       WHERE o.meta_id = ?) AS estimado_total,
+      (SELECT SUM(s.duracion_minutos)
+       FROM sesiones s
+       JOIN tareas t ON s.tarea_id = t.id
+       JOIN objetivos o ON t.objetivo_id = o.id
+       WHERE o.meta_id = ?) AS real_total`,
+    metaId,
+    metaId
+  );
+  return {
+    estimadoTotal: fila?.estimado_total ?? null,
+    realTotal: fila?.real_total ?? 0,
+  };
+}
