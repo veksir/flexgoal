@@ -30,8 +30,14 @@ import {
   type EstadoTarea,
   type Tarea,
 } from './db/tareas';
+import { crearSesion, tiempoTotalPorTarea } from './db/sesiones';
 
 type Vista = 'ideas' | 'metas';
+
+interface SesionActiva {
+  tareaId: number;
+  inicioTimestamp: number;
+}
 
 export default function App() {
   const [vista, setVista] = useState<Vista>('ideas');
@@ -49,6 +55,9 @@ export default function App() {
   const [errorFechaTarea, setErrorFechaTarea] = useState('');
   const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
   const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
+  const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
+  const [tiempoSegundos, setTiempoSegundos] = useState(0);
+  const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (vista === 'ideas') {
@@ -69,6 +78,20 @@ export default function App() {
       cargarTareas();
     }
   }, [objetivoSeleccionado]);
+
+  useEffect(() => {
+    if (!sesionActiva) {
+      return;
+    }
+    const actualizarCronometro = () => {
+      setTiempoSegundos(
+        Math.floor((Date.now() - sesionActiva.inicioTimestamp) / 1000)
+      );
+    };
+    actualizarCronometro();
+    const intervalo = setInterval(actualizarCronometro, 1000);
+    return () => clearInterval(intervalo);
+  }, [sesionActiva]);
 
   async function cargarIdeas() {
     const lista = await listarIdeas();
@@ -94,6 +117,11 @@ export default function App() {
     }
     const lista = await listarTareasPorObjetivo(objetivoSeleccionado.id);
     setTareas(lista);
+    const nuevosTotales: Record<number, number> = {};
+    for (const tarea of lista) {
+      nuevosTotales[tarea.id] = await tiempoTotalPorTarea(tarea.id);
+    }
+    setTotalesTareas(nuevosTotales);
   }
 
   async function guardarIdea() {
@@ -153,6 +181,37 @@ export default function App() {
     const nuevoEstado: EstadoTarea =
       tarea.estado === 'completada' ? 'pendiente' : 'completada';
     await alternarEstadoTarea(tarea.id, nuevoEstado);
+    await cargarTareas();
+  }
+
+  function iniciarSesion(tarea: Tarea) {
+    if (sesionActiva && sesionActiva.tareaId !== tarea.id) {
+      Alert.alert(
+        'Sesión activa',
+        'Ya hay una sesión en curso. Detén la sesión activa antes de iniciar otra.'
+      );
+      return;
+    }
+    setSesionActiva({ tareaId: tarea.id, inicioTimestamp: Date.now() });
+    setTiempoSegundos(0);
+  }
+
+  async function detenerSesion() {
+    if (!sesionActiva) {
+      return;
+    }
+    const minutos = Math.round(
+      (Date.now() - sesionActiva.inicioTimestamp) / 60000
+    );
+    if (minutos < 1) {
+      Alert.alert('Sesión muy corta', 'La sesión duró menos de 30 segundos y no se guardó.');
+      setSesionActiva(null);
+      setTiempoSegundos(0);
+      return;
+    }
+    await crearSesion(sesionActiva.tareaId, minutos);
+    setSesionActiva(null);
+    setTiempoSegundos(0);
     await cargarTareas();
   }
 
@@ -255,8 +314,33 @@ export default function App() {
                     <Text style={styles.itemFecha}>
                       {new Date(item.creado_en).toLocaleString()}
                     </Text>
+                    {totalesTareas[item.id] > 0 ? (
+                      <Text style={styles.sesionTotal}>
+                        Total: {formatearDuracion(totalesTareas[item.id])}
+                      </Text>
+                    ) : null}
                   </View>
                 </View>
+                {sesionActiva?.tareaId === item.id ? (
+                  <View style={styles.sesionContenido}>
+                    <Text style={styles.cronometro}>
+                      {formatearCronometro(tiempoSegundos)}
+                    </Text>
+                    <Pressable
+                      style={styles.botonDetener}
+                      onPress={detenerSesion}
+                    >
+                      <Text style={styles.botonDetenerTexto}>Detener</Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable
+                    style={styles.botonSesion}
+                    onPress={() => iniciarSesion(item)}
+                  >
+                    <Text style={styles.botonSesionTexto}>Iniciar sesión</Text>
+                  </Pressable>
+                )}
               </Pressable>
             )}
             ListEmptyComponent={
@@ -420,6 +504,12 @@ function ViewToggle({
   );
 }
 
+function formatearCronometro(segundos: number): string {
+  const mm = Math.floor(segundos / 60);
+  const ss = segundos % 60;
+  return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -520,6 +610,52 @@ const styles = StyleSheet.create({
   tareaCompletada: {
     textDecorationLine: 'line-through',
     color: '#888',
+  },
+  sesionTotal: {
+    fontSize: 13,
+    color: '#1971c2',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  sesionContenido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    backgroundColor: '#e7f5ff',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  cronometro: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    fontVariant: ['tabular-nums'],
+    color: '#1971c2',
+  },
+  botonSesion: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#1971c2',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginTop: 8,
+  },
+  botonSesionTexto: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  botonDetener: {
+    backgroundColor: '#e03131',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  botonDetenerTexto: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   itemTexto: {
     fontSize: 16,
