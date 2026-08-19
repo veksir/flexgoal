@@ -39,6 +39,10 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
   - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
   - [ ] Estados, fechas, prioridades
+    - [x] Fecha planificada en tareas (opcional, validada)
+    - [ ] Fecha objetivo en meta
+    - [ ] Prioridad (tarea y/o meta)
+    - [ ] Cambiar estado de meta (pausada/completada/abandonada)
 - [ ] **Fase 2 — Tiempo:** Pomodoro, time tracking, sesiones, historial
 - [ ] **Fase 3 — Planificación:** disponibilidad, horarios, reprogramación
 - [ ] **Fase 4 — Adaptación:** plan vs. realidad, modo mínimo, días libres
@@ -109,3 +113,18 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: Áreas, o cerrar Fase 1 con "Estados, fechas, prioridades"
   (fecha objetivo, prioridad y categoría/área para Meta; fecha planificada
   y duración estimada para Tarea).
+
+  ### 2026-08-19 — Historia 5: Fecha planificada en tareas
+
+- Agregado campo opcional `fecha_planificada` a `tareas` vía `ALTER TABLE`
+  (primera migración sobre tabla existente, no tabla nueva).
+- Validación simple con regex (`AAAA-MM-DD`), sin librería de fechas ni
+  date picker — texto plano por ahora.
+- Verificado que tareas creadas antes de la migración (Historia 4)
+  sobreviven intactas, con `fecha_planificada = NULL`.
+- Validados los 5 criterios de aceptación de
+  `docs/historias/historia-005-fecha-planificada-tareas.md`.
+- Merge a main (--ff-only): commit `f70d4d0`.
+- Siguiente: por definir — queda pendiente Áreas, o continuar
+  desglosando "Estados, fechas, prioridades" (fecha objetivo en meta,
+  prioridad, o cambio de estado de meta).
