@@ -192,3 +192,32 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   de drafts, todo sobre la instalación existente.
 - Merge a main (--ff-only): commit `bf0802b`.
 - `db/*.ts` sin cambios en todo este proceso.
+
+### 2026-08-19 — Tarea técnica 2: Pulido de UX (tras revisión de capturas reales)
+
+- Revisión de UX basada en capturas reales de la app (no solo criterios
+  aislados) tras completar Historias 1-7 + refactor. Se detectaron y
+  corrigieron 3 problemas:
+  - Ruido visual: se quitó la fecha de creación de las listas de Ideas,
+    Objetivos y Tareas (el dato sigue en BD, solo se dejó de mostrar).
+  - Pérdida de contexto jerárquico: agregado breadcrumb en el detalle de
+    objetivo ("Meta › Objetivo") y títulos más claros en el detalle de
+    meta, con "Volver a X" en vez de solo "Volver".
+  - Acción de eliminar invisible: agregado ícono 🗑️ visible en ideas y
+    tareas, además del long-press existente.
+- Desviación no planeada detectada durante la implementación: como
+  Tareas nunca tuvo función de eliminar (fuera de alcance en Historia 4),
+  hubo que crear `eliminarTarea` desde cero para cumplir la instrucción.
+  Como esto borra en cascada las sesiones de tiempo asociadas, se agregó
+  una advertencia explícita cuando la tarea tiene tiempo registrado
+  (mensaje con minutos exactos, mismo cálculo que el "Total: X min" ya
+  visible).
+- El ícono de configuración (⚙️) y el warning de "SafeAreaView
+  deprecated" se confirmaron como artefactos del menú de desarrollo de
+  Expo Go, no del producto — no requirieron cambios.
+- Lección de proceso: al escribir instrucciones para OpenCode, verificar
+  contra las historias/criterios ya existentes antes de asumir que una
+  funcionalidad (como "eliminar") ya existe en todas las entidades
+  parecidas — el supuesto incorrecto generó una feature no planeada que
+  hubo que revisar aparte.
+- Merge a main (--ff-only): commit `8d3bfbd` (sobre `571fccc`).
