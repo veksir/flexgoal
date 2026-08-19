@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 const DATABASE_NAME = 'flexgoal.db';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -34,6 +34,17 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
       CREATE TABLE IF NOT EXISTS ideas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         texto TEXT NOT NULL,
+        creado_en TEXT NOT NULL
+      );
+    `);
+  }
+
+  if (currentVersion < 2) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS metas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        estado TEXT NOT NULL DEFAULT 'activa',
         creado_en TEXT NOT NULL
       );
     `);

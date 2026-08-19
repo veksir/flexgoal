@@ -7,22 +7,38 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import { crearIdea, eliminarIdea, listarIdeas, type Idea } from './db/ideas';
+import { listarMetas, type Meta } from './db/metas';
+import { convertirIdeaEnMeta } from './db/conversiones';
+
+type Vista = 'ideas' | 'metas';
 
 export default function App() {
+  const [vista, setVista] = useState<Vista>('ideas');
   const [texto, setTexto] = useState('');
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [metas, setMetas] = useState<Meta[]>([]);
 
   useEffect(() => {
-    cargarIdeas();
-  }, []);
+    if (vista === 'ideas') {
+      cargarIdeas();
+    } else {
+      cargarMetas();
+    }
+  }, [vista]);
 
   async function cargarIdeas() {
     const lista = await listarIdeas();
     setIdeas(lista);
+  }
+
+  async function cargarMetas() {
+    const lista = await listarMetas();
+    setMetas(lista);
   }
 
   async function guardarIdea() {
@@ -33,6 +49,12 @@ export default function App() {
     await crearIdea(textoLimpio);
     setTexto('');
     await cargarIdeas();
+  }
+
+  async function convertir(idea: Idea) {
+    await convertirIdeaEnMeta(idea);
+    await cargarIdeas();
+    await cargarMetas();
   }
 
   function confirmarEliminacion(idea: Idea) {
@@ -51,41 +73,110 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.titulo}>Bandeja de ideas</Text>
-      <TextInput
-        style={styles.input}
-        value={texto}
-        onChangeText={setTexto}
-        placeholder="Escribe una idea..."
-        placeholderTextColor="#999"
-        multiline
-      />
-      <Pressable style={styles.boton} onPress={guardarIdea}>
-        <Text style={styles.botonTexto}>Guardar</Text>
-      </Pressable>
-      <FlatList
-        data={ideas}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.item}
-            onLongPress={() => confirmarEliminacion(item)}
-            delayLongPress={500}
-          >
-            <Text style={styles.itemTexto}>{item.texto}</Text>
-            <Text style={styles.itemFecha}>
-              {new Date(item.creado_en).toLocaleString()}
-            </Text>
+      <Text style={styles.titulo}>Flexgoal</Text>
+      <ViewToggle vista={vista} onChangeVista={setVista} />
+      {vista === 'ideas' ? (
+        <>
+          <TextInput
+            style={styles.input}
+            value={texto}
+            onChangeText={setTexto}
+            placeholder="Escribe una idea..."
+            placeholderTextColor="#999"
+            multiline
+          />
+          <Pressable style={styles.boton} onPress={guardarIdea}>
+            <Text style={styles.botonTexto}>Guardar</Text>
           </Pressable>
-        )}
-        ListEmptyComponent={
-          <Text style={styles.vacio}>
-            Aún no tienes ideas guardadas. ¡Escribe la primera!
-          </Text>
-        }
-      />
+          <FlatList
+            data={ideas}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <Pressable
+                style={styles.item}
+                onLongPress={() => confirmarEliminacion(item)}
+                delayLongPress={500}
+              >
+                <View style={styles.itemContenido}>
+                  <View style={styles.itemTextoWrapper}>
+                    <Text style={styles.itemTexto}>{item.texto}</Text>
+                    <Text style={styles.itemFecha}>
+                      {new Date(item.creado_en).toLocaleString()}
+                    </Text>
+                  </View>
+                  <Pressable
+                    style={styles.botonSecundario}
+                    onPress={() => convertir(item)}
+                  >
+                    <Text style={styles.botonSecundarioTexto}>
+                      Convertir en meta
+                    </Text>
+                  </Pressable>
+                </View>
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.vacio}>
+                Aún no tienes ideas guardadas. ¡Escribe la primera!
+              </Text>
+            }
+          />
+        </>
+      ) : (
+        <FlatList
+          data={metas}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+              <Text style={styles.itemTexto}>{item.nombre}</Text>
+              <Text style={styles.itemFecha}>Estado: {item.estado}</Text>
+            </View>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.vacio}>
+              Aún no tienes metas. Convierte una idea en meta para empezar.
+            </Text>
+          }
+        />
+      )}
       <StatusBar style="auto" />
     </SafeAreaView>
+  );
+}
+
+function ViewToggle({
+  vista,
+  onChangeVista,
+}: {
+  vista: Vista;
+  onChangeVista: (vista: Vista) => void;
+}) {
+  return (
+    <View style={styles.tabs}>
+      <Pressable
+        style={[styles.tab, vista === 'ideas' && styles.tabActiva]}
+        onPress={() => onChangeVista('ideas')}
+      >
+        <Text
+          style={[
+            styles.tabTexto,
+            vista === 'ideas' && styles.tabTextoActivo,
+          ]}
+        >
+          Ideas
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.tab, vista === 'metas' && styles.tabActiva]}
+        onPress={() => onChangeVista('metas')}
+      >
+        <Text
+          style={[styles.tabTexto, vista === 'metas' && styles.tabTextoActivo]}
+        >
+          Metas
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -99,6 +190,30 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+  },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f3f5',
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 6,
+  },
+  tabActiva: {
+    backgroundColor: '#fff',
+  },
+  tabTexto: {
+    fontSize: 15,
+    color: '#666',
+  },
+  tabTextoActivo: {
+    color: '#1c7ed6',
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,
@@ -126,6 +241,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  itemContenido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  itemTextoWrapper: {
+    flex: 1,
+  },
   itemTexto: {
     fontSize: 16,
   },
@@ -133,6 +257,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginTop: 4,
+  },
+  botonSecundario: {
+    backgroundColor: '#2b8a3e',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  botonSecundarioTexto: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   vacio: {
     textAlign: 'center',
