@@ -36,7 +36,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Bandeja de ideas (crear, listar, eliminar) — persistencia SQLite validada
   - [x] Convertir idea en meta
   - [ ] Áreas
-  - [ ] Objetivos
+  - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
   - [ ] Tareas
   - [ ] Estados, fechas, prioridades
 - [ ] **Fase 2 — Tiempo:** Pomodoro, time tracking, sesiones, historial
@@ -77,3 +77,17 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   persistencia real tras cierre completo de la app.
 - Merge a main (--ff-only): commit `f0d6011`.
 - Siguiente: Áreas (siguiente ítem del roadmap de Fase 1).
+
+### 2026-08-19 — Historia 3: Objetivos dentro de una meta
+
+- Implementados Objetivos como hijos de Meta (tabla `objetivos`, FK `meta_id`
+  con `PRAGMA foreign_keys = ON`).
+- Navegación al detalle de meta sin librería externa (estado local
+  `metaSeleccionada`).
+- Validado el aislamiento por `meta_id` (criterio más delicado de esta
+  historia): objetivos de metas distintas no se mezclan, ni antes ni
+  después de cerrar/reabrir la app.
+- Validados los 5 criterios de aceptación de
+  `docs/historias/historia-003-objetivos.md`.
+- Merge a main (--ff-only): commit `26cf316`.
+- Siguiente: Tareas (siguiente nivel de la jerarquía).
