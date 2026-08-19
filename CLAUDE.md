@@ -172,3 +172,23 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   duración estimada, y tiempo real capturados. El siguiente paso natural
   es empezar a *usar* esos datos (comparación planificado-vs-real,
   Fase 4), o seguir puliendo Fase 1/2 primero — a decidir.
+
+  ### 2026-08-19 — Tarea técnica 1: Refactor de App.tsx en componentes
+
+- `App.tsx` había crecido a 666 líneas tras 7 historias. Dividido en
+  `screens/` (IdeasScreen, MetasScreen, MetaDetalleScreen,
+  ObjetivoDetalleScreen, FormularioTarea) + estilos compartidos.
+  `App.tsx` quedó en 185 líneas como orquestador delgado (navegación +
+  sesión activa).
+- Regla aplicada: cero cambios de comportamiento. Se detectó y corrigió
+  una desviación real durante la verificación (los borradores de
+  formulario se perdían al navegar entre pantallas, porque cada screen
+  monta/desmonta) — el estado de los 3 formularios se subió a `App.tsx`
+  para preservar el comportamiento original.
+- Lección de proceso: vale la pena declarar explícitamente "cero cambios
+  de comportamiento" en tareas de refactor — permitió detectar una
+  regresión real que un check superficial no habría atrapado.
+- Verificada regresión completa de las 7 historias anteriores + el fix
+  de drafts, todo sobre la instalación existente.
+- Merge a main (--ff-only): commit `bf0802b`.
+- `db/*.ts` sin cambios en todo este proceso.
