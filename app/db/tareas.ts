@@ -12,6 +12,11 @@ export interface Tarea {
   creado_en: string;
 }
 
+export interface TareaConContexto extends Tarea {
+  nombreMeta: string;
+  nombreObjetivo: string;
+}
+
 export async function crearTarea(
   objetivoId: number,
   nombre: string,
@@ -35,6 +40,32 @@ export async function listarTareasPorObjetivo(objetivoId: number): Promise<Tarea
   const rows = await db.getAllAsync<Tarea>(
     'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
     objetivoId
+  );
+  return rows;
+}
+
+export async function tareasParaHoy(): Promise<TareaConContexto[]> {
+  const db = await getDb();
+  const hoy = new Date().toISOString().split('T')[0];
+  const rows = await db.getAllAsync<TareaConContexto>(
+    `SELECT
+      t.id,
+      t.objetivo_id,
+      t.nombre,
+      t.estado,
+      t.fecha_planificada,
+      t.duracion_estimada_minutos,
+      t.creado_en,
+      o.nombre AS nombreObjetivo,
+      m.nombre AS nombreMeta
+    FROM tareas t
+    JOIN objetivos o ON t.objetivo_id = o.id
+    JOIN metas m ON o.meta_id = m.id
+    WHERE t.estado = 'pendiente'
+      AND t.fecha_planificada IS NOT NULL
+      AND t.fecha_planificada <= ?
+    ORDER BY t.fecha_planificada ASC, t.creado_en ASC`,
+    hoy
   );
   return rows;
 }

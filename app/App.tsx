@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import IdeasScreen from './screens/IdeasScreen';
 import MetasScreen from './screens/MetasScreen';
+import HoyScreen from './screens/HoyScreen';
 import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
 import { crearSesion } from './db/sesiones';
@@ -18,7 +19,7 @@ import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
 import type { Tarea } from './db/tareas';
 
-type Vista = 'ideas' | 'metas';
+type Vista = 'hoy' | 'ideas' | 'metas';
 
 export interface SesionActiva {
   tareaId: number;
@@ -26,7 +27,7 @@ export interface SesionActiva {
 }
 
 export default function App() {
-  const [vista, setVista] = useState<Vista>('ideas');
+  const [vista, setVista] = useState<Vista>('hoy');
   const [metaSeleccionada, setMetaSeleccionada] = useState<Meta | null>(null);
   const [objetivoSeleccionado, setObjetivoSeleccionado] =
     useState<Objetivo | null>(null);
@@ -118,7 +119,14 @@ export default function App() {
       ) : (
         <>
           <ViewToggle vista={vista} onChangeVista={setVista} />
-          {vista === 'ideas' ? (
+          {vista === 'hoy' ? (
+            <HoyScreen
+              sesionActiva={sesionActiva}
+              tiempoSegundos={tiempoSegundos}
+              onIniciarSesion={iniciarSesion}
+              onDetenerSesion={detenerSesion}
+            />
+          ) : vista === 'ideas' ? (
             <IdeasScreen texto={texto} setTexto={setTexto} />
           ) : (
             <MetasScreen
@@ -141,6 +149,16 @@ function ViewToggle({
 }) {
   return (
     <View style={styles.tabs}>
+      <Pressable
+        style={[styles.tab, vista === 'hoy' && styles.tabActiva]}
+        onPress={() => onChangeVista('hoy')}
+      >
+        <Text
+          style={[styles.tabTexto, vista === 'hoy' && styles.tabTextoActivo]}
+        >
+          Hoy
+        </Text>
+      </Pressable>
       <Pressable
         style={[styles.tab, vista === 'ideas' && styles.tabActiva]}
         onPress={() => onChangeVista('ideas')}

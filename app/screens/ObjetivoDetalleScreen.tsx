@@ -240,7 +240,7 @@ export default function ObjetivoDetalleScreen({
   );
 }
 
-function formatearCronometro(segundos: number): string {
+export function formatearCronometro(segundos: number): string {
   const mm = Math.floor(segundos / 60);
   const ss = segundos % 60;
   return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
