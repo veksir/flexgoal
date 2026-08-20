@@ -7,6 +7,7 @@ export interface Meta {
   estado: string;
   categoria: string | null;
   prioridad: Prioridad | null;
+  fecha_objetivo: string | null;
   creado_en: string;
 }
 
@@ -25,7 +26,7 @@ export async function crearMeta(
 
 export async function listarMetas(db: SQLiteDatabase): Promise<Meta[]> {
   const rows = await db.getAllAsync<Meta>(
-    'SELECT id, nombre, estado, categoria, prioridad, creado_en FROM metas ORDER BY creado_en DESC'
+    'SELECT id, nombre, estado, categoria, prioridad, fecha_objetivo, creado_en FROM metas ORDER BY creado_en DESC'
   );
   return rows;
 }
@@ -50,6 +51,18 @@ export async function actualizarPrioridadMeta(
   await db.runAsync(
     'UPDATE metas SET prioridad = ? WHERE id = ?',
     prioridad,
+    metaId
+  );
+}
+
+export async function actualizarFechaObjetivoMeta(
+  db: SQLiteDatabase,
+  metaId: number,
+  fechaObjetivo: string | null
+): Promise<void> {
+  await db.runAsync(
+    'UPDATE metas SET fecha_objetivo = ? WHERE id = ?',
+    fechaObjetivo,
     metaId
   );
 }

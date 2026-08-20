@@ -41,7 +41,7 @@ describe('migraciones', () => {
       nodo.prepare('SELECT id FROM tareas').get()!.id
     );
 
-    aplicarMigraciones(nodo, 9);
+    aplicarMigraciones(nodo, 10);
 
     const db = adaptar(nodo);
     const metas = await listarMetas(db);
@@ -52,6 +52,7 @@ describe('migraciones', () => {
     expect(metas[0].nombre).toBe('Meta vieja');
     expect(metas[0].categoria).toBeNull();
     expect(metas[0].prioridad).toBeNull();
+    expect(metas[0].fecha_objetivo).toBeNull();
     expect(objetivo.nombre).toBe('Objetivo viejo');
     expect(tareas).toHaveLength(1);
     expect(tareas[0].id).toBe(tareaId);
@@ -80,7 +81,7 @@ describe('migraciones', () => {
       nodo.prepare('SELECT id FROM objetivos').get()!.id
     );
 
-    aplicarMigraciones(nodo, 9);
+    aplicarMigraciones(nodo, 10);
 
     const db = adaptar(nodo);
     await crearTarea(db, objetivoId, 'Tarea nueva', '2026-08-19', 45);
@@ -99,7 +100,7 @@ describe('migraciones', () => {
       .prepare('INSERT INTO metas (nombre, estado, creado_en) VALUES (?, ?, ?)')
       .run('Meta vieja', 'activa', new Date().toISOString());
 
-    aplicarMigraciones(nodo, 9);
+    aplicarMigraciones(nodo, 10);
 
     const db = adaptar(nodo);
     const [meta] = await listarMetas(db);

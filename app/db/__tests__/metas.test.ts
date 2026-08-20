@@ -1,6 +1,7 @@
 import {
   actualizarCategoriaMeta,
   actualizarEstadoMeta,
+  actualizarFechaObjetivoMeta,
   actualizarPrioridadMeta,
   crearMeta,
   listarMetas,
@@ -133,5 +134,35 @@ describe('metas', () => {
 
     const [actualizada] = await listarMetas(db);
     expect(actualizada.prioridad).toBeNull();
+  });
+
+  test('crear meta sin fecha objetivo la guarda en NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta sin fecha');
+
+    const [meta] = await listarMetas(db);
+    expect(meta.fecha_objetivo).toBeNull();
+  });
+
+  test('actualizarFechaObjetivoMeta guarda la fecha', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta con fecha');
+    const [meta] = await listarMetas(db);
+
+    await actualizarFechaObjetivoMeta(db, meta.id, '2026-12-31');
+
+    const [actualizada] = await listarMetas(db);
+    expect(actualizada.fecha_objetivo).toBe('2026-12-31');
+  });
+
+  test('actualizarFechaObjetivoMeta con null vuelve a NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta a limpiar');
+    const [meta] = await listarMetas(db);
+    await actualizarFechaObjetivoMeta(db, meta.id, '2026-12-31');
+    await actualizarFechaObjetivoMeta(db, meta.id, null);
+
+    const [actualizada] = await listarMetas(db);
+    expect(actualizada.fecha_objetivo).toBeNull();
   });
 });

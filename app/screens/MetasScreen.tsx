@@ -84,6 +84,7 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
               {item.nombre}
               {item.categoria ? ` · ${item.categoria}` : ''}
               {item.prioridad ? ` · ${etiquetaPrioridad(item.prioridad)}` : ''}
+              {item.fecha_objetivo ? ` · ${item.fecha_objetivo}` : ''}
             </Text>
             <Text style={estilos.itemFecha}>
               Estado: {etiquetaEstado(item.estado)}
