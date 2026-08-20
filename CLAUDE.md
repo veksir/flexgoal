@@ -43,7 +43,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [x] Duración estimada en tareas (opcional, validada)
     - [ ] Fecha objetivo en meta
     - [ ] Prioridad (tarea y/o meta)
-    - [ ] Cambiar estado de meta (pausada/completada/abandonada)
+    - [x] Cambiar estado de meta (pausada/completada/abandonada) — visual atenuado en lista
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
   - [ ] Historial detallado de sesiones (lista, no solo el total)
@@ -247,3 +247,19 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   Pomodoro configurable, agregación de la comparación a nivel de
   meta/objetivo, o retomar el resto de Fase 1 (Áreas, prioridad, fecha
   objetivo de meta, cambiar estado de meta).
+
+  ### 2026-08-19 — Historia 10: Cambiar estado de una meta
+
+- Agregado `actualizarEstadoMeta` (UPDATE simple, sin migración — la
+  columna `estado` ya existía desde Historia 2).
+- UI de 4 botones en el detalle de meta (Activa/Pausada/Completada/
+  Abandonada), con el actual resaltado.
+- Metas no activas se muestran atenuadas (gris) en la lista, sin
+  ocultarse.
+- Cambio siempre manual, sin lógica automática (coherente con "el
+  usuario decide" del documento original).
+- Validados los 4 criterios de aceptación de
+  `docs/historias/historia-010-cambiar-estado-meta.md`.
+- Merge a main (--ff-only): commit `14b4a6e`.
+- Con esto se cierra casi por completo el pulido de Fase 1 — solo
+  quedan Áreas, prioridad y fecha objetivo de meta.
