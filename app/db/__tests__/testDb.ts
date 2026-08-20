@@ -58,8 +58,17 @@ export function aplicarMigraciones(
   nodo: DatabaseSync,
   hastaVersion: number
 ): void {
+  const resultado = nodo.prepare('PRAGMA user_version').get() as {
+    user_version: number;
+  } | null;
+  const actual = resultado?.user_version ?? 0;
+
+  if (actual >= hastaVersion) {
+    return;
+  }
+
   for (const migracion of MIGRACIONES) {
-    if (migracion.version <= hastaVersion) {
+    if (migracion.version > actual && migracion.version <= hastaVersion) {
       nodo.exec(migracion.sql);
     }
   }

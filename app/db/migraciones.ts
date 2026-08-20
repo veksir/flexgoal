@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 7;
+export const DATABASE_VERSION = 8;
 
 export interface Migracion {
   version: number;
@@ -72,6 +72,12 @@ export const MIGRACIONES: Migracion[] = [
         duracion_minutos INTEGER NOT NULL,
         creado_en TEXT NOT NULL
       );
+    `,
+  },
+  {
+    version: 8,
+    sql: `
+      ALTER TABLE metas ADD COLUMN categoria TEXT;
     `,
   },
 ];

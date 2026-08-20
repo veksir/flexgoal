@@ -4,25 +4,40 @@ export interface Meta {
   id: number;
   nombre: string;
   estado: string;
+  categoria: string | null;
   creado_en: string;
 }
 
 export async function crearMeta(
   db: SQLiteDatabase,
-  nombre: string
+  nombre: string,
+  categoria?: string | null
 ): Promise<void> {
   await db.runAsync(
-    'INSERT INTO metas (nombre, creado_en) VALUES (?, ?)',
+    'INSERT INTO metas (nombre, categoria, creado_en) VALUES (?, ?, ?)',
     nombre,
+    categoria ?? null,
     new Date().toISOString()
   );
 }
 
 export async function listarMetas(db: SQLiteDatabase): Promise<Meta[]> {
   const rows = await db.getAllAsync<Meta>(
-    'SELECT id, nombre, estado, creado_en FROM metas ORDER BY creado_en DESC'
+    'SELECT id, nombre, estado, categoria, creado_en FROM metas ORDER BY creado_en DESC'
   );
   return rows;
+}
+
+export async function actualizarCategoriaMeta(
+  db: SQLiteDatabase,
+  metaId: number,
+  categoria: string | null
+): Promise<void> {
+  await db.runAsync(
+    'UPDATE metas SET categoria = ? WHERE id = ?',
+    categoria,
+    metaId
+  );
 }
 
 export async function actualizarEstadoMeta(

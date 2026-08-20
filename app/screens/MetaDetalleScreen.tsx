@@ -6,7 +6,11 @@ import {
   listarObjetivosPorMeta,
   type Objetivo,
 } from '../db/objetivos';
-import { actualizarEstadoMeta, type Meta } from '../db/metas';
+import {
+  actualizarCategoriaMeta,
+  actualizarEstadoMeta,
+  type Meta,
+} from '../db/metas';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
@@ -35,6 +39,7 @@ export default function MetaDetalleScreen({
 }: Props) {
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
   const [estado, setEstado] = useState(meta.estado);
+  const [textoCategoria, setTextoCategoria] = useState(meta.categoria ?? '');
 
   useEffect(() => {
     cargarObjetivos();
@@ -43,6 +48,16 @@ export default function MetaDetalleScreen({
   async function cambiarEstado(nuevoEstado: string) {
     await actualizarEstadoMeta(db, meta.id, nuevoEstado);
     setEstado(nuevoEstado);
+  }
+
+  async function guardarCategoria() {
+    const textoCategoriaLimpio = textoCategoria.trim();
+    await actualizarCategoriaMeta(
+      db,
+      meta.id,
+      textoCategoriaLimpio === '' ? null : textoCategoriaLimpio
+    );
+    setTextoCategoria(textoCategoriaLimpio);
   }
 
   async function cargarObjetivos() {
@@ -66,6 +81,17 @@ export default function MetaDetalleScreen({
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
       <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
+      <Text style={estilos.estadoEtiqueta}>Categoría (opcional)</Text>
+      <TextInput
+        style={estilos.input}
+        value={textoCategoria}
+        onChangeText={setTextoCategoria}
+        placeholder="Ej. Salud, Trabajo, Finanzas..."
+        placeholderTextColor="#999"
+      />
+      <Pressable style={estilos.botonSesion} onPress={guardarCategoria}>
+        <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
+      </Pressable>
       <Text style={estilos.estadoEtiqueta}>Estado</Text>
       <View style={estilos.estadoContenedor}>
         {ESTADOS_META.map((opcion) => {

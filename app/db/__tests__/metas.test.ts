@@ -1,4 +1,9 @@
-import { actualizarEstadoMeta, crearMeta, listarMetas } from '../metas';
+import {
+  actualizarCategoriaMeta,
+  actualizarEstadoMeta,
+  crearMeta,
+  listarMetas,
+} from '../metas';
 import { crearDbPruebas, esperar } from './testDb';
 
 describe('metas', () => {
@@ -56,5 +61,43 @@ describe('metas', () => {
     expect(metasFinales.find((m) => m.id === metaDos.id)?.estado).toBe(
       'activa'
     );
+  });
+
+  test('crearMeta sin categoria guarda con NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta sin categoría');
+
+    const [meta] = await listarMetas(db);
+    expect(meta.categoria).toBeNull();
+  });
+
+  test('crearMeta con categoria persiste el valor', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta con categoría', 'Salud');
+
+    const [meta] = await listarMetas(db);
+    expect(meta.categoria).toBe('Salud');
+  });
+
+  test('actualizarCategoriaMeta cambia el valor de la categoría', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta editable');
+    const [meta] = await listarMetas(db);
+
+    await actualizarCategoriaMeta(db, meta.id, 'Trabajo');
+
+    const [actualizada] = await listarMetas(db);
+    expect(actualizada.categoria).toBe('Trabajo');
+  });
+
+  test('actualizarCategoriaMeta con null vuelve la categoría a NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta a limpiar', 'Salud');
+    const [meta] = await listarMetas(db);
+
+    await actualizarCategoriaMeta(db, meta.id, null);
+
+    const [actualizada] = await listarMetas(db);
+    expect(actualizada.categoria).toBeNull();
   });
 });

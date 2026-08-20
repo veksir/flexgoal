@@ -41,7 +41,7 @@ describe('migraciones', () => {
       nodo.prepare('SELECT id FROM tareas').get()!.id
     );
 
-    aplicarMigraciones(nodo, 7);
+    aplicarMigraciones(nodo, 8);
 
     const db = adaptar(nodo);
     const metas = await listarMetas(db);
@@ -77,7 +77,7 @@ describe('migraciones', () => {
       nodo.prepare('SELECT id FROM objetivos').get()!.id
     );
 
-    aplicarMigraciones(nodo, 7);
+    aplicarMigraciones(nodo, 8);
 
     const db = adaptar(nodo);
     await crearTarea(db, objetivoId, 'Tarea nueva', '2026-08-19', 45);
@@ -86,5 +86,23 @@ describe('migraciones', () => {
     const tarea = tareas.find((t) => t.nombre === 'Tarea nueva') as Tarea;
     expect(tarea.fecha_planificada).toBe('2026-08-19');
     expect(tarea.duracion_estimada_minutos).toBe(45);
+  });
+
+  test('metas previas a la historia 13 sobreviven la migración con categoria NULL', async () => {
+    const nodo = crearNodoCrudo();
+    aplicarMigraciones(nodo, 7);
+
+    nodo
+      .prepare('INSERT INTO metas (nombre, estado, creado_en) VALUES (?, ?, ?)')
+      .run('Meta vieja', 'activa', new Date().toISOString());
+
+    aplicarMigraciones(nodo, 8);
+
+    const db = adaptar(nodo);
+    const [meta] = await listarMetas(db);
+
+    expect(meta.nombre).toBe('Meta vieja');
+    expect(meta.estado).toBe('activa');
+    expect(meta.categoria).toBeNull();
   });
 });

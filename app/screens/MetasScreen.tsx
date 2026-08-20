@@ -77,6 +77,7 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
               style={[estilos.itemTexto, inactiva && estilos.itemTextoInactivo]}
             >
               {item.nombre}
+              {item.categoria ? ` · ${item.categoria}` : ''}
             </Text>
             <Text style={estilos.itemFecha}>
               Estado: {etiquetaEstado(item.estado)}
