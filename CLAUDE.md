@@ -46,7 +46,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [x] Cambiar estado de meta (pausada/completada/abandonada) — visual atenuado en lista
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
-  - [ ] Historial detallado de sesiones (lista, no solo el total)
+  - [x] Historial detallado de sesiones (modal con lista, ordenado por fecha)
   - [ ] Pomodoro con duraciones configurables de trabajo/descanso
   - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación**
@@ -295,3 +295,17 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   no listas largas de pasos manuales.
 - Merge a main (--ff-only), junto con la Historia 11 (misma rama):
   commit `d76a59d`.
+
+  ### 2026-08-19 — Historia 12: Historial de sesiones de una tarea
+
+- Agregado `listarSesionesPorTarea` + modal nativo en el detalle de
+  objetivo que muestra el detalle de cada sesión (no solo el total).
+- 2 pruebas automatizadas nuevas (orden DESC, tarea sin sesiones →
+  vacío) — 36 pruebas totales.
+- **Nota de proceso:** esta historia se mergeó SIN verificación visual
+  en dispositivo (batería descargada). La lógica de datos está cubierta
+  por pruebas automatizadas, pero el comportamiento visual del modal
+  (abrir, cerrar, que no se pierda el estado de la pantalla al volver)
+  no se confirmó a mano. Si algo se ve raro con el modal, revisar aquí
+  primero.
+- Merge a main (--ff-only): commit `0eead68`.
