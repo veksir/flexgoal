@@ -49,7 +49,11 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [ ] Historial detallado de sesiones (lista, no solo el total)
   - [ ] Pomodoro con duraciones configurables de trabajo/descanso
   - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
-- [ ] **Fase 3 — Planificación:** disponibilidad, horarios, reprogramación
+- [ ] **Fase 3 — Planificación**
+  - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
+  - [ ] Disponibilidad declarada
+  - [ ] Horarios
+  - [ ] Reprogramación
 - [ ] **Fase 4 — Adaptación**
   - [x] Comparación estimado vs. real por tarea individual
   - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
@@ -263,3 +267,31 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Merge a main (--ff-only): commit `14b4a6e`.
 - Con esto se cierra casi por completo el pulido de Fase 1 — solo
   quedan Áreas, prioridad y fecha objetivo de meta.
+
+  ### 2026-08-19 — Historia 11: Vista "Hoy"
+
+- Primera implementación de "¿qué debería hacer ahora?" — tareas
+  pendientes con fecha de hoy o vencidas, agregadas de todas las metas
+  en un solo lugar, sin necesidad de navegar la jerarquía.
+- Ahora es la vista por defecto al abrir la app (antes era Ideas).
+- Reutiliza la lógica de sesión y de alternar estado ya existentes, sin
+  duplicar código.
+- Validados los 6 criterios de `docs/historias/historia-011-vista-hoy.md`.
+
+### 2026-08-19 — Tarea técnica 3: Suite de pruebas automatizadas
+
+- Refactor de inyección de dependencia en toda `db/*.ts`: las funciones
+  reciben la conexión de base de datos como parámetro en vez de
+  importarla internamente, permitiendo probarlas con `node:sqlite` sin
+  necesitar Expo Go ni dispositivo.
+- 34 pruebas automatizadas (`npm test`, en `app/db/__tests__/`) cubriendo
+  aislamiento por FK, atomicidad de conversión idea→meta, validaciones de
+  fecha/duración, descarte de sesiones cortas, suma de tiempo total,
+  progreso agregado por meta, filtrado/orden de la vista Hoy, y que las
+  migraciones no rompan datos existentes.
+- Cambio de proceso a partir de ahora: la verificación manual en
+  dispositivo se reduce a lo genuinamente visual (que se vea y se sienta
+  bien) — toda la lógica de datos la cubren las pruebas automatizadas,
+  no listas largas de pasos manuales.
+- Merge a main (--ff-only), junto con la Historia 11 (misma rama):
+  commit `d76a59d`.
