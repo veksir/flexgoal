@@ -42,7 +42,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [x] Fecha planificada en tareas (opcional, validada)
     - [x] Duración estimada en tareas (opcional, validada)
     - [ ] Fecha objetivo en meta
-    - [ ] Prioridad (tarea y/o meta)
+    - [x] Prioridad (tarea y/o meta) — Alta/Media/Baja opcional, selector de botones (historia 14)
     - [x] Cambiar estado de meta (pausada/completada/abandonada) — visual atenuado en lista
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
@@ -335,3 +335,30 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — queda pendiente el resto de "Estados, fechas,
   prioridades" (fecha objetivo en meta, prioridad en tarea/meta), o
   avanzar Fase 2 (Pomodoro, persistencia de sesión activa en background).
+
+### 2026-08-20 — Historia 14: Prioridad en metas y tareas
+
+- Migración `DATABASE_VERSION` 8 → 9: `ALTER TABLE metas ADD COLUMN
+  prioridad TEXT` y `ALTER TABLE tareas ADD COLUMN prioridad TEXT`.
+- Nuevo type `Prioridad = 'alta' | 'media' | 'baja'` en `db/tareas.ts`,
+  reutilizado por `Meta.prioridad` y `Tarea.prioridad`.
+- `crearTarea` acepta 5º parámetro opcional `prioridad?: Prioridad | null`.
+  `actualizarPrioridadMeta` en `metas.ts` (mismo patrón que
+  `actualizarEstadoMeta` y `actualizarCategoriaMeta`).
+- UI: selector de 3 botones (Alta/Media/Baja) en `MetaDetalleScreen`
+  (igual que el de estado, se guarda al presionar) y en `FormularioTarea`
+  (toggleable — presionar de nuevo lo deselecciona, satisface criterio 5
+  de poder crear tarea sin prioridad). El estado de prioridad del
+  formulario se sube a `App.tsx` (igual que los otros borradores) para
+  preservarlo al navegar.
+- Metas con prioridad se muestran en `MetasScreen` como
+  "Nombre · Categoría · Prioridad" (solo lo que tenga asignado).
+  Tareas con prioridad se muestran en el detalle de objetivo como
+  "Nombre — Fecha — Duración — Prioridad".
+- 9 pruebas nuevas (4 en metas, 3 en tareas, 1 supervivencia, 1
+  actualización de test existente) — 50 pruebas totales, todas verdes
+  + tsc sin errores.
+- Merge a main (--ff-only): commit `983f5f4`.
+- Siguiente: por definir — queda pendiente "Fecha objetivo en meta"
+  (único ítem restante de Fase 1), o avanzar Fase 2 (Pomodoro,
+  persistencia de sesión activa en background).
