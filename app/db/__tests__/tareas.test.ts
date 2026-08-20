@@ -99,6 +99,27 @@ describe('tareas', () => {
     const tareasRestantes = await listarTareasPorObjetivo(db, objetivoId);
     expect(tareasRestantes).toHaveLength(0);
   });
+
+  test('crearTarea sin prioridad la guarda en NULL', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea sin prioridad');
+
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+    expect(tarea.prioridad).toBeNull();
+  });
+
+  test.each(['alta', 'media', 'baja'] as const)(
+    'crearTarea con prioridad %s la persiste',
+    async (prioridad) => {
+      const db = crearDbPruebas();
+      const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+      await crearTarea(db, objetivoId, 'Tarea con prioridad', undefined, undefined, prioridad);
+
+      const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+      expect(tarea.prioridad).toBe(prioridad);
+    }
+  );
 });
 
 describe('validación de formatos', () => {

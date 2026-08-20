@@ -19,7 +19,7 @@ import { getDb } from './db/database';
 import { crearSesion } from './db/sesiones';
 import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
-import type { Tarea } from './db/tareas';
+import type { Prioridad, Tarea } from './db/tareas';
 
 type Vista = 'hoy' | 'ideas' | 'metas';
 
@@ -43,6 +43,7 @@ export default function App() {
   const [errorFechaTarea, setErrorFechaTarea] = useState('');
   const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
   const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
+  const [prioridadTarea, setPrioridadTarea] = useState<Prioridad | null>(null);
 
   useEffect(() => {
     getDb().then(setDb);
@@ -115,6 +116,8 @@ export default function App() {
           setTextoDuracionTarea={setTextoDuracionTarea}
           errorDuracionTarea={errorDuracionTarea}
           setErrorDuracionTarea={setErrorDuracionTarea}
+          prioridadTarea={prioridadTarea}
+          setPrioridadTarea={setPrioridadTarea}
         />
       ) : metaSeleccionada ? (
         <MetaDetalleScreen

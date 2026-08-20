@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 export type EstadoTarea = 'pendiente' | 'completada';
+export type Prioridad = 'alta' | 'media' | 'baja';
 
 export interface Tarea {
   id: number;
@@ -9,6 +10,7 @@ export interface Tarea {
   estado: EstadoTarea;
   fecha_planificada: string | null;
   duracion_estimada_minutos: number | null;
+  prioridad: Prioridad | null;
   creado_en: string;
 }
 
@@ -22,15 +24,17 @@ export async function crearTarea(
   objetivoId: number,
   nombre: string,
   fechaPlanificada?: string,
-  duracionEstimadaMinutos?: number
+  duracionEstimadaMinutos?: number,
+  prioridad?: Prioridad | null
 ): Promise<void> {
   await db.runAsync(
-    'INSERT INTO tareas (objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT INTO tareas (objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, prioridad, creado_en) VALUES (?, ?, ?, ?, ?, ?, ?)',
     objetivoId,
     nombre,
     'pendiente',
     fechaPlanificada ?? null,
     duracionEstimadaMinutos ?? null,
+    prioridad ?? null,
     new Date().toISOString()
   );
 }
@@ -40,7 +44,7 @@ export async function listarTareasPorObjetivo(
   objetivoId: number
 ): Promise<Tarea[]> {
   const rows = await db.getAllAsync<Tarea>(
-    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
+    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, prioridad, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
     objetivoId
   );
   return rows;
@@ -58,6 +62,7 @@ export async function tareasParaHoy(
       t.estado,
       t.fecha_planificada,
       t.duracion_estimada_minutos,
+      t.prioridad,
       t.creado_en,
       o.nombre AS nombreObjetivo,
       m.nombre AS nombreMeta

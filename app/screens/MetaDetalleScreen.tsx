@@ -9,12 +9,15 @@ import {
 import {
   actualizarCategoriaMeta,
   actualizarEstadoMeta,
+  actualizarPrioridadMeta,
   type Meta,
 } from '../db/metas';
+import type { Prioridad } from '../db/tareas';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
 const ESTADOS_META = ['activa', 'pausada', 'completada', 'abandonada'] as const;
+const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
 
 function etiquetaEstado(estado: string): string {
   return estado.charAt(0).toUpperCase() + estado.slice(1);
@@ -40,6 +43,7 @@ export default function MetaDetalleScreen({
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
   const [estado, setEstado] = useState(meta.estado);
   const [textoCategoria, setTextoCategoria] = useState(meta.categoria ?? '');
+  const [prioridad, setPrioridad] = useState<Prioridad | null>(meta.prioridad);
 
   useEffect(() => {
     cargarObjetivos();
@@ -48,6 +52,11 @@ export default function MetaDetalleScreen({
   async function cambiarEstado(nuevoEstado: string) {
     await actualizarEstadoMeta(db, meta.id, nuevoEstado);
     setEstado(nuevoEstado);
+  }
+
+  async function cambiarPrioridad(nuevaPrioridad: Prioridad) {
+    await actualizarPrioridadMeta(db, meta.id, nuevaPrioridad);
+    setPrioridad(nuevaPrioridad);
   }
 
   async function guardarCategoria() {
@@ -92,6 +101,28 @@ export default function MetaDetalleScreen({
       <Pressable style={estilos.botonSesion} onPress={guardarCategoria}>
         <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
       </Pressable>
+      <Text style={estilos.estadoEtiqueta}>Prioridad</Text>
+      <View style={estilos.estadoContenedor}>
+        {PRIORIDADES.map((opcion) => {
+          const activo = opcion === prioridad;
+          return (
+            <Pressable
+              key={opcion}
+              style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+              onPress={() => cambiarPrioridad(opcion)}
+            >
+              <Text
+                style={[
+                  estilos.estadoBotonTexto,
+                  activo && estilos.estadoBotonTextoActivo,
+                ]}
+              >
+                {etiquetaEstado(opcion)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <Text style={estilos.estadoEtiqueta}>Estado</Text>
       <View style={estilos.estadoContenedor}>
         {ESTADOS_META.map((opcion) => {

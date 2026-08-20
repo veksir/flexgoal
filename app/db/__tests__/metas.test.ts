@@ -1,6 +1,7 @@
 import {
   actualizarCategoriaMeta,
   actualizarEstadoMeta,
+  actualizarPrioridadMeta,
   crearMeta,
   listarMetas,
 } from '../metas';
@@ -99,5 +100,38 @@ describe('metas', () => {
 
     const [actualizada] = await listarMetas(db);
     expect(actualizada.categoria).toBeNull();
+  });
+
+  test('crear meta sin prioridad la guarda en NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta sin prioridad');
+
+    const [meta] = await listarMetas(db);
+    expect(meta.prioridad).toBeNull();
+  });
+
+  test.each(['alta', 'media', 'baja'] as const)(
+    'actualizarPrioridadMeta guarda prioridad %s',
+    async (prioridad) => {
+      const db = crearDbPruebas();
+      await crearMeta(db, 'Meta con prioridad');
+      const [meta] = await listarMetas(db);
+
+      await actualizarPrioridadMeta(db, meta.id, prioridad);
+
+      const [actualizada] = await listarMetas(db);
+      expect(actualizada.prioridad).toBe(prioridad);
+    }
+  );
+
+  test('actualizarPrioridadMeta con null vuelve la prioridad a NULL', async () => {
+    const db = crearDbPruebas();
+    await crearMeta(db, 'Meta a limpiar');
+    const [meta] = await listarMetas(db);
+    await actualizarPrioridadMeta(db, meta.id, 'alta');
+    await actualizarPrioridadMeta(db, meta.id, null);
+
+    const [actualizada] = await listarMetas(db);
+    expect(actualizada.prioridad).toBeNull();
   });
 });

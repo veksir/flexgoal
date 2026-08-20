@@ -11,12 +11,17 @@ import {
   calcularDiferencia,
   formatearDuracion,
   formatearDiferencia,
+  type Prioridad,
 } from '../db/tareas';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
 function etiquetaEstado(estado: string): string {
   return estado.charAt(0).toUpperCase() + estado.slice(1);
+}
+
+function etiquetaPrioridad(prioridad: Prioridad): string {
+  return prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
 }
 
 interface Props {
@@ -78,6 +83,7 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
             >
               {item.nombre}
               {item.categoria ? ` · ${item.categoria}` : ''}
+              {item.prioridad ? ` · ${etiquetaPrioridad(item.prioridad)}` : ''}
             </Text>
             <Text style={estilos.itemFecha}>
               Estado: {etiquetaEstado(item.estado)}

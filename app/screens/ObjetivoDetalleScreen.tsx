@@ -19,6 +19,7 @@ import {
   formatearDiferencia,
   calcularDiferencia,
   type EstadoTarea,
+  type Prioridad,
   type Tarea,
 } from '../db/tareas';
 import {
@@ -51,6 +52,12 @@ interface Props {
   setTextoDuracionTarea: (texto: string) => void;
   errorDuracionTarea: string;
   setErrorDuracionTarea: (error: string) => void;
+  prioridadTarea: Prioridad | null;
+  setPrioridadTarea: (prioridad: Prioridad | null) => void;
+}
+
+function etiquetaPrioridad(prioridad: Prioridad): string {
+  return prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
 }
 
 export default function ObjetivoDetalleScreen({
@@ -72,6 +79,8 @@ export default function ObjetivoDetalleScreen({
   setTextoDuracionTarea,
   errorDuracionTarea,
   setErrorDuracionTarea,
+  prioridadTarea,
+  setPrioridadTarea,
 }: Props) {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
@@ -116,9 +125,17 @@ export default function ObjetivoDetalleScreen({
   async function agregarTarea(
     nombre: string,
     fechaPlanificada?: string,
-    duracionEstimadaMinutos?: number
+    duracionEstimadaMinutos?: number,
+    prioridad?: Prioridad | null
   ) {
-    await crearTarea(db, objetivo.id, nombre, fechaPlanificada, duracionEstimadaMinutos);
+    await crearTarea(
+      db,
+      objetivo.id,
+      nombre,
+      fechaPlanificada,
+      duracionEstimadaMinutos,
+      prioridad
+    );
     await cargarTareas();
   }
 
@@ -186,6 +203,8 @@ export default function ObjetivoDetalleScreen({
         setTextoDuracionTarea={setTextoDuracionTarea}
         errorDuracionTarea={errorDuracionTarea}
         setErrorDuracionTarea={setErrorDuracionTarea}
+        prioridadTarea={prioridadTarea}
+        setPrioridadTarea={setPrioridadTarea}
       />
       <FlatList
         data={tareas}
@@ -218,6 +237,9 @@ export default function ObjetivoDetalleScreen({
                       : ''}
                     {estimado != null && realMinutos === 0
                       ? ` — ${formatearDuracion(estimado)}`
+                      : ''}
+                    {item.prioridad
+                      ? ` — ${etiquetaPrioridad(item.prioridad)}`
                       : ''}
                   </Text>
                   {estimado != null && realMinutos > 0 && diferencia != null ? (

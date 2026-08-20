@@ -1,16 +1,24 @@
-import { Pressable, Text, TextInput } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
 import {
   esFechaValida,
   esDuracionValida,
+  type Prioridad,
 } from '../db/tareas';
 import { estilos } from './estilos';
+
+const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
+
+function etiquetaPrioridad(prioridad: Prioridad): string {
+  return prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
+}
 
 interface Props {
   onAgregarTarea: (
     nombre: string,
     fechaPlanificada?: string,
-    duracionEstimadaMinutos?: number
+    duracionEstimadaMinutos?: number,
+    prioridad?: Prioridad | null
   ) => Promise<void>;
   textoTarea: string;
   setTextoTarea: (texto: string) => void;
@@ -22,6 +30,8 @@ interface Props {
   setTextoDuracionTarea: (texto: string) => void;
   errorDuracionTarea: string;
   setErrorDuracionTarea: (error: string) => void;
+  prioridadTarea: Prioridad | null;
+  setPrioridadTarea: (prioridad: Prioridad | null) => void;
 }
 
 export default function FormularioTarea({
@@ -36,6 +46,8 @@ export default function FormularioTarea({
   setTextoDuracionTarea,
   errorDuracionTarea,
   setErrorDuracionTarea,
+  prioridadTarea,
+  setPrioridadTarea,
 }: Props) {
   async function guardarTarea() {
     const textoLimpio = textoTarea.trim();
@@ -61,11 +73,13 @@ export default function FormularioTarea({
     await onAgregarTarea(
       textoLimpio,
       fechaLimpia || undefined,
-      duracionLimpia ? parseInt(duracionLimpia, 10) : undefined
+      duracionLimpia ? parseInt(duracionLimpia, 10) : undefined,
+      prioridadTarea ?? undefined
     );
     setTextoTarea('');
     setTextoFechaTarea('');
     setTextoDuracionTarea('');
+    setPrioridadTarea(null);
   }
 
   return (
@@ -99,6 +113,29 @@ export default function FormularioTarea({
       {errorDuracionTarea ? (
         <Text style={estilos.textoError}>{errorDuracionTarea}</Text>
       ) : null}
+      <View style={estilos.estadoContenedor}>
+        {PRIORIDADES.map((opcion) => {
+          const activo = opcion === prioridadTarea;
+          return (
+            <Pressable
+              key={opcion}
+              style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+              onPress={() =>
+                setPrioridadTarea(activo ? null : opcion)
+              }
+            >
+              <Text
+                style={[
+                  estilos.estadoBotonTexto,
+                  activo && estilos.estadoBotonTextoActivo,
+                ]}
+              >
+                {etiquetaPrioridad(opcion)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <Pressable style={estilos.boton} onPress={guardarTarea}>
         <Text style={estilos.botonTexto}>Agregar tarea</Text>
       </Pressable>

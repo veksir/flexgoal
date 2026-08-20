@@ -1,10 +1,12 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+import type { Prioridad } from './tareas';
 
 export interface Meta {
   id: number;
   nombre: string;
   estado: string;
   categoria: string | null;
+  prioridad: Prioridad | null;
   creado_en: string;
 }
 
@@ -23,7 +25,7 @@ export async function crearMeta(
 
 export async function listarMetas(db: SQLiteDatabase): Promise<Meta[]> {
   const rows = await db.getAllAsync<Meta>(
-    'SELECT id, nombre, estado, categoria, creado_en FROM metas ORDER BY creado_en DESC'
+    'SELECT id, nombre, estado, categoria, prioridad, creado_en FROM metas ORDER BY creado_en DESC'
   );
   return rows;
 }
@@ -36,6 +38,18 @@ export async function actualizarCategoriaMeta(
   await db.runAsync(
     'UPDATE metas SET categoria = ? WHERE id = ?',
     categoria,
+    metaId
+  );
+}
+
+export async function actualizarPrioridadMeta(
+  db: SQLiteDatabase,
+  metaId: number,
+  prioridad: Prioridad | null
+): Promise<void> {
+  await db.runAsync(
+    'UPDATE metas SET prioridad = ? WHERE id = ?',
+    prioridad,
     metaId
   );
 }
