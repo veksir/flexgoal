@@ -35,7 +35,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 - [ ] **Fase 1 — Fundamentos**
   - [x] Bandeja de ideas (crear, listar, eliminar) — persistencia SQLite validada
   - [x] Convertir idea en meta
-  - [ ] Áreas
+  - [x] Áreas — categoría/área textual opcional por meta (historia 13)
   - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
   - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
   - [ ] Estados, fechas, prioridades
@@ -309,3 +309,29 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   no se confirmó a mano. Si algo se ve raro con el modal, revisar aquí
   primero.
 - Merge a main (--ff-only): commit `0eead68`.
+
+### 2026-08-20 — Historia 13: Categoría/área en metas
+
+- Agregado campo opcional `categoria` a `metas` vía `ALTER TABLE`
+  (`DATABASE_VERSION` 7 → 8).
+- Nueva función `actualizarCategoriaMeta` (patrón `actualizarEstadoMeta`);
+  `crearMeta` acepta `categoria?: string | null`. No existe ni se inventó
+  `actualizarMeta` genérica (premisa falsa de la instrucción original,
+  corregida antes de implementar).
+- Corrección de contexto importante de esta historia: **no existe un
+  formulario de crear/editar meta** — las metas se crean solo por
+  conversión de idea (sin inputs), y el único punto de edición de una
+  meta es `MetaDetalleScreen`. Por eso la UI quedó ahí (input "Categoría
+  (opcional)" + guardar, vaciarlo → `NULL`), y la creación siempre deja
+  `categoria = NULL`. El doc `historia-013.md` refleja esta realidad.
+- También se corrigió una infraestructura de tests: `aplicarMigraciones`
+  en `testDb.ts` re-ejecutaba todas las migraciones <= target en cada
+  llamada; ahora es incremental (respeta `user_version`), igual que el
+  `migrate()` real de `database.ts`. Sin esto no existía forma de probar
+  supervivencia a través de un salto de versión con `ALTER TABLE`.
+- 5 pruebas nuevas (4 en metas + 1 de supervivencia de migración) — 41
+  pruebas totales, todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `839bfc0`.
+- Siguiente: por definir — queda pendiente el resto de "Estados, fechas,
+  prioridades" (fecha objetivo en meta, prioridad en tarea/meta), o
+  avanzar Fase 2 (Pomodoro, persistencia de sesión activa en background).
