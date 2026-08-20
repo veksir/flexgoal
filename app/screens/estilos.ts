@@ -108,6 +108,32 @@ export const estilos = StyleSheet.create({
     marginTop: 4,
     fontWeight: '600',
   },
+  sesionHistorialEnlace: {
+    fontWeight: 'normal',
+    fontStyle: 'italic',
+    textDecorationLine: 'underline',
+  },
+  sesionHistorialItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sesionHistorialTexto: {
+    fontSize: 16,
+    color: '#333',
+  },
+  modalFondo: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalContenido: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    maxHeight: '70%',
+  },
   sesionContenido: {
     flexDirection: 'row',
     alignItems: 'center',

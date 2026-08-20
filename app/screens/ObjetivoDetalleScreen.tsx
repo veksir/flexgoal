@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, Text, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import {
   crearTarea,
@@ -13,7 +21,11 @@ import {
   type EstadoTarea,
   type Tarea,
 } from '../db/tareas';
-import { tiempoTotalPorTarea } from '../db/sesiones';
+import {
+  listarSesionesPorTarea,
+  tiempoTotalPorTarea,
+  type Sesion,
+} from '../db/sesiones';
 import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
@@ -63,6 +75,8 @@ export default function ObjetivoDetalleScreen({
 }: Props) {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
+  const [historialVisible, setHistorialVisible] = useState(false);
+  const [sesionesHistorial, setSesionesHistorial] = useState<Sesion[]>([]);
   const sesionActivaAnterior = useRef(sesionActiva);
 
   useEffect(() => {
@@ -86,6 +100,17 @@ export default function ObjetivoDetalleScreen({
       nuevosTotales[tarea.id] = await tiempoTotalPorTarea(db, tarea.id);
     }
     setTotalesTareas(nuevosTotales);
+  }
+
+  async function abrirHistorial(tareaId: number) {
+    const sesiones = await listarSesionesPorTarea(db, tareaId);
+    setSesionesHistorial(sesiones);
+    setHistorialVisible(true);
+  }
+
+  function cerrarHistorial() {
+    setHistorialVisible(false);
+    setSesionesHistorial([]);
   }
 
   async function agregarTarea(
@@ -196,13 +221,20 @@ export default function ObjetivoDetalleScreen({
                       : ''}
                   </Text>
                   {estimado != null && realMinutos > 0 && diferencia != null ? (
-                    <Text style={estilos.sesionTotal}>
-                      {`Estimado: ${formatearDuracion(estimado)} · Real: ${formatearDuracion(realMinutos)} · ${formatearDiferencia(diferencia)}`}
-                    </Text>
+                    <Pressable onPress={() => abrirHistorial(item.id)}>
+                      <Text style={estilos.sesionTotal}>
+                        {`Estimado: ${formatearDuracion(estimado)} · Real: ${formatearDuracion(realMinutos)} · ${formatearDiferencia(diferencia)}`}
+                      </Text>
+                    </Pressable>
                   ) : realMinutos > 0 ? (
-                    <Text style={estilos.sesionTotal}>
-                      Total: {formatearDuracion(realMinutos)}
-                    </Text>
+                    <Pressable onPress={() => abrirHistorial(item.id)}>
+                      <Text style={estilos.sesionTotal}>
+                        Total: {formatearDuracion(realMinutos)}{' '}
+                        <Text style={estilos.sesionHistorialEnlace}>
+                          (ver historial)
+                        </Text>
+                      </Text>
+                    </Pressable>
                   ) : null}
                 </View>
                 <Pressable
@@ -239,6 +271,37 @@ export default function ObjetivoDetalleScreen({
           </Text>
         }
       />
+      <Modal
+        visible={historialVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={cerrarHistorial}
+      >
+        <View style={estilos.modalFondo}>
+          <View style={estilos.modalContenido}>
+            <Text style={estilos.tituloDetalle}>Historial de sesiones</Text>
+            {sesionesHistorial.length === 0 ? (
+              <Text style={estilos.vacio}>
+                Esta tarea aún no tiene sesiones registradas.
+              </Text>
+            ) : (
+              <ScrollView>
+                {sesionesHistorial.map((sesion) => (
+                  <View key={sesion.id} style={estilos.sesionHistorialItem}>
+                    <Text style={estilos.sesionHistorialTexto}>
+                      {sesion.duracion_minutos} min —{' '}
+                      {formatearFechaHora(sesion.creado_en)}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+            <Pressable style={estilos.boton} onPress={cerrarHistorial}>
+              <Text style={estilos.botonTexto}>Cerrar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -247,4 +310,13 @@ export function formatearCronometro(segundos: number): string {
   const mm = Math.floor(segundos / 60);
   const ss = segundos % 60;
   return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
+
+function formatearFechaHora(iso: string): string {
+  const fecha = new Date(iso);
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const horas = String(fecha.getHours()).padStart(2, '0');
+  const minutos = String(fecha.getMinutes()).padStart(2, '0');
+  return `${dia}/${mes} ${horas}:${minutos}`;
 }

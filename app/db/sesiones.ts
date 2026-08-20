@@ -33,3 +33,13 @@ export async function tiempoTotalPorTarea(
   );
   return fila?.total ?? 0;
 }
+
+export async function listarSesionesPorTarea(
+  db: SQLiteDatabase,
+  tareaId: number
+): Promise<Sesion[]> {
+  return db.getAllAsync<Sesion>(
+    'SELECT id, tarea_id, duracion_minutos, creado_en FROM sesiones WHERE tarea_id = ? ORDER BY creado_en DESC',
+    tareaId
+  );
+}
