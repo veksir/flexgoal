@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput } from 'react-native';
+import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 
 import {
   crearObjetivo,
   listarObjetivosPorMeta,
   type Objetivo,
 } from '../db/objetivos';
-import type { Meta } from '../db/metas';
+import { actualizarEstadoMeta, type Meta } from '../db/metas';
 import { estilos } from './estilos';
+
+const ESTADOS_META = ['activa', 'pausada', 'completada', 'abandonada'] as const;
+
+function etiquetaEstado(estado: string): string {
+  return estado.charAt(0).toUpperCase() + estado.slice(1);
+}
 
 interface Props {
   meta: Meta;
@@ -25,10 +31,16 @@ export default function MetaDetalleScreen({
   setTextoObjetivo,
 }: Props) {
   const [objetivos, setObjetivos] = useState<Objetivo[]>([]);
+  const [estado, setEstado] = useState(meta.estado);
 
   useEffect(() => {
     cargarObjetivos();
   }, []);
+
+  async function cambiarEstado(nuevoEstado: string) {
+    await actualizarEstadoMeta(meta.id, nuevoEstado);
+    setEstado(nuevoEstado);
+  }
 
   async function cargarObjetivos() {
     const lista = await listarObjetivosPorMeta(meta.id);
@@ -51,6 +63,28 @@ export default function MetaDetalleScreen({
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
       <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
+      <Text style={estilos.estadoEtiqueta}>Estado</Text>
+      <View style={estilos.estadoContenedor}>
+        {ESTADOS_META.map((opcion) => {
+          const activo = opcion === estado;
+          return (
+            <Pressable
+              key={opcion}
+              style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+              onPress={() => cambiarEstado(opcion)}
+            >
+              <Text
+                style={[
+                  estilos.estadoBotonTexto,
+                  activo && estilos.estadoBotonTextoActivo,
+                ]}
+              >
+                {etiquetaEstado(opcion)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <TextInput
         style={estilos.input}
         value={textoObjetivo}

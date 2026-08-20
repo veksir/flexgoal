@@ -24,6 +24,14 @@ export async function listarMetas(): Promise<Meta[]> {
   return rows;
 }
 
+export async function actualizarEstadoMeta(
+  metaId: number,
+  nuevoEstado: string
+): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE metas SET estado = ? WHERE id = ?', nuevoEstado, metaId);
+}
+
 export interface ProgresoMeta {
   estimadoTotal: number | null;
   realTotal: number;

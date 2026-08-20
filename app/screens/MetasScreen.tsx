@@ -14,6 +14,10 @@ import {
 } from '../db/tareas';
 import { estilos } from './estilos';
 
+function etiquetaEstado(estado: string): string {
+  return estado.charAt(0).toUpperCase() + estado.slice(1);
+}
+
 interface Props {
   onSeleccionarMeta: (meta: Meta) => void;
 }
@@ -61,15 +65,24 @@ export default function MetasScreen({ onSeleccionarMeta }: Props) {
       keyExtractor={(item) => String(item.id)}
       renderItem={({ item }) => {
         const resumen = resumenProgreso(progresos[item.id]);
+        const inactiva = item.estado !== 'activa';
         return (
           <Pressable
             style={estilos.item}
             onPress={() => onSeleccionarMeta(item)}
           >
-            <Text style={estilos.itemTexto}>{item.nombre}</Text>
-            <Text style={estilos.itemFecha}>Estado: {item.estado}</Text>
+            <Text
+              style={[estilos.itemTexto, inactiva && estilos.itemTextoInactivo]}
+            >
+              {item.nombre}
+            </Text>
+            <Text style={estilos.itemFecha}>
+              Estado: {etiquetaEstado(item.estado)}
+            </Text>
             {resumen ? (
-              <Text style={estilos.sesionTotal}>{resumen}</Text>
+              <Text style={[estilos.sesionTotal, inactiva && estilos.itemTextoInactivo]}>
+                {resumen}
+              </Text>
             ) : null}
           </Pressable>
         );

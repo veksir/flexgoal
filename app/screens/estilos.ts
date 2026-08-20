@@ -11,6 +11,36 @@ export const estilos = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
+  estadoEtiqueta: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 6,
+  },
+  estadoContenedor: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  estadoBoton: {
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  estadoBotonActivo: {
+    backgroundColor: '#1c7ed6',
+    borderColor: '#1c7ed6',
+  },
+  estadoBotonTexto: {
+    fontSize: 13,
+    color: '#666',
+  },
+  estadoBotonTextoActivo: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   botonVolver: {
     alignSelf: 'flex-start',
     marginBottom: 12,
@@ -120,6 +150,9 @@ export const estilos = StyleSheet.create({
   },
   itemTexto: {
     fontSize: 16,
+  },
+  itemTextoInactivo: {
+    color: '#888',
   },
   itemFecha: {
     fontSize: 12,
