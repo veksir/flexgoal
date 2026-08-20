@@ -41,7 +41,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [ ] Estados, fechas, prioridades
     - [x] Fecha planificada en tareas (opcional, validada)
     - [x] Duración estimada en tareas (opcional, validada)
-    - [ ] Fecha objetivo en meta
+    - [x] Fecha objetivo en meta
     - [x] Prioridad (tarea y/o meta) — Alta/Media/Baja opcional, selector de botones (historia 14)
     - [x] Cambiar estado de meta (pausada/completada/abandonada) — visual atenuado en lista
 - [ ] **Fase 2 — Tiempo**
@@ -362,3 +362,21 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — queda pendiente "Fecha objetivo en meta"
   (único ítem restante de Fase 1), o avanzar Fase 2 (Pomodoro,
   persistencia de sesión activa en background).
+
+### 2026-08-20 — Historia 15: Fecha objetivo en meta
+
+- Agregado campo opcional `fecha_objetivo` a `metas` vía `ALTER TABLE`
+  (`DATABASE_VERSION` 9 → 10).
+- Nueva función `actualizarFechaObjetivoMeta` en `metas.ts` (mismo patrón
+  que `actualizarEstadoMeta`, `actualizarCategoriaMeta` y
+  `actualizarPrioridadMeta`). Validación con `esFechaValida` reutilizada
+  de `db/tareas.ts`.
+- UI: input "Fecha objetivo (AAAA-MM-DD, opcional)" en
+  `MetaDetalleScreen`, con validación de formato, precargado con el
+  valor actual, y opción de vaciarlo (→ `NULL`). Se muestra junto al
+  nombre en `MetasScreen` solo si no es `NULL`.
+- Con esto se cierra Fase 1 (Fundamentos) — solo queda pulido de UX
+  general diferido para el final.
+- 5 pruebas nuevas (3 en metas, 2 actualizaciones en migraciones) — 53
+  pruebas totales, todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `dba780e`.
