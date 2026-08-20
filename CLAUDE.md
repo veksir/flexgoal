@@ -46,12 +46,17 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [ ] Cambiar estado de meta (pausada/completada/abandonada)
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
-  - [x] Comparación estimado vs. real por tarea (primera pieza del ciclo adaptativo)
   - [ ] Historial detallado de sesiones (lista, no solo el total)
   - [ ] Pomodoro con duraciones configurables de trabajo/descanso
   - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación:** disponibilidad, horarios, reprogramación
-- [ ] **Fase 4 — Adaptación:** plan vs. realidad, modo mínimo, días libres
+- [ ] **Fase 4 — Adaptación**
+  - [x] Comparación estimado vs. real por tarea individual
+  - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
+  - [ ] Detección de sobrecarga
+  - [ ] Sugerencias de ajuste
+  - [ ] Modo mínimo
+  - [ ] Días libresmínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
 
