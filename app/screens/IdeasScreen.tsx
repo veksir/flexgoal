@@ -10,14 +10,16 @@ import {
 
 import { crearIdea, eliminarIdea, listarIdeas, type Idea } from '../db/ideas';
 import { convertirIdeaEnMeta } from '../db/conversiones';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
 interface Props {
+  db: SQLiteDatabase;
   texto: string;
   setTexto: (texto: string) => void;
 }
 
-export default function IdeasScreen({ texto, setTexto }: Props) {
+export default function IdeasScreen({ db, texto, setTexto }: Props) {
   const [ideas, setIdeas] = useState<Idea[]>([]);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function IdeasScreen({ texto, setTexto }: Props) {
   }, []);
 
   async function cargarIdeas() {
-    const lista = await listarIdeas();
+    const lista = await listarIdeas(db);
     setIdeas(lista);
   }
 
@@ -34,13 +36,13 @@ export default function IdeasScreen({ texto, setTexto }: Props) {
     if (!textoLimpio) {
       return;
     }
-    await crearIdea(textoLimpio);
+    await crearIdea(db, textoLimpio);
     setTexto('');
     await cargarIdeas();
   }
 
   async function convertir(idea: Idea) {
-    await convertirIdeaEnMeta(idea);
+    await convertirIdeaEnMeta(db, idea);
     await cargarIdeas();
   }
 
@@ -51,7 +53,7 @@ export default function IdeasScreen({ texto, setTexto }: Props) {
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
-          await eliminarIdea(idea.id);
+          await eliminarIdea(db, idea.id);
           await cargarIdeas();
         },
       },

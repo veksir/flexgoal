@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export type EstadoTarea = 'pendiente' | 'completada';
 
@@ -18,12 +18,12 @@ export interface TareaConContexto extends Tarea {
 }
 
 export async function crearTarea(
+  db: SQLiteDatabase,
   objetivoId: number,
   nombre: string,
   fechaPlanificada?: string,
   duracionEstimadaMinutos?: number
 ): Promise<void> {
-  const db = await getDb();
   await db.runAsync(
     'INSERT INTO tareas (objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en) VALUES (?, ?, ?, ?, ?, ?)',
     objetivoId,
@@ -35,8 +35,10 @@ export async function crearTarea(
   );
 }
 
-export async function listarTareasPorObjetivo(objetivoId: number): Promise<Tarea[]> {
-  const db = await getDb();
+export async function listarTareasPorObjetivo(
+  db: SQLiteDatabase,
+  objetivoId: number
+): Promise<Tarea[]> {
   const rows = await db.getAllAsync<Tarea>(
     'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
     objetivoId
@@ -44,8 +46,9 @@ export async function listarTareasPorObjetivo(objetivoId: number): Promise<Tarea
   return rows;
 }
 
-export async function tareasParaHoy(): Promise<TareaConContexto[]> {
-  const db = await getDb();
+export async function tareasParaHoy(
+  db: SQLiteDatabase
+): Promise<TareaConContexto[]> {
   const hoy = new Date().toISOString().split('T')[0];
   const rows = await db.getAllAsync<TareaConContexto>(
     `SELECT
@@ -71,15 +74,21 @@ export async function tareasParaHoy(): Promise<TareaConContexto[]> {
 }
 
 export async function alternarEstadoTarea(
+  db: SQLiteDatabase,
   tareaId: number,
   nuevoEstado: EstadoTarea
 ): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('UPDATE tareas SET estado = ? WHERE id = ?', nuevoEstado, tareaId);
+  await db.runAsync(
+    'UPDATE tareas SET estado = ? WHERE id = ?',
+    nuevoEstado,
+    tareaId
+  );
 }
 
-export async function eliminarTarea(id: number): Promise<void> {
-  const db = await getDb();
+export async function eliminarTarea(
+  db: SQLiteDatabase,
+  id: number
+): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.runAsync('DELETE FROM sesiones WHERE tarea_id = ?', id);
     await txn.runAsync('DELETE FROM tareas WHERE id = ?', id);

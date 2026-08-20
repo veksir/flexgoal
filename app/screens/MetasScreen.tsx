@@ -12,6 +12,7 @@ import {
   formatearDuracion,
   formatearDiferencia,
 } from '../db/tareas';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
 function etiquetaEstado(estado: string): string {
@@ -19,10 +20,11 @@ function etiquetaEstado(estado: string): string {
 }
 
 interface Props {
+  db: SQLiteDatabase;
   onSeleccionarMeta: (meta: Meta) => void;
 }
 
-export default function MetasScreen({ onSeleccionarMeta }: Props) {
+export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
   const [metas, setMetas] = useState<Meta[]>([]);
   const [progresos, setProgresos] = useState<Record<number, ProgresoMeta>>({});
 
@@ -31,11 +33,11 @@ export default function MetasScreen({ onSeleccionarMeta }: Props) {
   }, []);
 
   async function cargarMetas() {
-    const lista = await listarMetas();
+    const lista = await listarMetas(db);
     setMetas(lista);
     const nuevosProgresos: Record<number, ProgresoMeta> = {};
     for (const meta of lista) {
-      nuevosProgresos[meta.id] = await progresoPorMeta(meta.id);
+      nuevosProgresos[meta.id] = await progresoPorMeta(db, meta.id);
     }
     setProgresos(nuevosProgresos);
   }

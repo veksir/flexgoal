@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export interface Idea {
   id: number;
@@ -6,8 +6,10 @@ export interface Idea {
   creado_en: string;
 }
 
-export async function crearIdea(texto: string): Promise<void> {
-  const db = await getDb();
+export async function crearIdea(
+  db: SQLiteDatabase,
+  texto: string
+): Promise<void> {
   await db.runAsync(
     'INSERT INTO ideas (texto, creado_en) VALUES (?, ?)',
     texto,
@@ -15,15 +17,16 @@ export async function crearIdea(texto: string): Promise<void> {
   );
 }
 
-export async function listarIdeas(): Promise<Idea[]> {
-  const db = await getDb();
+export async function listarIdeas(db: SQLiteDatabase): Promise<Idea[]> {
   const rows = await db.getAllAsync<Idea>(
     'SELECT id, texto, creado_en FROM ideas ORDER BY creado_en DESC'
   );
   return rows;
 }
 
-export async function eliminarIdea(id: number): Promise<void> {
-  const db = await getDb();
+export async function eliminarIdea(
+  db: SQLiteDatabase,
+  id: number
+): Promise<void> {
   await db.runAsync('DELETE FROM ideas WHERE id = ?', id);
 }

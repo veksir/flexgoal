@@ -16,10 +16,12 @@ import {
 import { tiempoTotalPorTarea } from '../db/sesiones';
 import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import FormularioTarea from './FormularioTarea';
 
 interface Props {
+  db: SQLiteDatabase;
   objetivo: Objetivo;
   nombreMeta: string;
   onVolver: () => void;
@@ -40,6 +42,7 @@ interface Props {
 }
 
 export default function ObjetivoDetalleScreen({
+  db,
   objetivo,
   nombreMeta,
   onVolver,
@@ -76,11 +79,11 @@ export default function ObjetivoDetalleScreen({
   }, [sesionActiva]);
 
   async function cargarTareas() {
-    const lista = await listarTareasPorObjetivo(objetivo.id);
+    const lista = await listarTareasPorObjetivo(db, objetivo.id);
     setTareas(lista);
     const nuevosTotales: Record<number, number> = {};
     for (const tarea of lista) {
-      nuevosTotales[tarea.id] = await tiempoTotalPorTarea(tarea.id);
+      nuevosTotales[tarea.id] = await tiempoTotalPorTarea(db, tarea.id);
     }
     setTotalesTareas(nuevosTotales);
   }
@@ -90,19 +93,19 @@ export default function ObjetivoDetalleScreen({
     fechaPlanificada?: string,
     duracionEstimadaMinutos?: number
   ) {
-    await crearTarea(objetivo.id, nombre, fechaPlanificada, duracionEstimadaMinutos);
+    await crearTarea(db, objetivo.id, nombre, fechaPlanificada, duracionEstimadaMinutos);
     await cargarTareas();
   }
 
   async function alternarTarea(tarea: Tarea) {
     const nuevoEstado: EstadoTarea =
       tarea.estado === 'completada' ? 'pendiente' : 'completada';
-    await alternarEstadoTarea(tarea.id, nuevoEstado);
+    await alternarEstadoTarea(db, tarea.id, nuevoEstado);
     await cargarTareas();
   }
 
   async function confirmarEliminacionTarea(tarea: Tarea) {
-    const totalMinutos = await tiempoTotalPorTarea(tarea.id);
+    const totalMinutos = await tiempoTotalPorTarea(db, tarea.id);
     if (totalMinutos > 0) {
       Alert.alert(
         'Eliminar tarea',
@@ -115,7 +118,7 @@ export default function ObjetivoDetalleScreen({
             text: 'Eliminar de todas formas',
             style: 'destructive',
             onPress: async () => {
-              await eliminarTarea(tarea.id);
+              await eliminarTarea(db, tarea.id);
               await cargarTareas();
             },
           },
@@ -129,7 +132,7 @@ export default function ObjetivoDetalleScreen({
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
-          await eliminarTarea(tarea.id);
+          await eliminarTarea(db, tarea.id);
           await cargarTareas();
         },
       },

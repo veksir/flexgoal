@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export interface Sesion {
   id: number;
@@ -8,13 +8,13 @@ export interface Sesion {
 }
 
 export async function crearSesion(
+  db: SQLiteDatabase,
   tareaId: number,
   duracionMinutos: number
 ): Promise<void> {
   if (duracionMinutos < 1) {
     return;
   }
-  const db = await getDb();
   await db.runAsync(
     'INSERT INTO sesiones (tarea_id, duracion_minutos, creado_en) VALUES (?, ?, ?)',
     tareaId,
@@ -23,8 +23,10 @@ export async function crearSesion(
   );
 }
 
-export async function tiempoTotalPorTarea(tareaId: number): Promise<number> {
-  const db = await getDb();
+export async function tiempoTotalPorTarea(
+  db: SQLiteDatabase,
+  tareaId: number
+): Promise<number> {
   const fila = await db.getFirstAsync<{ total: number | null }>(
     'SELECT COALESCE(SUM(duracion_minutos), 0) AS total FROM sesiones WHERE tarea_id = ?',
     tareaId

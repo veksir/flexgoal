@@ -8,12 +8,14 @@ import {
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 import IdeasScreen from './screens/IdeasScreen';
 import MetasScreen from './screens/MetasScreen';
 import HoyScreen from './screens/HoyScreen';
 import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
+import { getDb } from './db/database';
 import { crearSesion } from './db/sesiones';
 import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
@@ -27,6 +29,7 @@ export interface SesionActiva {
 }
 
 export default function App() {
+  const [db, setDb] = useState<SQLiteDatabase | null>(null);
   const [vista, setVista] = useState<Vista>('hoy');
   const [metaSeleccionada, setMetaSeleccionada] = useState<Meta | null>(null);
   const [objetivoSeleccionado, setObjetivoSeleccionado] =
@@ -40,6 +43,10 @@ export default function App() {
   const [errorFechaTarea, setErrorFechaTarea] = useState('');
   const [textoDuracionTarea, setTextoDuracionTarea] = useState('');
   const [errorDuracionTarea, setErrorDuracionTarea] = useState('');
+
+  useEffect(() => {
+    getDb().then(setDb);
+  }, []);
 
   useEffect(() => {
     if (!sesionActiva) {
@@ -68,7 +75,7 @@ export default function App() {
   }
 
   async function detenerSesion() {
-    if (!sesionActiva) {
+    if (!sesionActiva || !db) {
       return;
     }
     const minutos = Math.round(
@@ -80,7 +87,7 @@ export default function App() {
       setTiempoSegundos(0);
       return;
     }
-    await crearSesion(sesionActiva.tareaId, minutos);
+    await crearSesion(db, sesionActiva.tareaId, minutos);
     setSesionActiva(null);
     setTiempoSegundos(0);
   }
@@ -88,8 +95,9 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.titulo}>Flexgoal</Text>
-      {objetivoSeleccionado && metaSeleccionada ? (
+      {!db ? null : objetivoSeleccionado && metaSeleccionada ? (
         <ObjetivoDetalleScreen
+          db={db}
           objetivo={objetivoSeleccionado}
           nombreMeta={metaSeleccionada.nombre}
           onVolver={() => setObjetivoSeleccionado(null)}
@@ -110,6 +118,7 @@ export default function App() {
         />
       ) : metaSeleccionada ? (
         <MetaDetalleScreen
+          db={db}
           meta={metaSeleccionada}
           onVolver={() => setMetaSeleccionada(null)}
           onSeleccionarObjetivo={(objetivo) => setObjetivoSeleccionado(objetivo)}
@@ -121,15 +130,17 @@ export default function App() {
           <ViewToggle vista={vista} onChangeVista={setVista} />
           {vista === 'hoy' ? (
             <HoyScreen
+              db={db}
               sesionActiva={sesionActiva}
               tiempoSegundos={tiempoSegundos}
               onIniciarSesion={iniciarSesion}
               onDetenerSesion={detenerSesion}
             />
           ) : vista === 'ideas' ? (
-            <IdeasScreen texto={texto} setTexto={setTexto} />
+            <IdeasScreen db={db} texto={texto} setTexto={setTexto} />
           ) : (
             <MetasScreen
+              db={db}
               onSeleccionarMeta={(meta) => setMetaSeleccionada(meta)}
             />
           )}

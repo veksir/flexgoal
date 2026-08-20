@@ -7,6 +7,7 @@ import {
   type Objetivo,
 } from '../db/objetivos';
 import { actualizarEstadoMeta, type Meta } from '../db/metas';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 
 const ESTADOS_META = ['activa', 'pausada', 'completada', 'abandonada'] as const;
@@ -16,6 +17,7 @@ function etiquetaEstado(estado: string): string {
 }
 
 interface Props {
+  db: SQLiteDatabase;
   meta: Meta;
   onVolver: () => void;
   onSeleccionarObjetivo: (objetivo: Objetivo) => void;
@@ -24,6 +26,7 @@ interface Props {
 }
 
 export default function MetaDetalleScreen({
+  db,
   meta,
   onVolver,
   onSeleccionarObjetivo,
@@ -38,12 +41,12 @@ export default function MetaDetalleScreen({
   }, []);
 
   async function cambiarEstado(nuevoEstado: string) {
-    await actualizarEstadoMeta(meta.id, nuevoEstado);
+    await actualizarEstadoMeta(db, meta.id, nuevoEstado);
     setEstado(nuevoEstado);
   }
 
   async function cargarObjetivos() {
-    const lista = await listarObjetivosPorMeta(meta.id);
+    const lista = await listarObjetivosPorMeta(db, meta.id);
     setObjetivos(lista);
   }
 
@@ -52,7 +55,7 @@ export default function MetaDetalleScreen({
     if (!textoLimpio) {
       return;
     }
-    await crearObjetivo(meta.id, textoLimpio);
+    await crearObjetivo(db, meta.id, textoLimpio);
     setTextoObjetivo('');
     await cargarObjetivos();
   }

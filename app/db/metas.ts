@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export interface Meta {
   id: number;
@@ -7,8 +7,10 @@ export interface Meta {
   creado_en: string;
 }
 
-export async function crearMeta(nombre: string): Promise<void> {
-  const db = await getDb();
+export async function crearMeta(
+  db: SQLiteDatabase,
+  nombre: string
+): Promise<void> {
   await db.runAsync(
     'INSERT INTO metas (nombre, creado_en) VALUES (?, ?)',
     nombre,
@@ -16,8 +18,7 @@ export async function crearMeta(nombre: string): Promise<void> {
   );
 }
 
-export async function listarMetas(): Promise<Meta[]> {
-  const db = await getDb();
+export async function listarMetas(db: SQLiteDatabase): Promise<Meta[]> {
   const rows = await db.getAllAsync<Meta>(
     'SELECT id, nombre, estado, creado_en FROM metas ORDER BY creado_en DESC'
   );
@@ -25,11 +26,15 @@ export async function listarMetas(): Promise<Meta[]> {
 }
 
 export async function actualizarEstadoMeta(
+  db: SQLiteDatabase,
   metaId: number,
   nuevoEstado: string
 ): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('UPDATE metas SET estado = ? WHERE id = ?', nuevoEstado, metaId);
+  await db.runAsync(
+    'UPDATE metas SET estado = ? WHERE id = ?',
+    nuevoEstado,
+    metaId
+  );
 }
 
 export interface ProgresoMeta {
@@ -37,8 +42,10 @@ export interface ProgresoMeta {
   realTotal: number;
 }
 
-export async function progresoPorMeta(metaId: number): Promise<ProgresoMeta> {
-  const db = await getDb();
+export async function progresoPorMeta(
+  db: SQLiteDatabase,
+  metaId: number
+): Promise<ProgresoMeta> {
   const fila = await db.getFirstAsync<{
     estimado_total: number | null;
     real_total: number | null;

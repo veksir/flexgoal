@@ -9,10 +9,12 @@ import {
   type TareaConContexto,
 } from '../db/tareas';
 import type { SesionActiva } from '../App';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import { formatearCronometro } from './ObjetivoDetalleScreen';
 
 interface Props {
+  db: SQLiteDatabase;
   sesionActiva: SesionActiva | null;
   tiempoSegundos: number;
   onIniciarSesion: (tarea: TareaConContexto) => void;
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export default function HoyScreen({
+  db,
   sesionActiva,
   tiempoSegundos,
   onIniciarSesion,
@@ -32,14 +35,14 @@ export default function HoyScreen({
   }, []);
 
   async function cargarTareas() {
-    const lista = await tareasParaHoy();
+    const lista = await tareasParaHoy(db);
     setTareas(lista);
   }
 
   async function alternarTarea(tarea: TareaConContexto) {
     const nuevoEstado: EstadoTarea =
       tarea.estado === 'completada' ? 'pendiente' : 'completada';
-    await alternarEstadoTarea(tarea.id, nuevoEstado);
+    await alternarEstadoTarea(db, tarea.id, nuevoEstado);
     await cargarTareas();
   }
 

@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export interface Objetivo {
   id: number;
@@ -7,8 +7,11 @@ export interface Objetivo {
   creado_en: string;
 }
 
-export async function crearObjetivo(metaId: number, nombre: string): Promise<void> {
-  const db = await getDb();
+export async function crearObjetivo(
+  db: SQLiteDatabase,
+  metaId: number,
+  nombre: string
+): Promise<void> {
   await db.runAsync(
     'INSERT INTO objetivos (meta_id, nombre, creado_en) VALUES (?, ?, ?)',
     metaId,
@@ -17,8 +20,10 @@ export async function crearObjetivo(metaId: number, nombre: string): Promise<voi
   );
 }
 
-export async function listarObjetivosPorMeta(metaId: number): Promise<Objetivo[]> {
-  const db = await getDb();
+export async function listarObjetivosPorMeta(
+  db: SQLiteDatabase,
+  metaId: number
+): Promise<Objetivo[]> {
   const rows = await db.getAllAsync<Objetivo>(
     'SELECT id, meta_id, nombre, creado_en FROM objetivos WHERE meta_id = ? ORDER BY creado_en DESC',
     metaId

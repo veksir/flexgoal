@@ -1,8 +1,10 @@
-import { getDb } from './database';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Idea } from './ideas';
 
-export async function convertirIdeaEnMeta(idea: Idea): Promise<void> {
-  const db = await getDb();
+export async function convertirIdeaEnMeta(
+  db: SQLiteDatabase,
+  idea: Idea
+): Promise<void> {
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.runAsync(
       'INSERT INTO metas (nombre, creado_en) VALUES (?, ?)',
