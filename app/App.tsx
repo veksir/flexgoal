@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  Vibration,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -94,40 +95,41 @@ export default function App() {
     if (!db || sesionActiva?.modo !== 'pomodoro' || !sesionActiva.finEsperadoTimestamp) {
       return;
     }
+    let avanzando = false;
     const intervalo = setInterval(async () => {
+      if (avanzando) return;
       if (!sesionActivaRef.current?.finEsperadoTimestamp) return;
       if (Date.now() >= sesionActivaRef.current.finEsperadoTimestamp) {
-        const resultado = await avanzarFasePomodoro(db);
-        if (resultado) {
-          if (resultado.minutosTrabajo > 0) {
-            try {
-              const { Vibration } = await import('react-native');
+        avanzando = true;
+        try {
+          const resultado = await avanzarFasePomodoro(db);
+          if (resultado) {
+            if (resultado.minutosTrabajo > 0) {
               Vibration.vibrate();
-            } catch {}
-          }
-          const nuevaSesion = await obtenerSesionActiva(db);
-          if (nuevaSesion) {
-            const inicioTimestamp = new Date(nuevaSesion.inicio).getTime();
-            const finEsperadoTimestamp = nuevaSesion.finEsperado
-              ? new Date(nuevaSesion.finEsperado).getTime()
-              : null;
-            const nueva: SesionActiva = {
-              tareaId: nuevaSesion.tareaId,
-              inicioTimestamp,
-              modo: nuevaSesion.modo,
-              fase: nuevaSesion.fase,
-              finEsperadoTimestamp,
-            };
-            setSesionActiva(nueva);
-            sesionActivaRef.current = nueva;
-          } else {
-            try {
-              const { Vibration } = await import('react-native');
+            }
+            const nuevaSesion = await obtenerSesionActiva(db);
+            if (nuevaSesion) {
+              const inicioTimestamp = new Date(nuevaSesion.inicio).getTime();
+              const finEsperadoTimestamp = nuevaSesion.finEsperado
+                ? new Date(nuevaSesion.finEsperado).getTime()
+                : null;
+              const nueva: SesionActiva = {
+                tareaId: nuevaSesion.tareaId,
+                inicioTimestamp,
+                modo: nuevaSesion.modo,
+                fase: nuevaSesion.fase,
+                finEsperadoTimestamp,
+              };
+              setSesionActiva(nueva);
+              sesionActivaRef.current = nueva;
+            } else {
               Vibration.vibrate();
-            } catch {}
-            setSesionActiva(null);
-            sesionActivaRef.current = null;
+              setSesionActiva(null);
+              sesionActivaRef.current = null;
+            }
           }
+        } finally {
+          avanzando = false;
         }
       }
     }, 1000);
@@ -223,17 +225,9 @@ export default function App() {
       return;
     }
     const ahora = Date.now();
-    let minutos: number;
-    if (sesionActiva.modo === 'pomodoro' && sesionActiva.finEsperadoTimestamp) {
-      minutos = Math.round((sesionActiva.finEsperadoTimestamp - ahora) / 60000);
-      minutos = Math.round(
-        (ahora - sesionActiva.inicioTimestamp) / 60000
-      );
-    } else {
-      minutos = Math.round(
-        (ahora - sesionActiva.inicioTimestamp) / 60000
-      );
-    }
+    const minutos = Math.round(
+      (ahora - sesionActiva.inicioTimestamp) / 60000
+    );
     if (minutos < 1) {
       Alert.alert('Sesión muy corta', 'La sesión duró menos de 30 segundos y no se guardó.');
       await finalizarSesionActiva(db, sesionActiva.tareaId);
