@@ -106,12 +106,13 @@ export default function MetaDetalleScreen({
   }
 
   return (
-    <ScrollView>
+    <View style={{ flex: 1 }}>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
       <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
-      <Text style={estilos.estadoEtiqueta}>Categoría (opcional)</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        <Text style={estilos.estadoEtiqueta}>Categoría (opcional)</Text>
       <TextInput
         style={estilos.input}
         value={textoCategoria}
@@ -207,6 +208,7 @@ export default function MetaDetalleScreen({
           </Pressable>
         ))
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

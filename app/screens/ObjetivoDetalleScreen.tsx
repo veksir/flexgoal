@@ -181,7 +181,7 @@ export default function ObjetivoDetalleScreen({
   }
 
   return (
-    <ScrollView>
+    <View style={{ flex: 1 }}>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>
           ← Volver a {nombreMeta}
@@ -190,7 +190,8 @@ export default function ObjetivoDetalleScreen({
       <Text style={estilos.tituloDetalle}>
         {nombreMeta} › {objetivo.nombre}
       </Text>
-      <FormularioTarea
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        <FormularioTarea
         onAgregarTarea={agregarTarea}
         textoTarea={textoTarea}
         setTextoTarea={setTextoTarea}
@@ -320,7 +321,8 @@ export default function ObjetivoDetalleScreen({
           </View>
         </View>
       </Modal>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
