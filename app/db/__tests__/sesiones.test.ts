@@ -5,6 +5,9 @@ import {
   crearSesion,
   listarSesionesPorTarea,
   tiempoTotalPorTarea,
+  iniciarSesionActiva,
+  obtenerSesionActiva,
+  finalizarSesionActiva,
 } from '../sesiones';
 import { crearDbPruebas, esperar } from './testDb';
 
@@ -76,5 +79,58 @@ describe('sesiones', () => {
     const sesiones = await listarSesionesPorTarea(db, tareaId);
 
     expect(sesiones).toEqual([]);
+  });
+});
+
+describe('sesion activa', () => {
+  test('obtenerSesionActiva retorna null si no hay ninguna', async () => {
+    const db = crearDbPruebas();
+
+    const sesion = await obtenerSesionActiva(db);
+
+    expect(sesion).toBeNull();
+  });
+
+  test('iniciarSesionActiva persiste la sesión', async () => {
+    const db = crearDbPruebas();
+    const tareaId = await crearTareaAyudante(db, 'Tarea');
+
+    await iniciarSesionActiva(db, tareaId);
+
+    const sesion = await obtenerSesionActiva(db);
+    expect(sesion).not.toBeNull();
+    expect(sesion!.tareaId).toBe(tareaId);
+  });
+
+  test('finalizarSesionActiva guarda en sesiones y borra la fila', async () => {
+    const db = crearDbPruebas();
+    const tareaId = await crearTareaAyudante(db, 'Tarea');
+
+    await iniciarSesionActiva(db, tareaId);
+    await finalizarSesionActiva(db, tareaId);
+
+    const sesion = await obtenerSesionActiva(db);
+    expect(sesion).toBeNull();
+  });
+
+  test('finalizarSesionActiva descarta si es menor a 1 minuto', async () => {
+    const db = crearDbPruebas();
+    const tareaId = await crearTareaAyudante(db, 'Tarea');
+
+    await iniciarSesionActiva(db, tareaId);
+
+    // Simular inicio muy reciente (ahora)
+    const fila = await db.getFirstAsync<{ tarea_id: number }>(
+      'SELECT tarea_id FROM sesion_activa WHERE tarea_id = ?',
+      tareaId
+    );
+    expect(fila).not.toBeNull();
+
+    await finalizarSesionActiva(db, tareaId);
+
+    const total = await tiempoTotalPorTarea(db, tareaId);
+    expect(total).toBe(0);
+    const sesion = await obtenerSesionActiva(db);
+    expect(sesion).toBeNull();
   });
 });

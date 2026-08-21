@@ -16,7 +16,12 @@ import HoyScreen from './screens/HoyScreen';
 import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
 import { getDb } from './db/database';
-import { crearSesion } from './db/sesiones';
+import {
+  crearSesion,
+  iniciarSesionActiva,
+  obtenerSesionActiva,
+  finalizarSesionActiva,
+} from './db/sesiones';
 import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
 import type { Prioridad, Tarea } from './db/tareas';
@@ -50,6 +55,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!db) {
+      return;
+    }
+    obtenerSesionActiva(db).then((sesion) => {
+      if (sesion) {
+        const inicioTimestamp = new Date(sesion.inicio).getTime();
+        setSesionActiva({ tareaId: sesion.tareaId, inicioTimestamp });
+      }
+    });
+  }, [db]);
+
+  useEffect(() => {
     if (!sesionActiva) {
       return;
     }
@@ -71,6 +88,9 @@ export default function App() {
       );
       return;
     }
+    if (db) {
+      iniciarSesionActiva(db, tarea.id);
+    }
     setSesionActiva({ tareaId: tarea.id, inicioTimestamp: Date.now() });
     setTiempoSegundos(0);
   }
@@ -84,11 +104,12 @@ export default function App() {
     );
     if (minutos < 1) {
       Alert.alert('Sesión muy corta', 'La sesión duró menos de 30 segundos y no se guardó.');
+      await finalizarSesionActiva(db, sesionActiva.tareaId);
       setSesionActiva(null);
       setTiempoSegundos(0);
       return;
     }
-    await crearSesion(db, sesionActiva.tareaId, minutos);
+    await finalizarSesionActiva(db, sesionActiva.tareaId);
     setSesionActiva(null);
     setTiempoSegundos(0);
   }

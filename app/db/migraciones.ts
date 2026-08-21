@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 10;
+export const DATABASE_VERSION = 11;
 
 export interface Migracion {
   version: number;
@@ -91,6 +91,16 @@ export const MIGRACIONES: Migracion[] = [
     version: 10,
     sql: `
       ALTER TABLE metas ADD COLUMN fecha_objetivo TEXT;
+    `,
+  },
+  {
+    version: 11,
+    sql: `
+      CREATE TABLE sesion_activa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tarea_id INTEGER NOT NULL REFERENCES tareas(id),
+        inicio TEXT NOT NULL
+      );
     `,
   },
 ];

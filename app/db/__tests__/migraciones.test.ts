@@ -100,7 +100,7 @@ describe('migraciones', () => {
       .prepare('INSERT INTO metas (nombre, estado, creado_en) VALUES (?, ?, ?)')
       .run('Meta vieja', 'activa', new Date().toISOString());
 
-    aplicarMigraciones(nodo, 10);
+    aplicarMigraciones(nodo, 11);
 
     const db = adaptar(nodo);
     const [meta] = await listarMetas(db);
