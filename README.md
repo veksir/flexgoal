@@ -8,7 +8,7 @@ ejecutado — en vez de exigir que la persona se adapte a un plan perfecto.
 
 ## Estado del proyecto
 
-🚧 En desarrollo — Fase 1 (Fundamentos) en curso.
+🚧 En desarrollo — Fase 1 (Fundamentos) completa. Fase 2 (Tiempo) en curso.
 
 ## Stack
 
