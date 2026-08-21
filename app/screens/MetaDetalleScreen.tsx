@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import {
   crearObjetivo,
@@ -106,7 +106,7 @@ export default function MetaDetalleScreen({
   }
 
   return (
-    <>
+    <ScrollView>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
@@ -192,23 +192,21 @@ export default function MetaDetalleScreen({
       <Pressable style={estilos.boton} onPress={guardarObjetivo}>
         <Text style={estilos.botonTexto}>Agregar objetivo</Text>
       </Pressable>
-      <FlatList
-        data={objetivos}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
+      {objetivos.length === 0 ? (
+        <Text style={estilos.vacio}>
+          Esta meta no tiene objetivos todavía. ¡Agrega el primero!
+        </Text>
+      ) : (
+        objetivos.map((item) => (
           <Pressable
+            key={item.id}
             style={estilos.item}
             onPress={() => onSeleccionarObjetivo(item)}
           >
             <Text style={estilos.itemTexto}>{item.nombre}</Text>
           </Pressable>
-        )}
-        ListEmptyComponent={
-          <Text style={estilos.vacio}>
-            Esta meta no tiene objetivos todavía. ¡Agrega el primero!
-          </Text>
-        }
-      />
-    </>
+        ))
+      )}
+    </ScrollView>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  FlatList,
   Modal,
   Pressable,
   ScrollView,
@@ -182,7 +181,7 @@ export default function ObjetivoDetalleScreen({
   }
 
   return (
-    <>
+    <ScrollView>
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>
           ← Volver a {nombreMeta}
@@ -206,15 +205,17 @@ export default function ObjetivoDetalleScreen({
         prioridadTarea={prioridadTarea}
         setPrioridadTarea={setPrioridadTarea}
       />
-      <FlatList
-        data={tareas}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => {
+      {tareas.length === 0 ? (
+        <Text style={estilos.vacio}>
+          Este objetivo no tiene tareas todavía. ¡Agrega la primera!
+        </Text>
+      ) : (
+        tareas.map((item) => {
           const realMinutos = totalesTareas[item.id] ?? 0;
           const estimado = item.duracion_estimada_minutos;
           const diferencia = calcularDiferencia(estimado, realMinutos);
           return (
-            <Pressable style={estilos.item} onPress={() => alternarTarea(item)}>
+            <Pressable key={item.id} style={estilos.item} onPress={() => alternarTarea(item)}>
               <View style={estilos.tareaContenido}>
                 <Text
                   style={[
@@ -286,13 +287,8 @@ export default function ObjetivoDetalleScreen({
               )}
             </Pressable>
           );
-        }}
-        ListEmptyComponent={
-          <Text style={estilos.vacio}>
-            Este objetivo no tiene tareas todavía. ¡Agrega la primera!
-          </Text>
-        }
-      />
+        })
+      )}
       <Modal
         visible={historialVisible}
         transparent
@@ -324,7 +320,7 @@ export default function ObjetivoDetalleScreen({
           </View>
         </View>
       </Modal>
-    </>
+    </ScrollView>
   );
 }
 
