@@ -47,7 +47,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 - [ ] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
   - [x] Historial detallado de sesiones (modal con lista, ordenado por fecha)
-  - [ ] Pomodoro con duraciones configurables de trabajo/descanso
+  - [x] Pomodoro con duraciones configurables de trabajo/descanso
   - [x] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación**
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
@@ -399,3 +399,29 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   57 pruebas totales, todas verdes + tsc sin errores.
 - Merge a main (--ff-only): commit `8fd73d3`.
 - Siguiente: Pomodoro (siguiente pendiente de Fase 2).
+
+### 2026-08-21 — Historia 17: Pomodoro configurable
+
+- Migración `DATABASE_VERSION` 11 → 12: columnas `modo`, `fase`,
+  `fin_esperado` en `sesion_activa` (defaults preservan sesiones libres
+  existentes); nueva tabla `configuracion_pomodoro` (fila única, defaults
+  25/5 min).
+- Funciones nuevas en `db/sesiones.ts`: `obtenerConfiguracionPomodoro`,
+  `actualizarConfiguracionPomodoro`, `iniciarPomodoro`,
+  `avanzarFasePomodoro`, `resolverSesionActivaAlAbrir` (cascada con
+  while-loop para resolver múltiples fases vencidas de una).
+- UI: selector "Sesión libre" / "Pomodoro" en `HoyScreen` y
+  `ObjetivoDetalleScreen`, inputs de duración trabajo/descanso
+  (prellenados desde config), fase visible ("☕ Trabajo" /
+  "🏖️ Descanso"), cronómetro regresivo en modo Pomodoro, vibración
+  (`Vibration.vibrate()`) al terminar cada fase.
+- Fix durante implementación: race condition en el `setInterval` de
+  primer plano — `avanzarFasePomodoro` era async pero el intervalo
+  cada 1s podía llamarlo múltiples veces antes de que terminara
+  (el ref todavía tenía el `finEsperadoTimestamp` viejo). Solucionado
+  con guard `avanzando`.
+- 10 tests nuevos (67 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `e9992f8` (sobre `8fd73d3`).
+- Siguiente: por definir — Fase 2 completa (Pomodoro + persistencia
+  de sesión activa), evaluar Fase 3 (Planificación) o retomar pulido
+  de Fase 1.
