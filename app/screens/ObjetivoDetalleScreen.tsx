@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -31,6 +32,7 @@ import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import FormularioTarea from './FormularioTarea';
+import type { ModoSesion } from '../db/sesiones';
 
 interface Props {
   db: SQLiteDatabase;
@@ -53,6 +55,13 @@ interface Props {
   setErrorDuracionTarea: (error: string) => void;
   prioridadTarea: Prioridad | null;
   setPrioridadTarea: (prioridad: Prioridad | null) => void;
+  modoSesion: ModoSesion;
+  setModoSesion: (modo: ModoSesion) => void;
+  duracionTrabajo: string;
+  setDuracionTrabajo: (texto: string) => void;
+  duracionDescanso: string;
+  setDuracionDescanso: (texto: string) => void;
+  onCargarConfigPomodoro: () => void;
 }
 
 function etiquetaPrioridad(prioridad: Prioridad): string {
@@ -80,6 +89,13 @@ export default function ObjetivoDetalleScreen({
   setErrorDuracionTarea,
   prioridadTarea,
   setPrioridadTarea,
+  modoSesion,
+  setModoSesion,
+  duracionTrabajo,
+  setDuracionTrabajo,
+  duracionDescanso,
+  setDuracionDescanso,
+  onCargarConfigPomodoro,
 }: Props) {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
@@ -271,20 +287,94 @@ export default function ObjetivoDetalleScreen({
               </View>
               {sesionActiva?.tareaId === item.id ? (
                 <View style={estilos.sesionContenido}>
+                  {sesionActiva.modo === 'pomodoro' && sesionActiva.fase ? (
+                    <Text style={estilos.faseEtiqueta}>
+                      {sesionActiva.fase === 'trabajo' ? '☕ Trabajo' : '🏖️ Descanso'}
+                    </Text>
+                  ) : null}
                   <Text style={estilos.cronometro}>
-                    {formatearCronometro(tiempoSegundos)}
+                    {sesionActiva.modo === 'pomodoro'
+                      ? formatearCronometro(tiempoSegundos)
+                      : formatearCronometro(tiempoSegundos)}
                   </Text>
                   <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
                     <Text style={estilos.botonDetenerTexto}>Detener</Text>
                   </Pressable>
                 </View>
               ) : (
-                <Pressable
-                  style={estilos.botonSesion}
-                  onPress={() => onIniciarSesion(item)}
-                >
-                  <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
-                </Pressable>
+                !sesionActiva && (
+                  <View style={estilos.sesionInicio}>
+                    <View style={estilos.modoSelector}>
+                      <Pressable
+                        style={[
+                          estilos.modoBoton,
+                          modoSesion === 'libre' && estilos.modoBotonActivo,
+                        ]}
+                        onPress={() => setModoSesion('libre')}
+                      >
+                        <Text
+                          style={[
+                            estilos.modoBotonTexto,
+                            modoSesion === 'libre' && estilos.modoBotonTextoActivo,
+                          ]}
+                        >
+                          Sesión libre
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        style={[
+                          estilos.modoBoton,
+                          modoSesion === 'pomodoro' && estilos.modoBotonActivo,
+                        ]}
+                        onPress={() => {
+                          setModoSesion('pomodoro');
+                          onCargarConfigPomodoro();
+                        }}
+                      >
+                        <Text
+                          style={[
+                            estilos.modoBotonTexto,
+                            modoSesion === 'pomodoro' && estilos.modoBotonTextoActivo,
+                          ]}
+                        >
+                          Pomodoro
+                        </Text>
+                      </Pressable>
+                    </View>
+                    {modoSesion === 'pomodoro' && (
+                      <View style={estilos.pomodoroInputs}>
+                        <View style={estilos.pomodoroInputFila}>
+                          <Text style={estilos.pomodoroLabel}>Trabajo:</Text>
+                          <TextInput
+                            style={estilos.pomodoroInput}
+                            value={duracionTrabajo}
+                            onChangeText={setDuracionTrabajo}
+                            keyboardType="numeric"
+                            maxLength={2}
+                          />
+                          <Text style={estilos.pomodoroUnidad}>min</Text>
+                        </View>
+                        <View style={estilos.pomodoroInputFila}>
+                          <Text style={estilos.pomodoroLabel}>Descanso:</Text>
+                          <TextInput
+                            style={estilos.pomodoroInput}
+                            value={duracionDescanso}
+                            onChangeText={setDuracionDescanso}
+                            keyboardType="numeric"
+                            maxLength={2}
+                          />
+                          <Text style={estilos.pomodoroUnidad}>min</Text>
+                        </View>
+                      </View>
+                    )}
+                    <Pressable
+                      style={estilos.botonSesion}
+                      onPress={() => onIniciarSesion(item)}
+                    >
+                      <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
+                    </Pressable>
+                  </View>
+                )
               )}
             </Pressable>
           );

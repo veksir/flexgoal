@@ -213,4 +213,66 @@ export const estilos = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
   },
+  sesionInicio: {
+    marginTop: 8,
+  },
+  modoSelector: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  modoBoton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  modoBotonActivo: {
+    backgroundColor: '#1c7ed6',
+    borderColor: '#1c7ed6',
+  },
+  modoBotonTexto: {
+    fontSize: 13,
+    color: '#666',
+  },
+  modoBotonTextoActivo: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  pomodoroInputs: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 8,
+  },
+  pomodoroInputFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  pomodoroLabel: {
+    fontSize: 13,
+    color: '#666',
+  },
+  pomodoroInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    width: 48,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  pomodoroUnidad: {
+    fontSize: 13,
+    color: '#666',
+  },
+  faseEtiqueta: {
+    fontSize: 12,
+    color: '#1971c2',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
 });

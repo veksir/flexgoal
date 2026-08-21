@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 11;
+export const DATABASE_VERSION = 12;
 
 export interface Migracion {
   version: number;
@@ -100,6 +100,20 @@ export const MIGRACIONES: Migracion[] = [
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tarea_id INTEGER NOT NULL REFERENCES tareas(id),
         inicio TEXT NOT NULL
+      );
+    `,
+  },
+  {
+    version: 12,
+    sql: `
+      ALTER TABLE sesion_activa ADD COLUMN modo TEXT NOT NULL DEFAULT 'libre';
+      ALTER TABLE sesion_activa ADD COLUMN fase TEXT;
+      ALTER TABLE sesion_activa ADD COLUMN fin_esperado TEXT;
+
+      CREATE TABLE configuracion_pomodoro (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        duracion_trabajo_minutos INTEGER NOT NULL DEFAULT 25,
+        duracion_descanso_minutos INTEGER NOT NULL DEFAULT 5
       );
     `,
   },
