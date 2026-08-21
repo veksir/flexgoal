@@ -48,7 +48,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
   - [x] Historial detallado de sesiones (modal con lista, ordenado por fecha)
   - [ ] Pomodoro con duraciones configurables de trabajo/descanso
-  - [ ] Manejo robusto de sesión activa al cerrar la app (persistir en background)
+  - [x] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación**
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
   - [ ] Disponibilidad declarada
@@ -380,3 +380,22 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - 5 pruebas nuevas (3 en metas, 2 actualizaciones en migraciones) — 53
   pruebas totales, todas verdes + tsc sin errores.
 - Merge a main (--ff-only): commit `dba780e`.
+
+### 2026-08-20 — Historia 16: Persistencia de sesión activa
+
+- Nueva tabla `sesion_activa` (migración `DATABASE_VERSION` 10 → 11),
+  separada de `sesiones` existente. Enfoque "sin fila = sin sesión
+  activa": se inserta al iniciar, se borra al finalizar.
+- 3 nuevas funciones en `db/sesiones.ts`: `iniciarSesionActiva`,
+  `obtenerSesionActiva`, `finalizarSesionActiva`. La última reutiliza
+  la lógica de duración y descarte de <30s de Historia 7, insertando en
+  `sesiones` solo si corresponde.
+- `App.tsx`: al iniciar sesión, se persiste en `sesion_activa`. Al montar
+  la app, se consulta `obtenerSesionActiva` y se restaura el estado
+  con el `inicio` real para que el cronómetro calcule el tiempo
+  transcurrido correctamente.
+- Actualizado README.md: "Fase 1 completa, Fase 2 en curso".
+- 4 pruebas nuevas en sesiones (iniciar, obtener, finalizar, descarte) —
+  57 pruebas totales, todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `8fd73d3`.
+- Siguiente: Pomodoro (siguiente pendiente de Fase 2).
