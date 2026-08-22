@@ -8,7 +8,18 @@ ejecutado — en vez de exigir que la persona se adapte a un plan perfecto.
 
 ## Estado del proyecto
 
-🚧 En desarrollo — Fase 1 (Fundamentos) completa. Fase 2 (Tiempo) en curso.
+✅ Fase 1 (Fundamentos) y Fase 2 (Tiempo) completadas. Fase 3 (Planificación) en curso.
+
+## Qué incluye hoy
+
+- **Ideas → Metas → Objetivos → Tareas:** jerarquía completa con persistencia SQLite, navegación de 3 niveles y estado pendiente/completada.
+- **Sesiones de tiempo real:** cronómetro manual por tarea, historial detallado y total acumulado.
+- **Pomodoro configurable:** duraciones de trabajo/descanso a elección, fase visible, vibración al cambiar, resolución automática al reabrir la app.
+- **Persistencia de sesión activa:** el cronómetro sobrevive cierre de la app sin perder tiempo.
+- **Comparación estimado vs. real:** diferencia visible por tarea (y agregada por meta).
+- **Metas con contexto:** categoría/área, prioridad (alta/media/baja) y fecha objetivo opcionales.
+
+*(Actualizado a Fase 2 — ver `CLAUDE.md` para detalle completo por historia.)*
 
 ## Stack
 
