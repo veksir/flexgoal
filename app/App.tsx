@@ -16,6 +16,7 @@ import MetasScreen from './screens/MetasScreen';
 import HoyScreen from './screens/HoyScreen';
 import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
+import DisponibilidadScreen from './screens/DisponibilidadScreen';
 import { getDb } from './db/database';
 import {
   crearSesion,
@@ -33,7 +34,7 @@ import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
 import type { Prioridad, Tarea } from './db/tareas';
 
-type Vista = 'hoy' | 'ideas' | 'metas';
+type Vista = 'hoy' | 'ideas' | 'metas' | 'disponibilidad';
 
 export interface SesionActiva {
   tareaId: number;
@@ -304,11 +305,13 @@ export default function App() {
             />
           ) : vista === 'ideas' ? (
             <IdeasScreen db={db} texto={texto} setTexto={setTexto} />
-          ) : (
+          ) : vista === 'metas' ? (
             <MetasScreen
               db={db}
               onSeleccionarMeta={(meta) => setMetaSeleccionada(meta)}
             />
+          ) : (
+            <DisponibilidadScreen db={db} />
           )}
         </>
       )}
@@ -355,6 +358,19 @@ function ViewToggle({
       >
         <Text style={[styles.tabTexto, vista === 'metas' && styles.tabTextoActivo]}>
           Metas
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.tab, vista === 'disponibilidad' && styles.tabActiva]}
+        onPress={() => onChangeVista('disponibilidad')}
+      >
+        <Text
+          style={[
+            styles.tabTexto,
+            vista === 'disponibilidad' && styles.tabTextoActivo,
+          ]}
+        >
+          Horario
         </Text>
       </Pressable>
     </View>

@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 12;
+export const DATABASE_VERSION = 13;
 
 export interface Migracion {
   version: number;
@@ -114,6 +114,17 @@ export const MIGRACIONES: Migracion[] = [
         id INTEGER PRIMARY KEY CHECK (id = 1),
         duracion_trabajo_minutos INTEGER NOT NULL DEFAULT 25,
         duracion_descanso_minutos INTEGER NOT NULL DEFAULT 5
+      );
+    `,
+  },
+  {
+    version: 13,
+    sql: `
+      CREATE TABLE disponibilidad (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        dia_semana INTEGER NOT NULL,
+        hora_inicio TEXT NOT NULL,
+        hora_fin TEXT NOT NULL
       );
     `,
   },

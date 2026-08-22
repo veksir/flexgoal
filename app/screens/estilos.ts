@@ -275,4 +275,92 @@ export const estilos = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
+  formularioDisponibilidad: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  diaSelector: {
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 8,
+  },
+  diaBoton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 6,
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  diaBotonActivo: {
+    backgroundColor: '#1c7ed6',
+    borderColor: '#1c7ed6',
+  },
+  diaBotonTexto: {
+    fontSize: 12,
+    color: '#666',
+  },
+  diaBotonTextoActivo: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  horaFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  horaInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    width: 72,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  horaSeparador: {
+    fontSize: 14,
+    color: '#666',
+  },
+  botonAgregar: {
+    backgroundColor: '#1c7ed6',
+    borderRadius: 6,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botonAgregarTexto: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bloqueDia: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  bloqueDiaNombre: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  bloqueVacio: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  bloqueItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    paddingLeft: 12,
+  },
+  bloqueHorario: {
+    fontSize: 15,
+  },
 });
