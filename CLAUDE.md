@@ -32,13 +32,13 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 
 ## Roadmap (resumen)
 
-- [ ] **Fase 1 — Fundamentos**
+- [x] **Fase 1 — Fundamentos**
   - [x] Bandeja de ideas (crear, listar, eliminar) — persistencia SQLite validada
   - [x] Convertir idea en meta
   - [x] Áreas — categoría/área textual opcional por meta (historia 13)
   - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
   - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
-  - [ ] Estados, fechas, prioridades
+  - [x] Estados, fechas, prioridades
     - [x] Fecha planificada en tareas (opcional, validada)
     - [x] Duración estimada en tareas (opcional, validada)
     - [x] Fecha objetivo en meta
@@ -60,7 +60,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [ ] Detección de sobrecarga
   - [ ] Sugerencias de ajuste
   - [ ] Modo mínimo
-  - [ ] Días libresmínimo, días libres
+  - [ ] Días libre mínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
 
