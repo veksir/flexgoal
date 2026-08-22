@@ -383,4 +383,84 @@ export const estilos = StyleSheet.create({
   bloqueHorario: {
     fontSize: 15,
   },
+  semanaHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  semanaNavBoton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  semanaNavBotonTexto: {
+    fontSize: 14,
+    color: '#1c7ed6',
+  },
+  semanaTitulo: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  semanaDia: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  semanaDiaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  semanaDiaNombre: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  semanaDiaFecha: {
+    fontSize: 13,
+    color: '#666',
+  },
+  semanaDiaCuerpo: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 12,
+  },
+  semanaColumna: {
+    flex: 1,
+  },
+  semanaColumnaTitulo: {
+    fontSize: 11,
+    color: '#999',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  semanaTarea: {
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  semanaVacio: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  semanaTotal: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  semanaDiferencia: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  semanaDiferenciaExceso: {
+    color: '#e03131',
+  },
+  semanaDiferenciaFaltante: {
+    color: '#2b8a3e',
+  },
 });

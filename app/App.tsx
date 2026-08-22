@@ -17,6 +17,7 @@ import HoyScreen from './screens/HoyScreen';
 import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
 import DisponibilidadScreen from './screens/DisponibilidadScreen';
+import SemanaScreen from './screens/SemanaScreen';
 import { getDb } from './db/database';
 import {
   crearSesion,
@@ -34,7 +35,7 @@ import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
 import type { Prioridad, Tarea } from './db/tareas';
 
-type Vista = 'hoy' | 'ideas' | 'metas' | 'disponibilidad';
+type Vista = 'hoy' | 'ideas' | 'metas' | 'disponibilidad' | 'semana';
 
 export interface SesionActiva {
   tareaId: number;
@@ -310,8 +311,10 @@ export default function App() {
               db={db}
               onSeleccionarMeta={(meta) => setMetaSeleccionada(meta)}
             />
-          ) : (
+          ) : vista === 'disponibilidad' ? (
             <DisponibilidadScreen db={db} />
+          ) : (
+            <SemanaScreen db={db} />
           )}
         </>
       )}
@@ -371,6 +374,16 @@ function ViewToggle({
           ]}
         >
           Horario
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.tab, vista === 'semana' && styles.tabActiva]}
+        onPress={() => onChangeVista('semana')}
+      >
+        <Text
+          style={[styles.tabTexto, vista === 'semana' && styles.tabTextoActivo]}
+        >
+          Semana
         </Text>
       </Pressable>
     </View>
