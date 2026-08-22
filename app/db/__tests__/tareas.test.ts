@@ -7,6 +7,7 @@ import {
   esDuracionValida,
   esFechaValida,
   listarTareasPorObjetivo,
+  actualizarTarea,
 } from '../tareas';
 import { crearSesion } from '../sesiones';
 import { crearDbPruebas } from './testDb';
@@ -145,5 +146,138 @@ describe('validación de formatos', () => {
     expect(esDuracionValida('1.5')).toBe(false);
     expect(esDuracionValida('')).toBe(false);
     expect(esDuracionValida('abc')).toBe(false);
+  });
+});
+
+describe('actualizarTarea', () => {
+  test('actualiza el nombre de una tarea', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea original');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, { nombre: 'Tarea renombrada' });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.nombre).toBe('Tarea renombrada');
+  });
+
+  test('actualiza la fecha planificada', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea', '2026-08-20');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, { fechaPlanificada: '2026-09-01' });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.fecha_planificada).toBe('2026-09-01');
+  });
+
+  test('quita la fecha planificada con null', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea', '2026-08-20');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, { fechaPlanificada: null });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.fecha_planificada).toBeNull();
+  });
+
+  test('actualiza la duracion estimada', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea', undefined, 30);
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, { duracionEstimadaMinutos: 60 });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.duracion_estimada_minutos).toBe(60);
+  });
+
+  test('actualiza la prioridad', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, { prioridad: 'alta' });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.prioridad).toBe('alta');
+  });
+
+  test('actualiza varios campos a la vez', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Original', '2026-08-20', 30, 'baja');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await actualizarTarea(db, tarea.id, {
+      nombre: 'Nuevo nombre',
+      fechaPlanificada: '2026-10-01',
+      duracionEstimadaMinutos: 90,
+      prioridad: 'media',
+    });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.nombre).toBe('Nuevo nombre');
+    expect(actualizada.fecha_planificada).toBe('2026-10-01');
+    expect(actualizada.duracion_estimada_minutos).toBe(90);
+    expect(actualizada.prioridad).toBe('media');
+  });
+
+  test('rechaza nombre vacio', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await expect(
+      actualizarTarea(db, tarea.id, { nombre: '   ' })
+    ).rejects.toThrow('El nombre de la tarea no puede estar vacío');
+  });
+
+  test('rechaza fecha con formato invalido', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await expect(
+      actualizarTarea(db, tarea.id, { fechaPlanificada: '20/08/2026' })
+    ).rejects.toThrow('Fecha inválida');
+  });
+
+  test('rechaza duracion invalida', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea');
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+
+    await expect(
+      actualizarTarea(db, tarea.id, { duracionEstimadaMinutos: -5 })
+    ).rejects.toThrow('Duración inválida');
+  });
+
+  test('las sesiones de la tarea no se alteran al editar', async () => {
+    const db = crearDbPruebas();
+    const objetivoId = await crearMetaConObjetivo(db, 'Meta', 'Obj');
+    await crearTarea(db, objetivoId, 'Tarea', undefined, 30);
+    const [tarea] = await listarTareasPorObjetivo(db, objetivoId);
+    await crearSesion(db, tarea.id, 20);
+
+    await actualizarTarea(db, tarea.id, { nombre: 'Renombrada' });
+    const [actualizada] = await listarTareasPorObjetivo(db, objetivoId);
+
+    expect(actualizada.nombre).toBe('Renombrada');
+    const sesiones = await db.getAllAsync<{ tarea_id: number }>(
+      'SELECT tarea_id FROM sesiones WHERE tarea_id = ?',
+      tarea.id
+    );
+    expect(sesiones).toHaveLength(1);
   });
 });

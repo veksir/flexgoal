@@ -90,6 +90,76 @@ export async function alternarEstadoTarea(
   );
 }
 
+export interface CambiosTarea {
+  nombre?: string;
+  fechaPlanificada?: string | null;
+  duracionEstimadaMinutos?: number | null;
+  prioridad?: Prioridad | null;
+}
+
+export async function actualizarTarea(
+  db: SQLiteDatabase,
+  tareaId: number,
+  cambios: CambiosTarea
+): Promise<void> {
+  if (cambios.nombre !== undefined) {
+    const nombreLimpio = cambios.nombre.trim();
+    if (!nombreLimpio) {
+      throw new Error('El nombre de la tarea no puede estar vacío');
+    }
+  }
+  if (
+    cambios.fechaPlanificada !== undefined &&
+    cambios.fechaPlanificada !== null &&
+    cambios.fechaPlanificada !== ''
+  ) {
+    if (!esFechaValida(cambios.fechaPlanificada)) {
+      throw new Error('Fecha inválida. Usa el formato AAAA-MM-DD.');
+    }
+  }
+  if (
+    cambios.duracionEstimadaMinutos !== undefined &&
+    cambios.duracionEstimadaMinutos !== null
+  ) {
+    if (
+      !Number.isInteger(cambios.duracionEstimadaMinutos) ||
+      cambios.duracionEstimadaMinutos <= 0
+    ) {
+      throw new Error('Duración inválida. Usa un número entero de minutos mayor a 0.');
+    }
+  }
+
+  const campos: string[] = [];
+  const valores: (string | number | null)[] = [];
+
+  if (cambios.nombre !== undefined) {
+    campos.push('nombre = ?');
+    valores.push(cambios.nombre.trim());
+  }
+  if (cambios.fechaPlanificada !== undefined) {
+    campos.push('fecha_planificada = ?');
+    valores.push(cambios.fechaPlanificada || null);
+  }
+  if (cambios.duracionEstimadaMinutos !== undefined) {
+    campos.push('duracion_estimada_minutos = ?');
+    valores.push(cambios.duracionEstimadaMinutos ?? null);
+  }
+  if (cambios.prioridad !== undefined) {
+    campos.push('prioridad = ?');
+    valores.push(cambios.prioridad ?? null);
+  }
+
+  if (campos.length === 0) {
+    return;
+  }
+
+  valores.push(tareaId);
+  await db.runAsync(
+    `UPDATE tareas SET ${campos.join(', ')} WHERE id = ?`,
+    ...valores
+  );
+}
+
 export async function eliminarTarea(
   db: SQLiteDatabase,
   id: number

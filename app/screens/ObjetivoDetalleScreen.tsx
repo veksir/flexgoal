@@ -20,9 +20,12 @@ import {
   formatearDuracion,
   formatearDiferencia,
   calcularDiferencia,
+  esFechaValida,
+  esDuracionValida,
+  actualizarTarea,
   type EstadoTarea,
-  type Prioridad,
   type Tarea,
+  type Prioridad,
 } from '../db/tareas';
 import {
   listarSesionesPorTarea,
@@ -70,6 +73,8 @@ function etiquetaPrioridad(prioridad: Prioridad): string {
   return prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
 }
 
+const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
+
 export default function ObjetivoDetalleScreen({
   db,
   objetivo,
@@ -103,6 +108,13 @@ export default function ObjetivoDetalleScreen({
   const [totalesTareas, setTotalesTareas] = useState<Record<number, number>>({});
   const [historialVisible, setHistorialVisible] = useState(false);
   const [sesionesHistorial, setSesionesHistorial] = useState<Sesion[]>([]);
+  const [tareaEditando, setTareaEditando] = useState<Tarea | null>(null);
+  const [editNombre, setEditNombre] = useState('');
+  const [editFecha, setEditFecha] = useState('');
+  const [editDuracion, setEditDuracion] = useState('');
+  const [editPrioridad, setEditPrioridad] = useState<Prioridad | null>(null);
+  const [editErrorFecha, setEditErrorFecha] = useState('');
+  const [editErrorDuracion, setEditErrorDuracion] = useState('');
   const sesionActivaAnterior = useRef(sesionActiva);
 
   useEffect(() => {
@@ -153,6 +165,50 @@ export default function ObjetivoDetalleScreen({
       duracionEstimadaMinutos,
       prioridad
     );
+    await cargarTareas();
+  }
+
+  function iniciarEdicion(tarea: Tarea) {
+    setTareaEditando(tarea);
+    setEditNombre(tarea.nombre);
+    setEditFecha(tarea.fecha_planificada ?? '');
+    setEditDuracion(
+      tarea.duracion_estimada_minutos != null
+        ? String(tarea.duracion_estimada_minutos)
+        : ''
+    );
+    setEditPrioridad(tarea.prioridad);
+    setEditErrorFecha('');
+    setEditErrorDuracion('');
+  }
+
+  function cerrarEdicionModal() {
+    setTareaEditando(null);
+  }
+
+  async function guardarEdicion() {
+    if (!tareaEditando) return;
+    const nombreLimpio = editNombre.trim();
+    if (!nombreLimpio) return;
+    const fechaLimpia = editFecha.trim();
+    if (fechaLimpia && !esFechaValida(fechaLimpia)) {
+      setEditErrorFecha('Fecha inválida. Usa AAAA-MM-DD.');
+      return;
+    }
+    const duracionLimpia = editDuracion.trim();
+    if (duracionLimpia && !esDuracionValida(duracionLimpia)) {
+      setEditErrorDuracion('Duración inválida. Usa un número entero positivo.');
+      return;
+    }
+    await actualizarTarea(db, tareaEditando.id, {
+      nombre: nombreLimpio,
+      fechaPlanificada: fechaLimpia || null,
+      duracionEstimadaMinutos: duracionLimpia
+        ? parseInt(duracionLimpia, 10)
+        : null,
+      prioridad: editPrioridad ?? null,
+    });
+    setTareaEditando(null);
     await cargarTareas();
   }
 
@@ -282,6 +338,13 @@ export default function ObjetivoDetalleScreen({
                     </Pressable>
                   ) : null}
                 </View>
+                <Pressable
+                  style={estilos.botonBasura}
+                  onPress={() => iniciarEdicion(item)}
+                  hitSlop={8}
+                >
+                  <Text style={estilos.botonBasuraTexto}>✏️</Text>
+                </Pressable>
                 <Pressable
                   style={estilos.botonBasura}
                   onPress={() => confirmarEliminacionTarea(item)}
@@ -415,6 +478,111 @@ export default function ObjetivoDetalleScreen({
             </Pressable>
           </View>
         </View>
+      </Modal>
+      <Modal
+        visible={tareaEditando !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={cerrarEdicionModal}
+      >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', padding: 24 }}
+          onPress={cerrarEdicionModal}
+        >
+          <Pressable
+            style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24 }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <Text style={estilos.tituloDetalle}>Editar tarea</Text>
+            <TextInput
+              style={estilos.input}
+              value={editNombre}
+              onChangeText={setEditNombre}
+              placeholder="Nombre de la tarea"
+              placeholderTextColor="#999"
+              multiline
+            />
+            <TextInput
+              style={estilos.input}
+              value={editFecha}
+              onChangeText={setEditFecha}
+              placeholder="AAAA-MM-DD (opcional)"
+              placeholderTextColor="#999"
+            />
+            {editErrorFecha ? (
+              <Text style={estilos.textoError}>{editErrorFecha}</Text>
+            ) : null}
+            <TextInput
+              style={estilos.input}
+              value={editDuracion}
+              onChangeText={setEditDuracion}
+              placeholder="Duración estimada en minutos (opcional)"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+            {editErrorDuracion ? (
+              <Text style={estilos.textoError}>{editErrorDuracion}</Text>
+            ) : null}
+            <View style={estilos.estadoContenedor}>
+              {PRIORIDADES.map((opcion) => {
+                const activo = opcion === editPrioridad;
+                return (
+                  <Pressable
+                    key={opcion}
+                    style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+                    onPress={() =>
+                      setEditPrioridad(activo ? null : opcion)
+                    }
+                  >
+                    <Text
+                      style={[
+                        estilos.estadoBotonTexto,
+                        activo && estilos.estadoBotonTextoActivo,
+                      ]}
+                    >
+                      {etiquetaPrioridad(opcion)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 'auto' }}>
+              <Pressable
+                style={{
+                  flex: 1,
+                  backgroundColor: '#333',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                }}
+                onPress={guardarEdicion}
+              >
+                <Text style={[estilos.botonTexto, { color: '#fff', fontSize: 14 }]}>
+                  Guardar cambios
+                </Text>
+              </Pressable>
+              <Pressable
+                style={{
+                  flex: 1,
+                  backgroundColor: 'transparent',
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                }}
+                onPress={cerrarEdicionModal}
+              >
+                <Text style={{ color: '#555', fontSize: 14, fontWeight: '600' }}>Cancelar</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
