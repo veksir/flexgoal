@@ -306,37 +306,57 @@ export const estilos = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  horaFila: {
+  pickerFila: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  horaInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    width: 72,
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  horaSeparador: {
-    fontSize: 14,
-    color: '#666',
-  },
-  botonAgregar: {
-    backgroundColor: '#1c7ed6',
-    borderRadius: 6,
-    width: 36,
-    height: 36,
-    alignItems: 'center',
     justifyContent: 'center',
+    gap: 12,
+    marginBottom: 8,
   },
-  botonAgregarTexto: {
-    color: '#fff',
-    fontSize: 20,
+  pickerGrupo: {
+    alignItems: 'center',
+  },
+  pickerGrupoLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  pickerGrupoSeparador: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 16,
+  },
+  pickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  pickerColumn: {
+    alignItems: 'center',
+  },
+  pickerBoton: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  pickerBotonTexto: {
+    fontSize: 14,
+    color: '#1c7ed6',
+  },
+  pickerValor: {
+    fontSize: 22,
     fontWeight: 'bold',
+    fontVariant: ['tabular-nums'],
+    marginVertical: 2,
+  },
+  pickerSeparador: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  pickerEtiqueta: {
+    fontSize: 10,
+    color: '#999',
+    marginTop: 2,
   },
   bloqueDia: {
     paddingVertical: 10,

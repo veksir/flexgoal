@@ -4,7 +4,6 @@ import {
   FlatList,
   Pressable,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import type { SQLiteDatabase } from 'expo-sqlite';
@@ -23,12 +22,71 @@ interface Props {
 }
 
 const DIAS = [1, 2, 3, 4, 5, 6, 0];
+const MINUTOS = [0, 15, 30, 45];
+
+function formatearNumero(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+function PickerHora({
+  hora,
+  onChange,
+}: {
+  hora: { h: number; m: number };
+  onChange: (h: number, m: number) => void;
+}) {
+  return (
+    <View style={estilos.pickerContainer}>
+      <View style={estilos.pickerColumn}>
+        <Pressable
+          style={estilos.pickerBoton}
+          onPress={() => onChange((hora.h + 1) % 24, hora.m)}
+        >
+          <Text style={estilos.pickerBotonTexto}>▲</Text>
+        </Pressable>
+        <Text style={estilos.pickerValor}>{formatearNumero(hora.h)}</Text>
+        <Pressable
+          style={estilos.pickerBoton}
+          onPress={() => onChange((hora.h + 23) % 24, hora.m)}
+        >
+          <Text style={estilos.pickerBotonTexto}>▼</Text>
+        </Pressable>
+        <Text style={estilos.pickerEtiqueta}>hora</Text>
+      </View>
+      <Text style={estilos.pickerSeparador}>:</Text>
+      <View style={estilos.pickerColumn}>
+        <Pressable
+          style={estilos.pickerBoton}
+          onPress={() => {
+            const idx = MINUTOS.indexOf(hora.m);
+            const siguiente = (idx + 1) % MINUTOS.length;
+            onChange(hora.h, MINUTOS[siguiente]);
+          }}
+        >
+          <Text style={estilos.pickerBotonTexto}>▲</Text>
+        </Pressable>
+        <Text style={estilos.pickerValor}>{formatearNumero(hora.m)}</Text>
+        <Pressable
+          style={estilos.pickerBoton}
+          onPress={() => {
+            const idx = MINUTOS.indexOf(hora.m);
+            const anterior = (idx + MINUTOS.length - 1) % MINUTOS.length;
+            onChange(hora.h, MINUTOS[anterior]);
+          }}
+        >
+          <Text style={estilos.pickerBotonTexto}>▼</Text>
+        </Pressable>
+        <Text style={estilos.pickerEtiqueta}>min</Text>
+      </View>
+    </View>
+  );
+}
 
 export default function DisponibilidadScreen({ db }: Props) {
   const [bloques, setBloques] = useState<BloqueDisponibilidad[]>([]);
   const [diaSeleccionado, setDiaSeleccionado] = useState(1);
-  const [horaInicio, setHoraInicio] = useState('');
-  const [horaFin, setHoraFin] = useState('');
+  const [inicio, setInicio] = useState({ h: 9, m: 0 });
+  const [fin, setFin] = useState({ h: 12, m: 0 });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -40,20 +98,22 @@ export default function DisponibilidadScreen({ db }: Props) {
     setBloques(lista);
   }
 
+  function horaAString(h: number, m: number): string {
+    return `${formatearNumero(h)}:${formatearNumero(m)}`;
+  }
+
   async function agregarBloque() {
     setError('');
     const resultado = await agregarBloqueDisponibilidad(
       db,
       diaSeleccionado,
-      horaInicio.trim(),
-      horaFin.trim()
+      horaAString(inicio.h, inicio.m),
+      horaAString(fin.h, fin.m)
     );
     if (!resultado.ok) {
       setError(resultado.error!);
       return;
     }
-    setHoraInicio('');
-    setHoraFin('');
     await cargarBloques();
   }
 
@@ -101,29 +161,21 @@ export default function DisponibilidadScreen({ db }: Props) {
             </Pressable>
           ))}
         </View>
-        <View style={estilos.horaFila}>
-          <TextInput
-            style={estilos.horaInput}
-            value={horaInicio}
-            onChangeText={setHoraInicio}
-            placeholder="HH:MM"
-            maxLength={5}
-            keyboardType="numbers-and-punctuation"
-          />
-          <Text style={estilos.horaSeparador}>a</Text>
-          <TextInput
-            style={estilos.horaInput}
-            value={horaFin}
-            onChangeText={setHoraFin}
-            placeholder="HH:MM"
-            maxLength={5}
-            keyboardType="numbers-and-punctuation"
-          />
-          <Pressable style={estilos.botonAgregar} onPress={agregarBloque}>
-            <Text style={estilos.botonAgregarTexto}>+</Text>
-          </Pressable>
+        <View style={estilos.pickerFila}>
+          <View style={estilos.pickerGrupo}>
+            <Text style={estilos.pickerGrupoLabel}>Inicio</Text>
+            <PickerHora hora={inicio} onChange={(h, m) => setInicio({ h, m })} />
+          </View>
+          <Text style={estilos.pickerGrupoSeparador}>a</Text>
+          <View style={estilos.pickerGrupo}>
+            <Text style={estilos.pickerGrupoLabel}>Fin</Text>
+            <PickerHora hora={fin} onChange={(h, m) => setFin({ h, m })} />
+          </View>
         </View>
         {error ? <Text style={estilos.textoError}>{error}</Text> : null}
+        <Pressable style={estilos.boton} onPress={agregarBloque}>
+          <Text style={estilos.botonTexto}>Agregar bloque</Text>
+        </Pressable>
       </View>
       <FlatList
         data={bloquesPorDia}

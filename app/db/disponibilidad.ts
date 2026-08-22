@@ -21,8 +21,18 @@ export function nombreDia(dia: number): string {
   return DIAS_SEMANA[dia] ?? `Día ${dia}`;
 }
 
-function esHoraValida(hora: string): boolean {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(hora);
+export function normalizarHora(hora: string): string | null {
+  const match = hora.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const h = parseInt(match[1], 10);
+  const m = parseInt(match[2], 10);
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function horaAAuxiliar(h: string): number {
+  const [hh, mm] = h.split(':').map(Number);
+  return hh * 60 + mm;
 }
 
 export async function agregarBloqueDisponibilidad(
@@ -34,20 +44,38 @@ export async function agregarBloqueDisponibilidad(
   if (diaSemana < 0 || diaSemana > 6) {
     return { ok: false, error: 'Día de la semana inválido.' };
   }
-  if (!esHoraValida(horaInicio) || !esHoraValida(horaFin)) {
-    return { ok: false, error: 'Formato de hora inválido (use HH:MM).' };
+  const inicio = normalizarHora(horaInicio);
+  const fin = normalizarHora(horaFin);
+  if (!inicio || !fin) {
+    return { ok: false, error: 'Formato de hora inválido (use H:MM o HH:MM).' };
   }
-  if (horaInicio >= horaFin) {
+  if (inicio >= fin) {
     return {
       ok: false,
       error: 'La hora de fin debe ser posterior a la hora de inicio.',
     };
   }
+  const existentes = await db.getAllAsync<{ hora_inicio: string; hora_fin: string }>(
+    'SELECT hora_inicio, hora_fin FROM disponibilidad WHERE dia_semana = ?',
+    diaSemana
+  );
+  const inicioMin = horaAAuxiliar(inicio);
+  const finMin = horaAAuxiliar(fin);
+  for (const existente of existentes) {
+    const eInicio = horaAAuxiliar(existente.hora_inicio);
+    const eFin = horaAAuxiliar(existente.hora_fin);
+    if (inicioMin < eFin && eInicio < finMin) {
+      return {
+        ok: false,
+        error: `Se cruza con el bloque existente ${existente.hora_inicio}—${existente.hora_fin}.`,
+      };
+    }
+  }
   await db.runAsync(
     'INSERT INTO disponibilidad (dia_semana, hora_inicio, hora_fin) VALUES (?, ?, ?)',
     diaSemana,
-    horaInicio,
-    horaFin
+    inicio,
+    fin
   );
   return { ok: true };
 }
