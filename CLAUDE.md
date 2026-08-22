@@ -51,7 +51,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Manejo robusto de sesión activa al cerrar la app (persistir en background)
 - [ ] **Fase 3 — Planificación**
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
-  - [ ] Disponibilidad declarada
+  - [x] Disponibilidad declarada
   - [ ] Horarios
   - [ ] Reprogramación
 - [ ] **Fase 4 — Adaptación**
@@ -425,3 +425,31 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — Fase 2 completa (Pomodoro + persistencia
   de sesión activa), evaluar Fase 3 (Planificación) o retomar pulido
   de Fase 1.
+
+### 2026-08-21 — Historia 18: Disponibilidad declarada
+
+- Migración `DATABASE_VERSION` 12 → 13: tabla `disponibilidad` (dia_semana
+  0-6, hora_inicio HH:MM, hora_fin HH:MM) — tabla nueva, sin tocar
+  existentes.
+- Funciones nuevas en `db/disponibilidad.ts`: `agregarBloqueDisponibilidad`
+  (con validación de solapamiento y normalización de hora),
+  `listarDisponibilidad` (orden día+hora), `eliminarBloqueDisponibilidad`,
+  `normalizarHora`, `nombreDia`.
+- UI: nueva pantalla `DisponibilidadScreen` con selector de día (Lu-Do +
+  Do), picker manual de hora (botones ▲/▼ para hora 0-23 y minutos
+  00/15/30/45), lista agrupada por día, eliminar por bloque.
+- Nuevo tab "Horario" en la navegación principal.
+- Ajustes post-verificación:
+  - **Solapamiento:** rechaza bloques que se cruzan en el mismo día
+    (al inicio, al final, contenidos, o que contienen); bloques
+    consecutivos (fin == inicio del siguiente) se aceptan.
+  - **Formato flexible:** acepta "7:00" y "07:00", normaliza a HH:MM
+    de 2 dígitos antes de guardar.
+  - **Picker manual:** sin `@react-native-community/datetimepicker`
+    ni dependencias nuevas — selector con botones básicos de React
+    Native, coherente con mantenerse en Expo Go (ADR-002).
+  - **Scroll:** replicado patrón de `ObjetivoDetalleScreen` — header
+    fijo fuera del `ScrollView`, `paddingBottom: 32`.
+- 16 tests nuevos (92 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `0fdf22a` (sobre `5bfb57c`).
+- Siguiente: "Horarios" (siguiente ítem de Fase 3).
