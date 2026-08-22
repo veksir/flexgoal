@@ -49,7 +49,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Historial detallado de sesiones (modal con lista, ordenado por fecha)
   - [x] Pomodoro con duraciones configurables de trabajo/descanso
   - [x] Manejo robusto de sesión activa al cerrar la app (persistir en background)
-- [ ] **Fase 3 — Planificación**
+- [x] **Fase 3 — Planificación**
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
   - [x] Disponibilidad declarada
   - [x] Horarios
