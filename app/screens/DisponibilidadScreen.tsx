@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  FlatList,
   Pressable,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -139,6 +139,7 @@ export default function DisponibilidadScreen({ db }: Props) {
 
   return (
     <View style={{ flex: 1 }}>
+      <Text style={estilos.tituloDetalle}>Disponibilidad semanal</Text>
       <View style={estilos.formularioDisponibilidad}>
         <View style={estilos.diaSelector}>
           {DIAS.map((dia) => (
@@ -177,16 +178,14 @@ export default function DisponibilidadScreen({ db }: Props) {
           <Text style={estilos.botonTexto}>Agregar bloque</Text>
         </Pressable>
       </View>
-      <FlatList
-        data={bloquesPorDia}
-        keyExtractor={(item) => String(item.dia)}
-        renderItem={({ item }) => (
-          <View style={estilos.bloqueDia}>
-            <Text style={estilos.bloqueDiaNombre}>{item.nombre}</Text>
-            {item.bloques.length === 0 ? (
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        {bloquesPorDia.map((dia) => (
+          <View key={dia.dia} style={estilos.bloqueDia}>
+            <Text style={estilos.bloqueDiaNombre}>{dia.nombre}</Text>
+            {dia.bloques.length === 0 ? (
               <Text style={estilos.bloqueVacio}>Sin disponibilidad</Text>
             ) : (
-              item.bloques.map((bloque) => (
+              dia.bloques.map((bloque) => (
                 <View key={bloque.id} style={estilos.bloqueItem}>
                   <Text style={estilos.bloqueHorario}>
                     {bloque.hora_inicio} — {bloque.hora_fin}
@@ -201,8 +200,8 @@ export default function DisponibilidadScreen({ db }: Props) {
               ))
             )}
           </View>
-        )}
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 }
