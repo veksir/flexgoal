@@ -53,7 +53,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
   - [x] Disponibilidad declarada
   - [x] Horarios
-  - [ ] Reprogramación
+  - [x] Reprogramación
 - [ ] **Fase 4 — Adaptación**
   - [x] Comparación estimado vs. real por tarea individual
   - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
@@ -481,3 +481,31 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   urgencia inmediata) — agregado a roadmap en CLAUDE.md.
 - 11 tests nuevos (103 totales), todas verdes + tsc sin errores.
 - Merge a main (--ff-only): commit `9edb612` (sobre `5c63dc5`).
+
+### 2026-08-21 — Historia 20: Editar tarea (incluye reprogramación)
+
+- Nueva función `actualizarTarea` en `db/tareas.ts`: UPDATE parcial
+  con validación (nombre no vacío, formato AAAA-MM-DD, entero positivo
+  duración). Sin migración — campos ya existen desde Historias 4, 5, 6
+  y 14. Resuelve el backlog de Historia 19 y el ítem "Reprogramación"
+  de Fase 3.
+- UI: botón de edición en cada tarea de `ObjetivoDetalleScreen` que
+  abre un `Modal` nativo (mismo patrón que historial de sesiones de
+  Historia 12) con fondo semitransparente. Campos precargados con
+  valores actuales (nombre, fecha, duración, prioridad). Botones
+  "Guardar cambios" (fondo `#333`, texto blanco) y "Cancelar" (fondo
+  transparente, borde `#ccc`, texto `#555`), ambos `fontSize: 14` en
+  una sola línea. Tap en fondo cierra sin guardar.
+- **Problema visual resuelto:** los botones del modal heredaban
+  estilos de `estilos.boton` (fondo azul, marginBottom) y
+  `estilos.botonSecundario` (fondo verde `#2b8a3e`, texto blanco `#fff`)
+  — causaba botones verdes gigantes y texto invisible. Solucionado con
+  estilos inline completamente aislados, sin composición con estilos
+  globales.
+- `KeyboardAvoidingView` envuelve el fondo del modal para que suba
+  con el teclado; botones con `marginTop: 'auto'` siempre visibles
+  dentro de la caja blanca.
+- 10 pruebas nuevas (113 totales): actualización de cada campo
+  individual, varios campos a la vez, rechazo de nombre vacío/fecha
+  inválida/duración inválida, sesiones no alteradas al editar.
+- Merge a main (--ff-only): commit `0f3eeb5` (sobre `eed45bd`).

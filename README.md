@@ -8,7 +8,7 @@ ejecutado — en vez de exigir que la persona se adapte a un plan perfecto.
 
 ## Estado del proyecto
 
-✅ Fase 1 (Fundamentos) y Fase 2 (Tiempo) completadas. Fase 3 (Planificación) en curso.
+✅ Fase 1 (Fundamentos), Fase 2 (Tiempo) y Fase 3 (Planificación) completadas. Iniciando Fase 4 (Adaptación).
 
 ## Qué incluye hoy
 
@@ -18,8 +18,12 @@ ejecutado — en vez de exigir que la persona se adapte a un plan perfecto.
 - **Persistencia de sesión activa:** el cronómetro sobrevive cierre de la app sin perder tiempo.
 - **Comparación estimado vs. real:** diferencia visible por tarea (y agregada por meta).
 - **Metas con contexto:** categoría/área, prioridad (alta/media/baja) y fecha objetivo opcionales.
+- **Vista Hoy:** tareas pendientes con fecha de hoy o vencidas, de todas las metas.
+- **Disponibilidad declarada:** bloques de horario por día de la semana.
+- **Vista Semana:** tareas planificadas vs. disponibilidad por día, navegación anterior/siguiente.
+- **Editar tarea:** modal de edición para nombre, fecha planificada, duración y prioridad sin eliminar y recrear.
 
-*(Actualizado a Fase 2 — ver `CLAUDE.md` para detalle completo por historia.)*
+*(Actualizado a Fase 3 completa — ver `CLAUDE.md` para detalle completo por historia.)*
 
 ## Stack
 
