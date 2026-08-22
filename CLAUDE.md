@@ -44,7 +44,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     - [x] Fecha objetivo en meta
     - [x] Prioridad (tarea y/o meta) — Alta/Media/Baja opcional, selector de botones (historia 14)
     - [x] Cambiar estado de meta (pausada/completada/abandonada) — visual atenuado en lista
-- [ ] **Fase 2 — Tiempo**
+- [x] **Fase 2 — Tiempo**
   - [x] Sesiones de tiempo real (cronómetro manual, iniciar/detener) — total acumulado por tarea
   - [x] Historial detallado de sesiones (modal con lista, ordenado por fecha)
   - [x] Pomodoro con duraciones configurables de trabajo/descanso
