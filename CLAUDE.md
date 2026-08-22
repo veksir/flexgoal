@@ -52,7 +52,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 - [ ] **Fase 3 — Planificación**
   - [x] Vista "Hoy" (tareas pendientes con fecha de hoy o vencidas, de todas las metas)
   - [x] Disponibilidad declarada
-  - [ ] Horarios
+  - [x] Horarios
   - [ ] Reprogramación
 - [ ] **Fase 4 — Adaptación**
   - [x] Comparación estimado vs. real por tarea individual
@@ -454,3 +454,30 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - 16 tests nuevos (92 totales), todas verdes + tsc sin errores.
 - Merge a main (--ff-only): commit `0fdf22a` (sobre `5bfb57c`).
 - Siguiente: "Horarios" (siguiente ítem de Fase 3).
+
+### 2026-08-21 — Historia 19: Vista semanal con cálculo de carga
+
+- Funciones puras en `db/carga.ts`: `calcularCargaDia` (tareas
+  planificadas + disponibilidad por día), `calcularCargaSemana` (7 días
+  desde una fecha inicio), `inicioDeSemana` (domingo de la semana dada).
+- Sin migración — cálculo puro sobre datos existentes (tareas +
+  disponibilidad).
+- UI: nueva pantalla `SemanaScreen` con navegación anterior/siguiente,
+  por cada día: tareas (marcadas "(sin estimar)" las que no tienen
+  duración), disponibilidad, totales planificado/disponible, diferencia
+  con tono neutro (solo signo numérico, sin colores de alarma — criterio
+  4, igual que Historia 8).
+- Nuevo tab "Semana" en la navegación principal.
+- Separación visual entre tareas en la vista semana: cada tarea en su
+  propia fila con borde inferior, mismo patrón que `estilos.item` de
+  MetasScreen (fix durante verificación).
+- **Fix teclado tapa inputs** (durante verificación de Historia 19):
+  `KeyboardAvoidingView` agregado en `MetaDetalleScreen`,
+  `ObjetivoDetalleScreen`, `IdeasScreen` y `HoyScreen`. Patrón:
+  envuelve `ScrollView`/`FlatList`, `behavior="padding"` en iOS,
+  `behavior="height"` en Android. FormularioTarea (fragment dentro del
+  ScrollView de ObjetivoDetalleScreen) se beneficia indirectamente.
+- Backlog: editar una tarea ya creada (detectado durante pruebas, sin
+  urgencia inmediata) — agregado a roadmap en CLAUDE.md.
+- 11 tests nuevos (103 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `9edb612` (sobre `5c63dc5`).
