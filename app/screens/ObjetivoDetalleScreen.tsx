@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -197,7 +199,10 @@ export default function ObjetivoDetalleScreen({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>
           ← Volver a {nombreMeta}
@@ -412,7 +417,7 @@ export default function ObjetivoDetalleScreen({
         </View>
       </Modal>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

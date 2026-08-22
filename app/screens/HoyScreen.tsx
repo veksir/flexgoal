@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 
 import {
   alternarEstadoTarea,
@@ -62,6 +62,10 @@ export default function HoyScreen({
   }
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
     <FlatList
       data={tareas}
       keyExtractor={(item) => String(item.id)}
@@ -180,5 +184,6 @@ export default function HoyScreen({
         </Text>
       }
     />
+    </KeyboardAvoidingView>
   );
 }

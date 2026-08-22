@@ -95,12 +95,14 @@ export default function SemanaScreen({ db }: Props) {
                   <Text style={estilos.semanaVacio}>Sin tareas</Text>
                 ) : (
                   dia.tareas.map((t) => (
-                    <Text key={t.id} style={estilos.semanaTarea}>
-                      {t.nombre}
-                      {t.duracion_estimada_minutos == null
-                        ? ' (sin estimar)'
-                        : ''}
-                    </Text>
+                    <View key={t.id} style={estilos.item}>
+                      <Text style={estilos.semanaTarea}>
+                        {t.nombre}
+                        {t.duracion_estimada_minutos == null
+                          ? ' (sin estimar)'
+                          : ''}
+                      </Text>
+                    </View>
                   ))
                 )}
               </View>

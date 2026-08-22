@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -61,7 +63,10 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
   }
 
   return (
-    <>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TextInput
         style={estilos.input}
         value={texto}
@@ -110,6 +115,6 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
           </Text>
         }
       />
-    </>
+    </KeyboardAvoidingView>
   );
 }

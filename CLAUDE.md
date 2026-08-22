@@ -63,6 +63,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [ ] Días libre mínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
+- [ ] **Backlog:** editar una tarea ya creada (hoy solo se puede eliminar y recrear) — detectado durante pruebas de Historia 19, sin urgencia inmediata
 
 ## Explícitamente fuera de alcance (v1)
 

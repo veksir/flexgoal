@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import {
   crearObjetivo,
@@ -106,7 +106,10 @@ export default function MetaDetalleScreen({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <Pressable style={estilos.botonVolver} onPress={onVolver}>
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
@@ -209,6 +212,6 @@ export default function MetaDetalleScreen({
         ))
       )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
