@@ -120,13 +120,7 @@ export default function SemanaScreen({ db }: Props) {
                   {formatearDuracion(dia.minutosPlanificados)} /{' '}
                   {formatearDuracion(dia.minutosDisponibles)}
                 </Text>
-                <Text
-                  style={[
-                    estilos.semanaDiferencia,
-                    dia.diferencia > 0 && estilos.semanaDiferenciaExceso,
-                    dia.diferencia < 0 && estilos.semanaDiferenciaFaltante,
-                  ]}
-                >
+                <Text style={estilos.semanaDiferencia}>
                   {formatearDiferencia(dia.diferencia)}
                 </Text>
               </View>
