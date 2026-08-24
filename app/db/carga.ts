@@ -140,3 +140,61 @@ export async function calcularVistaPreviaSobrecarga(
     estaSobrecargado: carga.minutosDisponibles > 0 && diferencia > 0,
   };
 }
+
+export interface SugerenciaDia {
+  fecha: string;
+  minutosDisponibles: number;
+}
+
+function distanciaEnDias(fechaA: string, fechaB: string): number {
+  const [aY, aM, aD] = fechaA.split('-').map(Number);
+  const [bY, bM, bD] = fechaB.split('-').map(Number);
+  const a = new Date(aY, aM - 1, aD);
+  const b = new Date(bY, bM - 1, bD);
+  return Math.abs(a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24);
+}
+
+export async function sugerirDiaAlternativo(
+  db: SQLiteDatabase,
+  fechaOriginal: string,
+  minutosNecesarios: number,
+  excluirTareaId?: number
+): Promise<SugerenciaDia | null> {
+  const inicioSemanaActual = inicioDeSemana(fechaOriginal);
+  const [anio, mes, dia] = inicioSemanaActual.split('-').map(Number);
+  const base = new Date(anio, mes - 1, dia);
+  const siguienteSemana = new Date(base);
+  siguienteSemana.setDate(base.getDate() + 7);
+
+  const YY = siguienteSemana.getFullYear();
+  const MM = String(siguienteSemana.getMonth() + 1).padStart(2, '0');
+  const DD = String(siguienteSemana.getDate()).padStart(2, '0');
+  const inicioSemanaSiguiente = `${YY}-${MM}-${DD}`;
+
+  const fechasActuales = semanaDesde(inicioSemanaActual);
+  const fechasSiguientes = semanaDesde(inicioSemanaSiguiente);
+  const todosCandidatos = [...fechasActuales, ...fechasSiguientes].filter(
+    (f) => f !== fechaOriginal
+  );
+
+  let mejor: SugerenciaDia | null = null;
+  let mejorDistancia = Infinity;
+
+  for (const candidato of todosCandidatos) {
+    const vista = await calcularVistaPreviaSobrecarga(
+      db,
+      candidato,
+      minutosNecesarios,
+      excluirTareaId
+    );
+    if (!vista.estaSobrecargado && vista.minutosDisponibles > 0) {
+      const dist = distanciaEnDias(fechaOriginal, candidato);
+      if (dist < mejorDistancia || (dist === mejorDistancia && candidato < (mejor?.fecha ?? ''))) {
+        mejorDistancia = dist;
+        mejor = { fecha: candidato, minutosDisponibles: vista.minutosDisponibles };
+      }
+    }
+  }
+
+  return mejor;
+}

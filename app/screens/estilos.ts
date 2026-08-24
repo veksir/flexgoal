@@ -218,6 +218,23 @@ export const estilos = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
   },
+  sugerenciaContenedor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  botonSugerencia: {
+    backgroundColor: '#e8590c',
+    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  botonSugerenciaTexto: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   sesionInicio: {
     marginTop: 8,
   },

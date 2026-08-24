@@ -9,9 +9,12 @@ import {
 } from '../db/tareas';
 import {
   calcularVistaPreviaSobrecarga,
+  sugerirDiaAlternativo,
   type VistaPreviaSobrecarga,
+  type SugerenciaDia,
 } from '../db/carga';
-import { formatearDuracion, formatearDiferencia } from '../db/tareas';
+import { nombreDia } from '../db/disponibilidad';
+import { formatearDuracion, formatearDiferencia, formatearFecha } from '../db/tareas';
 import { estilos } from './estilos';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
@@ -59,6 +62,7 @@ export default function FormularioTarea({
   setPrioridadTarea,
 }: Props) {
   const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
+  const [sugerencia, setSugerencia] = useState<SugerenciaDia | null>(null);
 
   useEffect(() => {
     const fechaLimpia = textoFechaTarea.trim();
@@ -71,6 +75,7 @@ export default function FormularioTarea({
       !esDuracionValida(duracionLimpia)
     ) {
       setVistaPrevia(null);
+      setSugerencia(null);
       return;
     }
 
@@ -78,8 +83,16 @@ export default function FormularioTarea({
     const minutos = parseInt(duracionLimpia, 10);
 
     calcularVistaPreviaSobrecarga(db, fechaLimpia, minutos).then((resultado) => {
-      if (!cancelado) {
-        setVistaPrevia(resultado);
+      if (cancelado) return;
+      setVistaPrevia(resultado);
+      if (resultado.estaSobrecargado) {
+        sugerirDiaAlternativo(db, fechaLimpia, minutos).then((sug) => {
+          if (!cancelado) {
+            setSugerencia(sug);
+          }
+        });
+      } else {
+        setSugerencia(null);
       }
     });
 
@@ -157,6 +170,24 @@ export default function FormularioTarea({
           planificados de {formatearDuracion(vistaPrevia.minutosDisponibles)} disponibles{' '}
           ({formatearDiferencia(vistaPrevia.diferencia)})
         </Text>
+      ) : null}
+      {vistaPrevia?.estaSobrecargado && sugerencia ? (
+        <View style={estilos.sugerenciaContenedor}>
+          <Text style={estilos.textoAviso}>
+            {(() => {
+              const [y, m, d] = sugerencia.fecha.split('-').map(Number);
+              return nombreDia(new Date(y, m - 1, d).getDay());
+            })()}{' '}
+            {formatearFecha(sugerencia.fecha)} tiene{' '}
+            {formatearDuracion(sugerencia.minutosDisponibles)} libres
+          </Text>
+          <Pressable
+            style={estilos.botonSugerencia}
+            onPress={() => setTextoFechaTarea(sugerencia.fecha)}
+          >
+            <Text style={estilos.botonSugerenciaTexto}>Usar esta fecha</Text>
+          </Pressable>
+        </View>
       ) : null}
       <View style={estilos.estadoContenedor}>
         {PRIORIDADES.map((opcion) => {

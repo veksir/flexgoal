@@ -6,6 +6,7 @@ import {
   calcularCargaDia,
   calcularCargaSemana,
   calcularVistaPreviaSobrecarga,
+  sugerirDiaAlternativo,
   inicioDeSemana,
 } from '../carga';
 import { crearDbPruebas } from './testDb';
@@ -312,5 +313,116 @@ describe('calcularVistaPreviaSobrecarga', () => {
     expect(resultado.minutosDisponibles).toBe(120);
     expect(resultado.diferencia).toBe(0);
     expect(resultado.estaSobrecargado).toBe(false);
+  });
+});
+
+describe('sugerirDiaAlternativo', () => {
+  test('retorna dia disponible en la semana actual', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+    const diaSemanaOriginal = diaDeLaSemana('2026-08-21');
+    const diaSugerido = (diaSemanaOriginal + 1) % 7;
+
+    await crearTarea(db, objetivoId, 'Sobrecarga', '2026-08-21', 300);
+    await agregarBloqueDisponibilidad(db, diaSemanaOriginal, '09:00', '12:00');
+    await agregarBloqueDisponibilidad(db, diaSugerido, '09:00', '12:00');
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    expect(resultado).not.toBeNull();
+    const [y, m, d] = resultado!.fecha.split('-').map(Number);
+    expect(new Date(y, m - 1, d).getDay()).toBe(diaSugerido);
+  });
+
+  test('no sugiere la fecha original', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+    const diaSemana = diaDeLaSemana('2026-08-21');
+
+    await crearTarea(db, objetivoId, 'Sobrecarga', '2026-08-21', 300);
+    await agregarBloqueDisponibilidad(db, diaSemana, '09:00', '17:00');
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    if (resultado) {
+      expect(resultado.fecha).not.toBe('2026-08-21');
+    }
+  });
+
+  test('si no hay hueco en semana actual, busca en la siguiente', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+    const diaSemanaOriginal = diaDeLaSemana('2026-08-21');
+
+    await crearTarea(db, objetivoId, 'Sobrecarga', '2026-08-21', 300);
+    await agregarBloqueDisponibilidad(db, diaSemanaOriginal, '09:00', '12:00');
+
+    const otroDia = (diaSemanaOriginal + 3) % 7;
+    await agregarBloqueDisponibilidad(db, otroDia, '09:00', '12:00');
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    expect(resultado).not.toBeNull();
+    expect(resultado!.fecha).not.toBe('2026-08-21');
+  });
+
+  test('retorna null si no hay ningun dia con capacidad en 2 semanas', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+
+    await crearTarea(db, objetivoId, 'Sobrecarga', '2026-08-21', 300);
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    expect(resultado).toBeNull();
+  });
+
+  test('retorna null si no hay disponibilidad declarada en ningun dia', async () => {
+    const db = crearDbPruebas();
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    expect(resultado).toBeNull();
+  });
+
+  test('elige el dia mas cercano cuando hay varios candidatos', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+    const diaSemanaOriginal = diaDeLaSemana('2026-08-21');
+    const diaCercano = (diaSemanaOriginal + 1) % 7;
+    const diaLejano = (diaSemanaOriginal + 5) % 7;
+
+    await crearTarea(db, objetivoId, 'Sobrecarga', '2026-08-21', 300);
+    await agregarBloqueDisponibilidad(db, diaSemanaOriginal, '09:00', '12:00');
+    await agregarBloqueDisponibilidad(db, diaCercano, '09:00', '12:00');
+    await agregarBloqueDisponibilidad(db, diaLejano, '09:00', '12:00');
+
+    const resultado = await sugerirDiaAlternativo(db, '2026-08-21', 60);
+
+    expect(resultado).not.toBeNull();
+    const [y, m, d] = resultado!.fecha.split('-').map(Number);
+    expect(new Date(y, m - 1, d).getDay()).toBe(diaCercano);
+  });
+
+  test('excluirTareaId no cuenta la tarea propia dos veces', async () => {
+    const db = crearDbPruebas();
+    const { objetivoId } = await prepararDatos(db);
+    const diaSemana = diaDeLaSemana('2026-08-21');
+
+    await crearTarea(db, objetivoId, 'Original', '2026-08-21', 120);
+    const [tarea] = await db.getAllAsync<{ id: number }>(
+      "SELECT id FROM tareas WHERE nombre = 'Original'"
+    );
+    await agregarBloqueDisponibilidad(db, diaSemana, '09:00', '11:00');
+
+    const resultado = await sugerirDiaAlternativo(
+      db,
+      '2026-08-21',
+      30,
+      tarea.id
+    );
+
+    expect(resultado).not.toBeNull();
+    expect(resultado!.fecha).not.toBe('2026-08-21');
   });
 });

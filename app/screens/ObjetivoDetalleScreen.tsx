@@ -34,8 +34,11 @@ import {
 } from '../db/sesiones';
 import {
   calcularVistaPreviaSobrecarga,
+  sugerirDiaAlternativo,
   type VistaPreviaSobrecarga,
+  type SugerenciaDia,
 } from '../db/carga';
+import { nombreDia } from '../db/disponibilidad';
 import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
@@ -120,6 +123,7 @@ export default function ObjetivoDetalleScreen({
   const [editErrorFecha, setEditErrorFecha] = useState('');
   const [editErrorDuracion, setEditErrorDuracion] = useState('');
   const [editVistaPrevia, setEditVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
+  const [editSugerencia, setEditSugerencia] = useState<SugerenciaDia | null>(null);
   const sesionActivaAnterior = useRef(sesionActiva);
 
   useEffect(() => {
@@ -138,6 +142,7 @@ export default function ObjetivoDetalleScreen({
   useEffect(() => {
     if (!tareaEditando) {
       setEditVistaPrevia(null);
+      setEditSugerencia(null);
       return;
     }
 
@@ -151,6 +156,7 @@ export default function ObjetivoDetalleScreen({
       !esDuracionValida(duracionLimpia)
     ) {
       setEditVistaPrevia(null);
+      setEditSugerencia(null);
       return;
     }
 
@@ -159,8 +165,18 @@ export default function ObjetivoDetalleScreen({
 
     calcularVistaPreviaSobrecarga(db, fechaLimpia, minutos, tareaEditando.id).then(
       (resultado) => {
-        if (!cancelado) {
-          setEditVistaPrevia(resultado);
+        if (cancelado) return;
+        setEditVistaPrevia(resultado);
+        if (resultado.estaSobrecargado) {
+          sugerirDiaAlternativo(db, fechaLimpia, minutos, tareaEditando.id).then(
+            (sug) => {
+              if (!cancelado) {
+                setEditSugerencia(sug);
+              }
+            }
+          );
+        } else {
+          setEditSugerencia(null);
         }
       }
     );
@@ -574,6 +590,24 @@ export default function ObjetivoDetalleScreen({
                 planificados de {formatearDuracion(editVistaPrevia.minutosDisponibles)} disponibles{' '}
                 ({formatearDiferencia(editVistaPrevia.diferencia)})
               </Text>
+            ) : null}
+            {editVistaPrevia?.estaSobrecargado && editSugerencia ? (
+              <View style={estilos.sugerenciaContenedor}>
+                <Text style={estilos.textoAviso}>
+                  {(() => {
+                    const [y, m, d] = editSugerencia.fecha.split('-').map(Number);
+                    return nombreDia(new Date(y, m - 1, d).getDay());
+                  })()}{' '}
+                  {formatearFecha(editSugerencia.fecha)} tiene{' '}
+                  {formatearDuracion(editSugerencia.minutosDisponibles)} libres
+                </Text>
+                <Pressable
+                  style={estilos.botonSugerencia}
+                  onPress={() => setEditFecha(editSugerencia.fecha)}
+                >
+                  <Text style={estilos.botonSugerenciaTexto}>Usar esta fecha</Text>
+                </Pressable>
+              </View>
             ) : null}
             <View style={estilos.estadoContenedor}>
               {PRIORIDADES.map((opcion) => {
