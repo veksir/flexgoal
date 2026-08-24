@@ -528,7 +528,7 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   "Sobrecargado" en el header de cada día, sin duplicar lógica.
 - Sin migración de BD — cálculo puro sobre datos existentes.
 - 10 pruebas nuevas (123 totales), todas verdes + tsc sin errores.
-- Merge a main (--ff-only): commit `<PENDIENTE>`.
+- Merge a main (--ff-only): commit `52c9a95`.
 - Siguiente: por definir — queda pendiente "Sugerencias de ajuste" y
   "Modo mínimo / días libres" (resto de Fase 4), o retomar el spike de
   ADR-003 (runtime/modelo de IA local, pendiente desde el inicio).
