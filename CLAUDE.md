@@ -58,7 +58,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Comparación estimado vs. real por tarea individual
   - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
   - [x] Detección de sobrecarga
-  - [ ] Sugerencias de ajuste
+  - [x] Sugerencias de ajuste
   - [ ] Modo mínimo
   - [ ] Días libre mínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
@@ -532,3 +532,22 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — queda pendiente "Sugerencias de ajuste" y
   "Modo mínimo / días libres" (resto de Fase 4), o retomar el spike de
   ADR-003 (runtime/modelo de IA local, pendiente desde el inicio).
+
+### 2026-08-24 — Historia 22: Sugerencias de ajuste ante sobrecarga
+
+- Extensión de Historia 21: cuando hay sobrecarga, además del aviso se
+  sugiere un día alternativo con capacidad disponible.
+- `app/db/carga.ts`: nueva función pura `sugerirDiaAlternativo(db,
+  fechaOriginal, minutosNecesarios, excluirTareaId?)` — busca en la
+  semana actual (domingo–sábado) y la siguiente, reutilizando
+  `calcularVistaPreviaSobrecarga` para cada candidato. Retorna el día
+  más cercano a la fecha original con capacidad libre, o null.
+- `FormularioTarea.tsx` y modal de edición de `ObjetivoDetalleScreen.tsx`:
+ 当 `estaSobrecargado` es true, calculan y muestran la sugerencia con
+  botón "Usar esta fecha" que llena el campo de fecha sin guardar.
+- Sin migración de BD — cálculo puro sobre datos existentes.
+- 7 pruebas nuevas (130 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `<PENDIENTE>`.
+- Siguiente: "Modo mínimo / días libres" (resto de Fase 4), o retomar el
+  spike de ADR-003 (runtime/modelo de IA local, pendiente desde el
+  inicio).
