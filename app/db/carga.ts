@@ -10,6 +10,7 @@ export interface DiaCarga {
   minutosPlanificados: number;
   minutosDisponibles: number;
   diferencia: number;
+  estaSobrecargado: boolean;
 }
 
 function fechaADiaSemana(fecha: string): number {
@@ -79,6 +80,8 @@ export async function calcularCargaDia(
       horasAMinutos(bloque.hora_fin) - horasAMinutos(bloque.hora_inicio);
   }
 
+  const diferencia = minutosPlanificados - minutosDisponibles;
+
   return {
     fecha,
     diaSemana,
@@ -86,7 +89,8 @@ export async function calcularCargaDia(
     tareas,
     minutosPlanificados,
     minutosDisponibles,
-    diferencia: minutosPlanificados - minutosDisponibles,
+    diferencia,
+    estaSobrecargado: minutosDisponibles > 0 && diferencia > 0,
   };
 }
 
@@ -100,4 +104,39 @@ export async function calcularCargaSemana(
     resultados.push(await calcularCargaDia(db, fecha));
   }
   return resultados;
+}
+
+export interface VistaPreviaSobrecarga {
+  minutosPlanificados: number;
+  minutosDisponibles: number;
+  diferencia: number;
+  estaSobrecargado: boolean;
+}
+
+export async function calcularVistaPreviaSobrecarga(
+  db: SQLiteDatabase,
+  fecha: string,
+  minutosAdicionales: number,
+  excluirTareaId?: number
+): Promise<VistaPreviaSobrecarga> {
+  const carga = await calcularCargaDia(db, fecha);
+
+  let minutosPlanificados = carga.minutosPlanificados;
+
+  if (excluirTareaId != null) {
+    const tareaExistente = carga.tareas.find((t) => t.id === excluirTareaId);
+    if (tareaExistente && tareaExistente.duracion_estimada_minutos != null) {
+      minutosPlanificados -= tareaExistente.duracion_estimada_minutos;
+    }
+  }
+
+  minutosPlanificados += minutosAdicionales;
+  const diferencia = minutosPlanificados - carga.minutosDisponibles;
+
+  return {
+    minutosPlanificados,
+    minutosDisponibles: carga.minutosDisponibles,
+    diferencia,
+    estaSobrecargado: carga.minutosDisponibles > 0 && diferencia > 0,
+  };
 }

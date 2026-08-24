@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 import {
   esFechaValida,
   esDuracionValida,
   type Prioridad,
 } from '../db/tareas';
+import {
+  calcularVistaPreviaSobrecarga,
+  type VistaPreviaSobrecarga,
+} from '../db/carga';
+import { formatearDuracion, formatearDiferencia } from '../db/tareas';
 import { estilos } from './estilos';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
@@ -14,6 +21,7 @@ function etiquetaPrioridad(prioridad: Prioridad): string {
 }
 
 interface Props {
+  db: SQLiteDatabase;
   onAgregarTarea: (
     nombre: string,
     fechaPlanificada?: string,
@@ -35,6 +43,7 @@ interface Props {
 }
 
 export default function FormularioTarea({
+  db,
   onAgregarTarea,
   textoTarea,
   setTextoTarea,
@@ -49,6 +58,35 @@ export default function FormularioTarea({
   prioridadTarea,
   setPrioridadTarea,
 }: Props) {
+  const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
+
+  useEffect(() => {
+    const fechaLimpia = textoFechaTarea.trim();
+    const duracionLimpia = textoDuracionTarea.trim();
+
+    if (
+      !fechaLimpia ||
+      !esFechaValida(fechaLimpia) ||
+      !duracionLimpia ||
+      !esDuracionValida(duracionLimpia)
+    ) {
+      setVistaPrevia(null);
+      return;
+    }
+
+    let cancelado = false;
+    const minutos = parseInt(duracionLimpia, 10);
+
+    calcularVistaPreviaSobrecarga(db, fechaLimpia, minutos).then((resultado) => {
+      if (!cancelado) {
+        setVistaPrevia(resultado);
+      }
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [db, textoFechaTarea, textoDuracionTarea]);
   async function guardarTarea() {
     const textoLimpio = textoTarea.trim();
     if (!textoLimpio) {
@@ -112,6 +150,13 @@ export default function FormularioTarea({
       />
       {errorDuracionTarea ? (
         <Text style={estilos.textoError}>{errorDuracionTarea}</Text>
+      ) : null}
+      {vistaPrevia?.estaSobrecargado ? (
+        <Text style={estilos.textoAviso}>
+          Ese día quedaría con {formatearDuracion(vistaPrevia.minutosPlanificados)}{' '}
+          planificados de {formatearDuracion(vistaPrevia.minutosDisponibles)} disponibles{' '}
+          ({formatearDiferencia(vistaPrevia.diferencia)})
+        </Text>
       ) : null}
       <View style={estilos.estadoContenedor}>
         {PRIORIDADES.map((opcion) => {

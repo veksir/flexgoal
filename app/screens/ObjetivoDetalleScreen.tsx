@@ -32,6 +32,10 @@ import {
   tiempoTotalPorTarea,
   type Sesion,
 } from '../db/sesiones';
+import {
+  calcularVistaPreviaSobrecarga,
+  type VistaPreviaSobrecarga,
+} from '../db/carga';
 import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
@@ -115,6 +119,7 @@ export default function ObjetivoDetalleScreen({
   const [editPrioridad, setEditPrioridad] = useState<Prioridad | null>(null);
   const [editErrorFecha, setEditErrorFecha] = useState('');
   const [editErrorDuracion, setEditErrorDuracion] = useState('');
+  const [editVistaPrevia, setEditVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
   const sesionActivaAnterior = useRef(sesionActiva);
 
   useEffect(() => {
@@ -129,6 +134,41 @@ export default function ObjetivoDetalleScreen({
       cargarTareas();
     }
   }, [sesionActiva]);
+
+  useEffect(() => {
+    if (!tareaEditando) {
+      setEditVistaPrevia(null);
+      return;
+    }
+
+    const fechaLimpia = editFecha.trim();
+    const duracionLimpia = editDuracion.trim();
+
+    if (
+      !fechaLimpia ||
+      !esFechaValida(fechaLimpia) ||
+      !duracionLimpia ||
+      !esDuracionValida(duracionLimpia)
+    ) {
+      setEditVistaPrevia(null);
+      return;
+    }
+
+    let cancelado = false;
+    const minutos = parseInt(duracionLimpia, 10);
+
+    calcularVistaPreviaSobrecarga(db, fechaLimpia, minutos, tareaEditando.id).then(
+      (resultado) => {
+        if (!cancelado) {
+          setEditVistaPrevia(resultado);
+        }
+      }
+    );
+
+    return () => {
+      cancelado = true;
+    };
+  }, [db, tareaEditando, editFecha, editDuracion]);
 
   async function cargarTareas() {
     const lista = await listarTareasPorObjetivo(db, objetivo.id);
@@ -269,6 +309,7 @@ export default function ObjetivoDetalleScreen({
       </Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         <FormularioTarea
+        db={db}
         onAgregarTarea={agregarTarea}
         textoTarea={textoTarea}
         setTextoTarea={setTextoTarea}
@@ -526,6 +567,13 @@ export default function ObjetivoDetalleScreen({
             />
             {editErrorDuracion ? (
               <Text style={estilos.textoError}>{editErrorDuracion}</Text>
+            ) : null}
+            {editVistaPrevia?.estaSobrecargado ? (
+              <Text style={estilos.textoAviso}>
+                Ese día quedaría con {formatearDuracion(editVistaPrevia.minutosPlanificados)}{' '}
+                planificados de {formatearDuracion(editVistaPrevia.minutosDisponibles)} disponibles{' '}
+                ({formatearDiferencia(editVistaPrevia.diferencia)})
+              </Text>
             ) : null}
             <View style={estilos.estadoContenedor}>
               {PRIORIDADES.map((opcion) => {

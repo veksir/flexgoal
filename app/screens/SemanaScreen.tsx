@@ -125,6 +125,9 @@ export default function SemanaScreen({ db }: Props) {
                 <Text style={estilos.semanaDiferencia}>
                   {formatearDiferencia(dia.diferencia)}
                 </Text>
+                {dia.estaSobrecargado ? (
+                  <Text style={estilos.textoAviso}>Sobrecargado</Text>
+                ) : null}
               </View>
             </View>
           </View>

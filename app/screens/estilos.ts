@@ -213,6 +213,11 @@ export const estilos = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
   },
+  textoAviso: {
+    color: '#e8590c',
+    fontSize: 14,
+    marginBottom: 12,
+  },
   sesionInicio: {
     marginTop: 8,
   },
