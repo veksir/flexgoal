@@ -547,7 +547,7 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   botón "Usar esta fecha" que llena el campo de fecha sin guardar.
 - Sin migración de BD — cálculo puro sobre datos existentes.
 - 7 pruebas nuevas (130 totales), todas verdes + tsc sin errores.
-- Merge a main (--ff-only): commit `<PENDIENTE>`.
+- Merge a main (--ff-only): commit `5dba840`.
 - Siguiente: "Modo mínimo / días libres" (resto de Fase 4), o retomar el
   spike de ADR-003 (runtime/modelo de IA local, pendiente desde el
   inicio).
