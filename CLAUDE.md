@@ -57,7 +57,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 - [ ] **Fase 4 — Adaptación**
   - [x] Comparación estimado vs. real por tarea individual
   - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
-  - [ ] Detección de sobrecarga
+  - [x] Detección de sobrecarga
   - [ ] Sugerencias de ajuste
   - [ ] Modo mínimo
   - [ ] Días libre mínimo, días libres
@@ -509,3 +509,26 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   individual, varios campos a la vez, rechazo de nombre vacío/fecha
   inválida/duración inválida, sesiones no alteradas al editar.
 - Merge a main (--ff-only): commit `0f3eeb5` (sobre `eed45bd`).
+
+### 2026-08-24 — Historia 21: Detección de sobrecarga al planificar
+
+- Primera entrega de Fase 4 más allá de los agregados de progreso: el
+  aviso de sobrecarga aparece **al momento de planificar** (crear o
+  editar una tarea), no solo como dato pasivo en una vista aparte.
+- `app/db/carga.ts`: agregado `estaSobrecargado: boolean` a `DiaCarga`
+  (`minutosDisponibles > 0 && diferencia > 0` — un día sin disponibilidad
+  declarada nunca se marca sobrecargado, para no confundir falta de dato
+  con sobrecarga real). Nueva función pura `calcularVistaPreviaSobrecarga`
+  (vista previa hipotética sin escribir en BD, con `excluirTareaId` para
+  no contar dos veces la propia tarea al editarla).
+- `FormularioTarea.tsx` y el modal de edición de `ObjetivoDetalleScreen.tsx`
+  (Historia 20) muestran el mismo aviso neutro y no bloqueante: "Ese día
+  quedaría con X planificados de Y disponibles (+/-Z min)".
+- `SemanaScreen.tsx` reutiliza el mismo cálculo para mostrar la marca
+  "Sobrecargado" en el header de cada día, sin duplicar lógica.
+- Sin migración de BD — cálculo puro sobre datos existentes.
+- 10 pruebas nuevas (123 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `<PENDIENTE>`.
+- Siguiente: por definir — queda pendiente "Sugerencias de ajuste" y
+  "Modo mínimo / días libres" (resto de Fase 4), o retomar el spike de
+  ADR-003 (runtime/modelo de IA local, pendiente desde el inicio).
