@@ -600,6 +600,6 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   visual respeta el safe area en dispositivo real (la superposición que
   se veía era un artefacto de Expo Go, no un bug del código).
 - 3 pruebas nuevas (133 totales), todas verdes + tsc sin errores.
-- Merge a main (--ff-only): commit `<PENDING_HASH>`.
+- Merge a main (--ff-only): commit `5fdfcce`.
 - Siguiente: por definir — queda pendiente "Modo mínimo" y "Días
   libres" (resto de Fase 4), o retomar el spike de ADR-003.
