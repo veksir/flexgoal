@@ -115,102 +115,133 @@ export default function MetaDetalleScreen({
       </Pressable>
       <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        <Text style={estilos.estadoEtiqueta}>Categoría (opcional)</Text>
-      <TextInput
-        style={estilos.input}
-        value={textoCategoria}
-        onChangeText={setTextoCategoria}
-        placeholder="Ej. Salud, Trabajo, Finanzas..."
-        placeholderTextColor="#999"
-      />
-      <Pressable style={estilos.botonSesion} onPress={guardarCategoria}>
-        <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
-      </Pressable>
-      <Text style={estilos.estadoEtiqueta}>Prioridad</Text>
-      <View style={estilos.estadoContenedor}>
-        {PRIORIDADES.map((opcion) => {
-          const activo = opcion === prioridad;
-          return (
-            <Pressable
-              key={opcion}
-              style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
-              onPress={() => cambiarPrioridad(opcion)}
-            >
-              <Text
-                style={[
-                  estilos.estadoBotonTexto,
-                  activo && estilos.estadoBotonTextoActivo,
-                ]}
-              >
-                {etiquetaEstado(opcion)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <Text style={estilos.estadoEtiqueta}>Fecha objetivo (AAAA-MM-DD, opcional)</Text>
-      <TextInput
-        style={estilos.input}
-        value={textoFechaObjetivo}
-        onChangeText={setTextoFechaObjetivo}
-        placeholder="Ej. 2026-12-31"
-        placeholderTextColor="#999"
-        keyboardType="numbers-and-punctuation"
-      />
-      {errorFechaObjetivo ? (
-        <Text style={estilos.textoError}>{errorFechaObjetivo}</Text>
-      ) : null}
-      <Pressable style={estilos.botonSesion} onPress={guardarFechaObjetivo}>
-        <Text style={estilos.botonSesionTexto}>Guardar fecha objetivo</Text>
-      </Pressable>
-      <Text style={estilos.estadoEtiqueta}>Estado</Text>
-      <View style={estilos.estadoContenedor}>
-        {ESTADOS_META.map((opcion) => {
-          const activo = opcion === estado;
-          return (
-            <Pressable
-              key={opcion}
-              style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
-              onPress={() => cambiarEstado(opcion)}
-            >
-              <Text
-                style={[
-                  estilos.estadoBotonTexto,
-                  activo && estilos.estadoBotonTextoActivo,
-                ]}
-              >
-                {etiquetaEstado(opcion)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <TextInput
-        style={estilos.input}
-        value={textoObjetivo}
-        onChangeText={setTextoObjetivo}
-        placeholder="Nuevo objetivo..."
-        placeholderTextColor="#999"
-        multiline
-      />
-      <Pressable style={estilos.boton} onPress={guardarObjetivo}>
-        <Text style={estilos.botonTexto}>Agregar objetivo</Text>
-      </Pressable>
-      {objetivos.length === 0 ? (
-        <Text style={estilos.vacio}>
-          Esta meta no tiene objetivos todavía. ¡Agrega el primero!
-        </Text>
-      ) : (
-        objetivos.map((item) => (
-          <Pressable
-            key={item.id}
-            style={estilos.item}
-            onPress={() => onSeleccionarObjetivo(item)}
-          >
-            <Text style={estilos.itemTexto}>{item.nombre}</Text>
+        <View style={estilos.seccion}>
+          <Text style={estilos.seccionTitulo}>Categoría</Text>
+          <TextInput
+            style={estilos.input}
+            value={textoCategoria}
+            onChangeText={setTextoCategoria}
+            placeholder="Ej. Salud, Trabajo, Finanzas..."
+            placeholderTextColor="#999"
+          />
+          <Pressable style={[estilos.botonSesion, { marginTop: 0 }]} onPress={guardarCategoria}>
+            <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
           </Pressable>
-        ))
-      )}
+        </View>
+
+        <View style={estilos.seccion}>
+          <Text style={estilos.seccionTitulo}>Prioridad</Text>
+          <View style={[estilos.estadoContenedor, { marginBottom: 0 }]}>
+            {PRIORIDADES.map((opcion) => {
+              const activo = opcion === prioridad;
+              return (
+                <Pressable
+                  key={opcion}
+                  style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+                  onPress={() => cambiarPrioridad(opcion)}
+                >
+                  <Text
+                    style={[
+                      estilos.estadoBotonTexto,
+                      activo && estilos.estadoBotonTextoActivo,
+                    ]}
+                  >
+                    {etiquetaEstado(opcion)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={estilos.seccion}>
+          <Text style={estilos.seccionTitulo}>Fecha objetivo</Text>
+          <TextInput
+            style={estilos.input}
+            value={textoFechaObjetivo}
+            onChangeText={setTextoFechaObjetivo}
+            placeholder="AAAA-MM-DD, ej. 2026-12-31"
+            placeholderTextColor="#999"
+            keyboardType="numbers-and-punctuation"
+          />
+          {errorFechaObjetivo ? (
+            <Text style={estilos.textoError}>{errorFechaObjetivo}</Text>
+          ) : null}
+          <Pressable style={[estilos.botonSesion, { marginTop: 0 }]} onPress={guardarFechaObjetivo}>
+            <Text style={estilos.botonSesionTexto}>Guardar fecha objetivo</Text>
+          </Pressable>
+        </View>
+
+        <View style={estilos.seccion}>
+          <Text style={estilos.seccionTitulo}>Estado</Text>
+          <View style={[estilos.estadoContenedor, { marginBottom: 0 }]}>
+            {ESTADOS_META.map((opcion) => {
+              const activo = opcion === estado;
+              return (
+                <Pressable
+                  key={opcion}
+                  style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
+                  onPress={() => cambiarEstado(opcion)}
+                >
+                  <Text
+                    style={[
+                      estilos.estadoBotonTexto,
+                      activo && estilos.estadoBotonTextoActivo,
+                    ]}
+                  >
+                    {etiquetaEstado(opcion)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={estilos.divisor} />
+
+        <Text style={estilos.subtitulo}>Objetivos</Text>
+        <View style={estilos.composerFila}>
+          <TextInput
+            style={[estilos.input, estilos.composerInput]}
+            value={textoObjetivo}
+            onChangeText={setTextoObjetivo}
+            placeholder="Nuevo objetivo..."
+            placeholderTextColor="#999"
+            multiline
+          />
+          <Pressable
+            style={[estilos.composerBoton, !textoObjetivo.trim() && { opacity: 0.4 }]}
+            onPress={guardarObjetivo}
+            disabled={!textoObjetivo.trim()}
+            accessibilityLabel="Agregar objetivo"
+          >
+            <Text style={estilos.composerBotonTexto}>+</Text>
+          </Pressable>
+        </View>
+        <View style={{ marginTop: 14 }}>
+          {objetivos.length === 0 ? (
+            <View style={estilos.vacioContenedor}>
+              <Text style={estilos.vacioIcono}>🧭</Text>
+              <Text style={estilos.vacioTitulo}>
+                Esta meta no tiene objetivos todavía
+              </Text>
+              <Text style={estilos.vacioSubtexto}>¡Agrega el primero arriba!</Text>
+            </View>
+          ) : (
+            objetivos.map((item) => (
+              <Pressable
+                key={item.id}
+                style={estilos.item}
+                onPress={() => onSeleccionarObjetivo(item)}
+              >
+                <View style={estilos.itemContenido}>
+                  <Text style={[estilos.itemTexto, { flex: 1 }]}>{item.nombre}</Text>
+                  <Text style={{ color: '#ced4da', fontSize: 18 }}>›</Text>
+                </View>
+              </Pressable>
+            ))
+          )}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

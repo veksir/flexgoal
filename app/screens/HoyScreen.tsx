@@ -61,6 +61,8 @@ export default function HoyScreen({
     await cargarTareas();
   }
 
+  const pendientes = tareas.filter((t) => t.estado !== 'completada').length;
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -69,6 +71,16 @@ export default function HoyScreen({
     <FlatList
       data={tareas}
       keyExtractor={(item) => String(item.id)}
+      ListHeaderComponent={
+        tareas.length > 0 ? (
+          <Text style={estilos.contadorTexto}>
+            {pendientes === 0
+              ? 'Todo listo por hoy 🎉'
+              : `${pendientes} pendiente${pendientes === 1 ? '' : 's'} de ${tareas.length}`}
+          </Text>
+        ) : null
+      }
+      ListHeaderComponentStyle={{ marginBottom: 10 }}
       renderItem={({ item }) => (
         <Pressable style={estilos.item} onPress={() => alternarTarea(item)}>
           <View style={estilos.tareaContenido}>
@@ -179,10 +191,15 @@ export default function HoyScreen({
         </Pressable>
       )}
       ListEmptyComponent={
-        <Text style={estilos.vacio}>
-          No tienes tareas para hoy. Buen momento para planificar algo.
-        </Text>
+        <View style={estilos.vacioContenedor}>
+          <Text style={estilos.vacioIcono}>☀️</Text>
+          <Text style={estilos.vacioTitulo}>No tienes tareas para hoy</Text>
+          <Text style={estilos.vacioSubtexto}>
+            Buen momento para planificar algo desde Metas.
+          </Text>
+        </View>
       }
+      contentContainerStyle={tareas.length === 0 ? { flexGrow: 1 } : { paddingBottom: 8 }}
     />
     </KeyboardAvoidingView>
   );

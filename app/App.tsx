@@ -34,8 +34,17 @@ import {
 import type { Meta } from './db/metas';
 import type { Objetivo } from './db/objetivos';
 import type { Prioridad, Tarea } from './db/tareas';
+import { color, espacio, radio } from './screens/theme';
 
 type Vista = 'hoy' | 'ideas' | 'metas' | 'disponibilidad' | 'semana';
+
+const VISTAS: { id: Vista; etiqueta: string; icono: string; subtitulo: string }[] = [
+  { id: 'hoy', etiqueta: 'Hoy', icono: '☀️', subtitulo: 'Tus tareas para hoy' },
+  { id: 'ideas', etiqueta: 'Ideas', icono: '💡', subtitulo: 'Bandeja de ideas' },
+  { id: 'metas', etiqueta: 'Metas', icono: '🎯', subtitulo: 'Tus metas y objetivos' },
+  { id: 'disponibilidad', etiqueta: 'Horario', icono: '🗓️', subtitulo: 'Disponibilidad semanal' },
+  { id: 'semana', etiqueta: 'Semana', icono: '📊', subtitulo: 'Carga planificada vs. disponible' },
+];
 
 export interface SesionActiva {
   tareaId: number;
@@ -244,9 +253,20 @@ export default function App() {
     setTiempoSegundos(0);
   }
 
+  const enDetalle = Boolean(metaSeleccionada || objetivoSeleccionado);
+  const vistaActual = VISTAS.find((v) => v.id === vista);
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.titulo}>Flexgoal</Text>
+      <View style={styles.header}>
+        <View style={styles.headerFila}>
+          <Text style={styles.titulo}>Flexgoal</Text>
+        </View>
+        {!enDetalle && vistaActual ? (
+          <Text style={styles.headerSubtitulo}>{vistaActual.subtitulo}</Text>
+        ) : null}
+      </View>
+      <View style={styles.contenido}>
       {!db ? null : objetivoSeleccionado && metaSeleccionada ? (
         <ObjetivoDetalleScreen
           db={db}
@@ -288,7 +308,6 @@ export default function App() {
         />
       ) : (
         <>
-          <ViewToggle vista={vista} onChangeVista={setVista} />
           {vista === 'hoy' ? (
             <HoyScreen
               db={db}
@@ -318,12 +337,16 @@ export default function App() {
           )}
         </>
       )}
+      </View>
+      {!enDetalle ? (
+        <BottomNav vista={vista} onChangeVista={setVista} />
+      ) : null}
       <StatusBar style="auto" />
     </SafeAreaView>
   );
 }
 
-function ViewToggle({
+function BottomNav({
   vista,
   onChangeVista,
 }: {
@@ -332,60 +355,27 @@ function ViewToggle({
 }) {
   return (
     <View style={styles.tabs}>
-      <Pressable
-        style={[styles.tab, vista === 'hoy' && styles.tabActiva]}
-        onPress={() => onChangeVista('hoy')}
-      >
-        <Text
-          style={[styles.tabTexto, vista === 'hoy' && styles.tabTextoActivo]}
-        >
-          Hoy
-        </Text>
-      </Pressable>
-      <Pressable
-        style={[styles.tab, vista === 'ideas' && styles.tabActiva]}
-        onPress={() => onChangeVista('ideas')}
-      >
-        <Text
-          style={[
-            styles.tabTexto,
-            vista === 'ideas' && styles.tabTextoActivo,
-          ]}
-        >
-          Ideas
-        </Text>
-      </Pressable>
-      <Pressable
-        style={[styles.tab, vista === 'metas' && styles.tabActiva]}
-        onPress={() => onChangeVista('metas')}
-      >
-        <Text style={[styles.tabTexto, vista === 'metas' && styles.tabTextoActivo]}>
-          Metas
-        </Text>
-      </Pressable>
-      <Pressable
-        style={[styles.tab, vista === 'disponibilidad' && styles.tabActiva]}
-        onPress={() => onChangeVista('disponibilidad')}
-      >
-        <Text
-          style={[
-            styles.tabTexto,
-            vista === 'disponibilidad' && styles.tabTextoActivo,
-          ]}
-        >
-          Horario
-        </Text>
-      </Pressable>
-      <Pressable
-        style={[styles.tab, vista === 'semana' && styles.tabActiva]}
-        onPress={() => onChangeVista('semana')}
-      >
-        <Text
-          style={[styles.tabTexto, vista === 'semana' && styles.tabTextoActivo]}
-        >
-          Semana
-        </Text>
-      </Pressable>
+      {VISTAS.map((item) => {
+        const activo = vista === item.id;
+        return (
+          <Pressable
+            key={item.id}
+            style={styles.tab}
+            onPress={() => onChangeVista(item.id)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activo }}
+            accessibilityLabel={item.etiqueta}
+          >
+            {activo ? <View style={styles.tabIndicador} /> : null}
+            <Text style={[styles.tabIcono, activo && styles.tabIconoActivo]}>
+              {item.icono}
+            </Text>
+            <Text style={[styles.tabTexto, activo && styles.tabTextoActivo]}>
+              {item.etiqueta}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -393,36 +383,74 @@ function ViewToggle({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: color.fondo,
+  },
+  header: {
+    paddingHorizontal: espacio.base,
+    paddingTop: espacio.sm,
+    paddingBottom: espacio.md,
+    borderBottomWidth: 1,
+    borderBottomColor: color.borde,
+  },
+  headerFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   titulo: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontWeight: '800',
+    color: color.textoPrimario,
+    letterSpacing: -0.3,
+  },
+  headerSubtitulo: {
+    fontSize: 13.5,
+    color: color.textoTerciario,
+    marginTop: 2,
+  },
+  contenido: {
+    flex: 1,
+    paddingHorizontal: espacio.base,
+    paddingTop: espacio.md,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#f1f3f5',
-    borderRadius: 8,
-    padding: 4,
-    marginBottom: 16,
+    backgroundColor: color.fondo,
+    borderTopWidth: 1,
+    borderTopColor: color.borde,
+    paddingTop: espacio.xs,
+    paddingBottom: espacio.sm,
+    paddingHorizontal: espacio.xs,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 6,
+    justifyContent: 'center',
+    paddingVertical: espacio.xs + 2,
+    gap: 2,
   },
-  tabActiva: {
-    backgroundColor: '#fff',
+  tabIndicador: {
+    position: 'absolute',
+    top: 0,
+    width: 22,
+    height: 3,
+    borderRadius: radio.completo,
+    backgroundColor: color.primario,
+  },
+  tabIcono: {
+    fontSize: 19,
+    opacity: 0.5,
+  },
+  tabIconoActivo: {
+    opacity: 1,
   },
   tabTexto: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: 11,
+    color: color.textoTerciario,
+    fontWeight: '600',
   },
   tabTextoActivo: {
-    color: '#1c7ed6',
-    fontWeight: '600',
+    color: color.primario,
+    fontWeight: '700',
   },
 });

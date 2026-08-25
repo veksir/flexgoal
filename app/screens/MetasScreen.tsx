@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 
 import {
   listarMetas,
@@ -66,29 +66,74 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
     return null;
   }
 
+  function estiloPunto(prioridad: Prioridad) {
+    if (prioridad === 'alta') return estilos.insigniaPuntoAlta;
+    if (prioridad === 'media') return estilos.insigniaPuntoMedia;
+    return estilos.insigniaPuntoBaja;
+  }
+
   return (
     <FlatList
       data={metas}
       keyExtractor={(item) => String(item.id)}
       renderItem={({ item }) => {
         const resumen = resumenProgreso(progresos[item.id]);
+        const p = progresos[item.id];
         const inactiva = item.estado !== 'activa';
+        const proporcion =
+          p && p.estimadoTotal ? Math.min(1, p.realTotal / p.estimadoTotal) : null;
+        const excedido = p && p.estimadoTotal != null && p.realTotal > p.estimadoTotal;
         return (
           <Pressable
             style={estilos.item}
             onPress={() => onSeleccionarMeta(item)}
           >
-            <Text
-              style={[estilos.itemTexto, inactiva && estilos.itemTextoInactivo]}
-            >
-              {item.nombre}
-              {item.categoria ? ` · ${item.categoria}` : ''}
-              {item.prioridad ? ` · ${etiquetaPrioridad(item.prioridad)}` : ''}
-              {item.fecha_objetivo ? ` · ${item.fecha_objetivo}` : ''}
-            </Text>
-            <Text style={estilos.itemFecha}>
-              Estado: {etiquetaEstado(item.estado)}
-            </Text>
+            <View style={estilos.seccionEncabezadoFila}>
+              <Text
+                style={[
+                  estilos.itemTexto,
+                  { fontWeight: '600', flex: 1 },
+                  inactiva && estilos.itemTextoInactivo,
+                ]}
+                numberOfLines={2}
+              >
+                {item.nombre}
+              </Text>
+              <Text style={estilos.itemFecha}>{etiquetaEstado(item.estado)}</Text>
+            </View>
+            <View style={[estilos.itemContenido, { marginTop: 6, justifyContent: 'flex-start' }]}>
+              {item.prioridad ? (
+                <View style={estilos.insignia}>
+                  <View style={[estilos.insigniaPunto, estiloPunto(item.prioridad)]} />
+                  <Text style={estilos.insigniaTexto}>
+                    {etiquetaPrioridad(item.prioridad)}
+                  </Text>
+                </View>
+              ) : null}
+              {item.categoria ? (
+                <View style={estilos.insignia}>
+                  <Text style={estilos.insigniaTexto}>{item.categoria}</Text>
+                </View>
+              ) : null}
+              {item.fecha_objetivo ? (
+                <View style={estilos.insignia}>
+                  <Text style={estilos.insigniaTexto}>🗓 {item.fecha_objetivo}</Text>
+                </View>
+              ) : null}
+            </View>
+            {proporcion != null ? (
+              <View style={estilos.progresoFila}>
+                <View style={estilos.progresoFondo}>
+                  <View
+                    style={[
+                      estilos.progresoRelleno,
+                      excedido && estilos.progresoRellenoExceso,
+                      { width: `${Math.round(proporcion * 100)}%` },
+                    ]}
+                  />
+                </View>
+              </View>
+            ) : null}
             {resumen ? (
               <Text style={[estilos.sesionTotal, inactiva && estilos.itemTextoInactivo]}>
                 {resumen}
@@ -98,10 +143,15 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
         );
       }}
       ListEmptyComponent={
-        <Text style={estilos.vacio}>
-          Aún no tienes metas. Convierte una idea en meta para empezar.
-        </Text>
+        <View style={estilos.vacioContenedor}>
+          <Text style={estilos.vacioIcono}>🎯</Text>
+          <Text style={estilos.vacioTitulo}>Aún no tienes metas</Text>
+          <Text style={estilos.vacioSubtexto}>
+            Convierte una idea en meta desde la pestaña Ideas para empezar.
+          </Text>
+        </View>
       }
+      contentContainerStyle={metas.length === 0 ? { flexGrow: 1 } : { paddingBottom: 8 }}
     />
   );
 }

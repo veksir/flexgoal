@@ -43,6 +43,7 @@ import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
+import { color, radio } from './theme';
 import FormularioTarea from './FormularioTarea';
 import type { ModoSesion } from '../db/sesiones';
 
@@ -324,26 +325,34 @@ export default function ObjetivoDetalleScreen({
         {nombreMeta} › {objetivo.nombre}
       </Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        <FormularioTarea
-        db={db}
-        onAgregarTarea={agregarTarea}
-        textoTarea={textoTarea}
-        setTextoTarea={setTextoTarea}
-        textoFechaTarea={textoFechaTarea}
-        setTextoFechaTarea={setTextoFechaTarea}
-        errorFechaTarea={errorFechaTarea}
-        setErrorFechaTarea={setErrorFechaTarea}
-        textoDuracionTarea={textoDuracionTarea}
-        setTextoDuracionTarea={setTextoDuracionTarea}
-        errorDuracionTarea={errorDuracionTarea}
-        setErrorDuracionTarea={setErrorDuracionTarea}
-        prioridadTarea={prioridadTarea}
-        setPrioridadTarea={setPrioridadTarea}
-      />
+        <View style={estilos.seccion}>
+          <Text style={estilos.seccionTitulo}>Nueva tarea</Text>
+          <FormularioTarea
+          db={db}
+          onAgregarTarea={agregarTarea}
+          textoTarea={textoTarea}
+          setTextoTarea={setTextoTarea}
+          textoFechaTarea={textoFechaTarea}
+          setTextoFechaTarea={setTextoFechaTarea}
+          errorFechaTarea={errorFechaTarea}
+          setErrorFechaTarea={setErrorFechaTarea}
+          textoDuracionTarea={textoDuracionTarea}
+          setTextoDuracionTarea={setTextoDuracionTarea}
+          errorDuracionTarea={errorDuracionTarea}
+          setErrorDuracionTarea={setErrorDuracionTarea}
+          prioridadTarea={prioridadTarea}
+          setPrioridadTarea={setPrioridadTarea}
+        />
+        </View>
+      <Text style={estilos.subtitulo}>Tareas</Text>
       {tareas.length === 0 ? (
-        <Text style={estilos.vacio}>
-          Este objetivo no tiene tareas todavía. ¡Agrega la primera!
-        </Text>
+        <View style={estilos.vacioContenedor}>
+          <Text style={estilos.vacioIcono}>✅</Text>
+          <Text style={estilos.vacioTitulo}>
+            Este objetivo no tiene tareas todavía
+          </Text>
+          <Text style={estilos.vacioSubtexto}>¡Agrega la primera arriba!</Text>
+        </View>
       ) : (
         tareas.map((item) => {
           const realMinutos = totalesTareas[item.id] ?? 0;
@@ -547,11 +556,11 @@ export default function ObjetivoDetalleScreen({
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
         <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', padding: 24 }}
+          style={estilos.modalFondo}
           onPress={cerrarEdicionModal}
         >
           <Pressable
-            style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24 }}
+            style={estilos.modalContenido}
             onPress={(e) => e.stopPropagation()}
           >
             <Text style={estilos.tituloDetalle}>Editar tarea</Text>
@@ -632,18 +641,18 @@ export default function ObjetivoDetalleScreen({
                 );
               })}
             </View>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 'auto' }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               <Pressable
                 style={{
                   flex: 1,
-                  backgroundColor: '#333',
-                  borderRadius: 8,
-                  paddingVertical: 10,
+                  backgroundColor: color.oscuro,
+                  borderRadius: radio.md,
+                  paddingVertical: 12,
                   alignItems: 'center',
                 }}
                 onPress={guardarEdicion}
               >
-                <Text style={[estilos.botonTexto, { color: '#fff', fontSize: 14 }]}>
+                <Text style={[estilos.botonTexto, { fontSize: 14 }]}>
                   Guardar cambios
                 </Text>
               </Pressable>
@@ -651,15 +660,17 @@ export default function ObjetivoDetalleScreen({
                 style={{
                   flex: 1,
                   backgroundColor: 'transparent',
-                  borderWidth: 1,
-                  borderColor: '#ccc',
-                  borderRadius: 8,
-                  paddingVertical: 10,
+                  borderWidth: 1.5,
+                  borderColor: color.bordeInput,
+                  borderRadius: radio.md,
+                  paddingVertical: 12,
                   alignItems: 'center',
                 }}
                 onPress={cerrarEdicionModal}
               >
-                <Text style={{ color: '#555', fontSize: 14, fontWeight: '600' }}>Cancelar</Text>
+                <Text style={{ color: color.textoTerciario, fontSize: 14, fontWeight: '700' }}>
+                  Cancelar
+                </Text>
               </Pressable>
             </View>
           </Pressable>

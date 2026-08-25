@@ -1,111 +1,207 @@
 import { StyleSheet } from 'react-native';
+import { color, espacio, radio, sombraTarjeta, sombraSuave, sombraFlotante, toqueMinimo } from './theme';
 
 export const estilos = StyleSheet.create({
+  // ---------------------------------------------------------------------
+  // Encabezados de pantalla / detalle
+  // ---------------------------------------------------------------------
   tituloDetalle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: espacio.md,
+    color: color.textoPrimario,
   },
   subtitulo: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: espacio.md,
+    color: color.textoPrimario,
   },
+
+  // ---------------------------------------------------------------------
+  // Selectores tipo "pill" (estado, prioridad, día, modo)
+  // ---------------------------------------------------------------------
   estadoEtiqueta: {
     fontSize: 13,
-    color: '#666',
-    marginBottom: 6,
+    fontWeight: '600',
+    color: color.textoTerciario,
+    marginBottom: espacio.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   estadoContenedor: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
+    gap: espacio.sm,
+    marginBottom: espacio.base,
   },
   estadoBoton: {
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: color.bordeFuerte,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.md,
+    backgroundColor: color.fondo,
+    minHeight: 36,
+    justifyContent: 'center',
   },
   estadoBotonActivo: {
-    backgroundColor: '#1c7ed6',
-    borderColor: '#1c7ed6',
+    backgroundColor: color.primario,
+    borderColor: color.primario,
   },
   estadoBotonTexto: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
+    fontWeight: '500',
   },
   estadoBotonTextoActivo: {
-    color: '#fff',
-    fontWeight: '600',
+    color: color.fondo,
+    fontWeight: '700',
   },
+
+  // ---------------------------------------------------------------------
+  // Navegación (volver, encabezado de sección)
+  // ---------------------------------------------------------------------
   botonVolver: {
     alignSelf: 'flex-start',
-    marginBottom: 12,
+    marginBottom: espacio.sm,
+    paddingVertical: espacio.xs,
+    paddingRight: espacio.sm,
+    minHeight: toqueMinimo,
+    justifyContent: 'center',
   },
   botonVolverTexto: {
     fontSize: 16,
-    color: '#1c7ed6',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    minHeight: 48,
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  boton: {
-    backgroundColor: '#1c7ed6',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  botonTexto: {
-    color: '#fff',
-    fontSize: 16,
+    color: color.primario,
     fontWeight: '600',
   },
+
+  // ---------------------------------------------------------------------
+  // Campos de formulario
+  // ---------------------------------------------------------------------
+  input: {
+    borderWidth: 1.5,
+    borderColor: color.bordeInput,
+    backgroundColor: color.fondoSutil,
+    borderRadius: radio.md,
+    padding: espacio.md,
+    minHeight: 50,
+    fontSize: 16,
+    color: color.textoPrimario,
+    marginBottom: espacio.md,
+  },
+
+  // ---------------------------------------------------------------------
+  // Botones
+  // ---------------------------------------------------------------------
+  boton: {
+    backgroundColor: color.primario,
+    borderRadius: radio.md,
+    paddingVertical: espacio.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: espacio.base,
+    minHeight: toqueMinimo,
+    ...sombraSuave,
+  },
+  botonTexto: {
+    color: color.fondo,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  botonSecundario: {
+    backgroundColor: color.exito,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.md,
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  botonSecundarioTexto: {
+    color: color.fondo,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  botonBasura: {
+    padding: espacio.sm,
+    minWidth: toqueMinimo - 8,
+    minHeight: toqueMinimo - 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radio.completo,
+  },
+  botonBasuraTexto: {
+    fontSize: 18,
+  },
+
+  // ---------------------------------------------------------------------
+  // Tarjetas de lista (ideas, metas, objetivos, tareas, bloques...)
+  // ---------------------------------------------------------------------
   item: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    backgroundColor: color.fondo,
+    borderRadius: radio.lg,
+    paddingVertical: espacio.md,
+    paddingHorizontal: espacio.base,
+    marginBottom: espacio.sm,
+    borderWidth: 1,
+    borderColor: color.borde,
+    ...sombraTarjeta,
   },
   itemContenido: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: espacio.md,
   },
   itemTextoWrapper: {
     flex: 1,
   },
+  itemTexto: {
+    fontSize: 16,
+    color: color.textoPrimario,
+    lineHeight: 21,
+  },
+  itemTextoInactivo: {
+    color: color.textoInactivo,
+  },
+  itemFecha: {
+    fontSize: 12.5,
+    color: color.textoInactivo,
+    marginTop: espacio.xs,
+  },
+
+  // ---------------------------------------------------------------------
+  // Tareas (checkbox + estado)
+  // ---------------------------------------------------------------------
   tareaContenido: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: espacio.md,
   },
   tareaCheck: {
-    fontSize: 20,
-    width: 24,
+    fontSize: 22,
+    width: 28,
+    height: 28,
+    lineHeight: 28,
     textAlign: 'center',
-    color: '#666',
+    color: color.bordeFuerte,
   },
   tareaCheckCompletado: {
-    color: '#2b8a3e',
+    color: color.exito,
   },
   tareaCompletada: {
     textDecorationLine: 'line-through',
-    color: '#888',
+    color: color.textoInactivo,
   },
+
+  // ---------------------------------------------------------------------
+  // Sesión de tiempo (cronómetro / pomodoro)
+  // ---------------------------------------------------------------------
   sesionTotal: {
     fontSize: 13,
-    color: '#1971c2',
-    marginTop: 4,
+    color: color.primarioOscuro,
+    marginTop: espacio.xs,
     fontWeight: '600',
   },
   sesionHistorialEnlace: {
@@ -114,375 +210,653 @@ export const estilos = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   sesionHistorialItem: {
-    paddingVertical: 10,
+    paddingVertical: espacio.sm + 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: color.borde,
   },
   sesionHistorialTexto: {
     fontSize: 16,
-    color: '#333',
-  },
-  modalFondo: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContenido: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    maxHeight: '70%',
+    color: color.textoSecundario,
   },
   sesionContenido: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 8,
-    backgroundColor: '#e7f5ff',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    marginTop: espacio.sm + 2,
+    backgroundColor: color.primarioSuave,
+    borderRadius: radio.md,
+    paddingVertical: espacio.sm + 2,
+    paddingHorizontal: espacio.md,
   },
   cronometro: {
     fontSize: 20,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
-    color: '#1971c2',
+    color: color.primarioOscuro,
   },
   botonSesion: {
     alignSelf: 'flex-start',
-    backgroundColor: '#1971c2',
-    borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginTop: 8,
+    backgroundColor: color.primarioOscuro,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.md,
+    marginTop: espacio.sm,
+    minHeight: 36,
+    justifyContent: 'center',
   },
   botonSesionTexto: {
-    color: '#fff',
+    color: color.fondo,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   botonDetener: {
-    backgroundColor: '#e03131',
-    borderRadius: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    backgroundColor: color.peligro,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.md + 2,
+    minHeight: 36,
+    justifyContent: 'center',
   },
   botonDetenerTexto: {
-    color: '#fff',
+    color: color.fondo,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  itemTexto: {
-    fontSize: 16,
+  sesionInicio: {
+    marginTop: espacio.sm,
+    paddingTop: espacio.sm + 2,
+    borderTopWidth: 1,
+    borderTopColor: color.borde,
   },
-  itemTextoInactivo: {
-    color: '#888',
+
+  // ---------------------------------------------------------------------
+  // Modal
+  // ---------------------------------------------------------------------
+  modalFondo: {
+    flex: 1,
+    backgroundColor: color.overlay,
+    justifyContent: 'center',
+    padding: espacio.xl,
   },
-  itemFecha: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
+  modalContenido: {
+    backgroundColor: color.fondo,
+    borderRadius: radio.xl,
+    padding: espacio.xl,
+    maxHeight: '70%',
+    ...sombraFlotante,
   },
-  botonSecundario: {
-    backgroundColor: '#2b8a3e',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  botonSecundarioTexto: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  botonBasura: {
-    padding: 8,
-  },
-  botonBasuraTexto: {
-    fontSize: 18,
-  },
+
+  // ---------------------------------------------------------------------
+  // Estados vacíos / errores / avisos
+  // ---------------------------------------------------------------------
   vacio: {
     textAlign: 'center',
-    color: '#666',
+    color: color.textoTerciario,
     fontSize: 16,
-    marginTop: 32,
+    marginTop: espacio.xxl,
+  },
+  vacioContenedor: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: espacio.xxl,
+    paddingHorizontal: espacio.xl,
+    gap: espacio.xs,
+  },
+  vacioIcono: {
+    fontSize: 34,
+    marginBottom: espacio.sm,
+    opacity: 0.7,
+  },
+  vacioTitulo: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: color.textoSecundario,
+    textAlign: 'center',
+  },
+  vacioSubtexto: {
+    fontSize: 13.5,
+    color: color.textoDeshabilitado,
+    textAlign: 'center',
+    marginTop: 2,
   },
   textoError: {
-    color: '#e03131',
+    color: color.peligro,
     fontSize: 14,
-    marginBottom: 12,
+    marginBottom: espacio.md,
   },
   textoAviso: {
-    color: '#e8590c',
+    color: color.advertencia,
     fontSize: 14,
-    marginBottom: 12,
+    marginBottom: espacio.md,
   },
   sugerenciaContenedor: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    gap: espacio.sm,
+    marginBottom: espacio.md,
+    backgroundColor: color.advertenciaSuave,
+    borderRadius: radio.md,
+    padding: espacio.sm + 2,
   },
   botonSugerencia: {
-    backgroundColor: '#e8590c',
-    borderRadius: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    backgroundColor: color.advertencia,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.xs + 2,
+    paddingHorizontal: espacio.sm + 2,
   },
   botonSugerenciaTexto: {
-    color: '#fff',
+    color: color.fondo,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  sesionInicio: {
-    marginTop: 8,
-  },
+
+  // ---------------------------------------------------------------------
+  // Selector de modo de sesión (libre / pomodoro)
+  // ---------------------------------------------------------------------
   modoSelector: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
+    gap: espacio.sm,
+    marginBottom: espacio.sm,
+    backgroundColor: color.fondoTab,
+    borderRadius: radio.md,
+    padding: 4,
   },
   modoBoton: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 8,
-    paddingVertical: 8,
+    borderRadius: radio.sm,
+    paddingVertical: espacio.sm,
     alignItems: 'center',
   },
   modoBotonActivo: {
-    backgroundColor: '#1c7ed6',
-    borderColor: '#1c7ed6',
+    backgroundColor: color.fondo,
+    ...sombraSuave,
   },
   modoBotonTexto: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
+    fontWeight: '600',
   },
   modoBotonTextoActivo: {
-    color: '#fff',
-    fontWeight: '600',
+    color: color.primario,
+    fontWeight: '700',
   },
   pomodoroInputs: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 8,
+    gap: espacio.base,
+    marginBottom: espacio.sm,
   },
   pomodoroInputFila: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: espacio.xs,
   },
   pomodoroLabel: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
   },
   pomodoroInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    width: 48,
+    borderWidth: 1.5,
+    borderColor: color.bordeInput,
+    borderRadius: radio.sm,
+    paddingHorizontal: espacio.sm,
+    paddingVertical: espacio.xs,
+    width: 50,
     fontSize: 14,
     textAlign: 'center',
+    backgroundColor: color.fondoSutil,
   },
   pomodoroUnidad: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
   },
   faseEtiqueta: {
     fontSize: 12,
-    color: '#1971c2',
-    fontWeight: '600',
+    color: color.primarioOscuro,
+    fontWeight: '700',
     marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
+
+  // ---------------------------------------------------------------------
+  // Disponibilidad
+  // ---------------------------------------------------------------------
   formularioDisponibilidad: {
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    marginBottom: espacio.base,
+    padding: espacio.base,
+    borderRadius: radio.lg,
+    backgroundColor: color.fondoSutil,
+    borderWidth: 1,
+    borderColor: color.borde,
   },
   diaSelector: {
     flexDirection: 'row',
-    gap: 4,
-    marginBottom: 8,
+    gap: espacio.xs,
+    marginBottom: espacio.md,
   },
   diaBoton: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 6,
-    paddingVertical: 6,
+    borderWidth: 1.5,
+    borderColor: color.bordeFuerte,
+    borderRadius: radio.sm,
+    paddingVertical: espacio.sm,
     alignItems: 'center',
+    backgroundColor: color.fondo,
   },
   diaBotonActivo: {
-    backgroundColor: '#1c7ed6',
-    borderColor: '#1c7ed6',
+    backgroundColor: color.primario,
+    borderColor: color.primario,
   },
   diaBotonTexto: {
     fontSize: 12,
-    color: '#666',
+    color: color.textoTerciario,
+    fontWeight: '600',
   },
   diaBotonTextoActivo: {
-    color: '#fff',
-    fontWeight: '600',
+    color: color.fondo,
+    fontWeight: '700',
   },
   pickerFila: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 8,
+    gap: espacio.md,
+    marginBottom: espacio.md,
   },
   pickerGrupo: {
     alignItems: 'center',
   },
   pickerGrupoLabel: {
     fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
+    color: color.textoTerciario,
+    fontWeight: '600',
+    marginBottom: espacio.xs,
   },
   pickerGrupoSeparador: {
     fontSize: 18,
-    color: '#666',
-    marginTop: 16,
+    color: color.textoTerciario,
+    marginTop: espacio.base,
   },
   pickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
+    backgroundColor: color.fondo,
+    borderRadius: radio.md,
+    paddingHorizontal: espacio.xs,
+    borderWidth: 1,
+    borderColor: color.borde,
   },
   pickerColumn: {
     alignItems: 'center',
+    paddingVertical: espacio.xs,
   },
   pickerBoton: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: espacio.xs,
+    paddingHorizontal: espacio.md - 2,
   },
   pickerBotonTexto: {
     fontSize: 14,
-    color: '#1c7ed6',
+    color: color.primario,
   },
   pickerValor: {
     fontSize: 22,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
     marginVertical: 2,
+    color: color.textoPrimario,
   },
   pickerSeparador: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginTop: 16,
+    marginTop: espacio.base,
+    color: color.textoTerciario,
   },
   pickerEtiqueta: {
     fontSize: 10,
-    color: '#999',
+    color: color.textoDeshabilitado,
     marginTop: 2,
   },
   bloqueDia: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingVertical: espacio.md,
+    paddingHorizontal: espacio.base,
+    marginBottom: espacio.sm,
+    backgroundColor: color.fondo,
+    borderRadius: radio.lg,
+    borderWidth: 1,
+    borderColor: color.borde,
+    ...sombraTarjeta,
   },
   bloqueDiaNombre: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: '700',
+    marginBottom: espacio.xs + 2,
+    color: color.textoPrimario,
   },
   bloqueVacio: {
     fontSize: 14,
-    color: '#999',
+    color: color.textoDeshabilitado,
     fontStyle: 'italic',
   },
   bloqueItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
-    paddingLeft: 12,
+    paddingVertical: espacio.sm,
+    paddingLeft: espacio.md,
+    borderTopWidth: 1,
+    borderTopColor: color.borde,
+    marginTop: espacio.xs,
   },
   bloqueHorario: {
     fontSize: 15,
+    color: color.textoSecundario,
+    fontVariant: ['tabular-nums'],
   },
+
+  // ---------------------------------------------------------------------
+  // Vista Semana
+  // ---------------------------------------------------------------------
   semanaHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: espacio.base,
+    backgroundColor: color.fondoSutil,
+    borderRadius: radio.md,
+    paddingVertical: espacio.xs,
+    paddingHorizontal: espacio.xs,
   },
   semanaNavBoton: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.md,
+    minHeight: toqueMinimo - 8,
+    justifyContent: 'center',
   },
   semanaNavBotonTexto: {
     fontSize: 14,
-    color: '#1c7ed6',
+    color: color.primario,
+    fontWeight: '600',
   },
   semanaTitulo: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: color.textoPrimario,
   },
   semanaDia: {
-    marginBottom: 16,
+    marginBottom: espacio.md,
+    backgroundColor: color.fondo,
     borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
+    borderColor: color.borde,
+    borderRadius: radio.lg,
     overflow: 'hidden',
+    ...sombraTarjeta,
   },
   semanaDiaHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: color.fondoSutil,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm + 2,
   },
   semanaDiaNombre: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: color.textoPrimario,
   },
   semanaDiaFecha: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
   },
   semanaDiaCuerpo: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 12,
+    paddingHorizontal: espacio.md,
+    paddingVertical: espacio.sm + 2,
+    gap: espacio.md,
   },
   semanaColumna: {
     flex: 1,
   },
   semanaColumnaTitulo: {
     fontSize: 11,
-    color: '#999',
-    fontWeight: '600',
+    color: color.textoDeshabilitado,
+    fontWeight: '700',
     textTransform: 'uppercase',
-    marginBottom: 4,
+    letterSpacing: 0.4,
+    marginBottom: espacio.xs + 2,
   },
   semanaTarea: {
     fontSize: 13,
     marginBottom: 2,
+    color: color.textoSecundario,
   },
   semanaVacio: {
     fontSize: 12,
-    color: '#999',
+    color: color.textoDeshabilitado,
     fontStyle: 'italic',
   },
   semanaTotal: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: color.textoPrimario,
   },
   semanaDiferencia: {
     fontSize: 13,
-    color: '#666',
+    color: color.textoTerciario,
     marginTop: 2,
   },
   semanaDiferenciaExceso: {
-    color: '#e03131',
+    color: color.peligro,
   },
   semanaDiferenciaFaltante: {
-    color: '#2b8a3e',
+    color: color.exito,
+  },
+
+  // ---------------------------------------------------------------------
+  // Encabezado general de pantalla (usado por App.tsx)
+  // ---------------------------------------------------------------------
+  screenHeader: {
+    paddingHorizontal: espacio.base,
+    paddingTop: espacio.sm,
+    paddingBottom: espacio.md,
+  },
+  screenHeaderFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  screenHeaderTitulo: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: color.textoPrimario,
+    letterSpacing: -0.3,
+  },
+  screenHeaderSubtitulo: {
+    fontSize: 13.5,
+    color: color.textoTerciario,
+    marginTop: 2,
+  },
+  screenHeaderBadge: {
+    backgroundColor: color.primarioSuave,
+    borderRadius: radio.completo,
+    paddingVertical: espacio.xs,
+    paddingHorizontal: espacio.sm + 2,
+  },
+  screenHeaderBadgeTexto: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: color.primarioOscuro,
+  },
+
+  // ---------------------------------------------------------------------
+  // Barra de navegación inferior
+  // ---------------------------------------------------------------------
+  bottomNav: {
+    flexDirection: 'row',
+    backgroundColor: color.fondo,
+    borderTopWidth: 1,
+    borderTopColor: color.borde,
+    paddingTop: espacio.xs + 2,
+    paddingHorizontal: espacio.xs,
+    ...sombraFlotante,
+  },
+  bottomNavTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: espacio.xs + 2,
+    gap: 2,
+    minHeight: toqueMinimo,
+  },
+  bottomNavIcono: {
+    fontSize: 19,
+    opacity: 0.55,
+  },
+  bottomNavIconoActivo: {
+    opacity: 1,
+  },
+  bottomNavTexto: {
+    fontSize: 11,
+    color: color.textoTerciario,
+    fontWeight: '600',
+  },
+  bottomNavTextoActivo: {
+    color: color.primario,
+    fontWeight: '700',
+  },
+  bottomNavIndicador: {
+    position: 'absolute',
+    top: 0,
+    width: 22,
+    height: 3,
+    borderRadius: radio.completo,
+    backgroundColor: color.primario,
+  },
+
+  // ---------------------------------------------------------------------
+  // Tarjetas de sección (agrupan campos relacionados, p.ej. detalle de meta)
+  // ---------------------------------------------------------------------
+  seccion: {
+    backgroundColor: color.fondo,
+    borderRadius: radio.lg,
+    borderWidth: 1,
+    borderColor: color.borde,
+    padding: espacio.base,
+    marginBottom: espacio.md,
+    ...sombraTarjeta,
+  },
+  seccionTitulo: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: color.textoTerciario,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: espacio.sm + 2,
+  },
+  seccionEncabezadoFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: espacio.sm,
+  },
+
+  // ---------------------------------------------------------------------
+  // Insignias de prioridad / categoría
+  // ---------------------------------------------------------------------
+  insignia: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.xs,
+    paddingVertical: 3,
+    paddingHorizontal: espacio.sm,
+    borderRadius: radio.completo,
+    backgroundColor: color.fondoTab,
+    alignSelf: 'flex-start',
+  },
+  insigniaPunto: {
+    width: 7,
+    height: 7,
+    borderRadius: radio.completo,
+  },
+  insigniaPuntoAlta: {
+    backgroundColor: color.peligro,
+  },
+  insigniaPuntoMedia: {
+    backgroundColor: color.advertencia,
+  },
+  insigniaPuntoBaja: {
+    backgroundColor: color.exito,
+  },
+  insigniaTexto: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: color.textoSecundario,
+  },
+
+  // ---------------------------------------------------------------------
+  // Barra de progreso (estimado vs. real)
+  // ---------------------------------------------------------------------
+  progresoFila: {
+    marginTop: espacio.sm + 2,
+  },
+  progresoFondo: {
+    height: 6,
+    borderRadius: radio.completo,
+    backgroundColor: color.fondoTab,
+    overflow: 'hidden',
+  },
+  progresoRelleno: {
+    height: '100%',
+    borderRadius: radio.completo,
+    backgroundColor: color.primario,
+  },
+  progresoRellenoExceso: {
+    backgroundColor: color.peligro,
+  },
+  progresoTexto: {
+    fontSize: 12.5,
+    color: color.textoTerciario,
+    marginTop: espacio.xs,
+  },
+
+  // ---------------------------------------------------------------------
+  // Compositor (fila de agregar rápido, p.ej. ideas / objetivos)
+  // ---------------------------------------------------------------------
+  composerFila: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: espacio.sm,
+  },
+  composerInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  composerBoton: {
+    width: toqueMinimo + 6,
+    height: toqueMinimo + 6,
+    borderRadius: radio.md,
+    backgroundColor: color.primario,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...sombraSuave,
+  },
+  composerBotonTexto: {
+    fontSize: 20,
+    color: color.fondo,
+    fontWeight: '700',
+  },
+
+  // ---------------------------------------------------------------------
+  // Tarjeta de tiempo total (encabezado con resumen) y separadores
+  // ---------------------------------------------------------------------
+  contadorTexto: {
+    fontSize: 13,
+    color: color.textoTerciario,
+  },
+  divisor: {
+    height: 1,
+    backgroundColor: color.borde,
+    marginVertical: espacio.md,
   },
 });

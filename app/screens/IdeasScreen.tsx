@@ -67,30 +67,38 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <TextInput
-        style={estilos.input}
-        value={texto}
-        onChangeText={setTexto}
-        placeholder="Escribe una idea..."
-        placeholderTextColor="#999"
-        multiline
-      />
-      <Pressable style={estilos.boton} onPress={guardarIdea}>
-        <Text style={estilos.botonTexto}>Guardar</Text>
-      </Pressable>
+      <View style={estilos.composerFila}>
+        <TextInput
+          style={[estilos.input, estilos.composerInput]}
+          value={texto}
+          onChangeText={setTexto}
+          placeholder="Escribe una idea..."
+          placeholderTextColor="#999"
+          multiline
+        />
+        <Pressable
+          style={[estilos.composerBoton, !texto.trim() && { opacity: 0.4 }]}
+          onPress={guardarIdea}
+          disabled={!texto.trim()}
+          accessibilityLabel="Guardar idea"
+        >
+          <Text style={estilos.composerBotonTexto}>➤</Text>
+        </Pressable>
+      </View>
       <FlatList
         data={ideas}
         keyExtractor={(item) => String(item.id)}
+        style={{ marginTop: 14 }}
         renderItem={({ item }) => (
           <Pressable
             style={estilos.item}
             onLongPress={() => confirmarEliminacion(item)}
             delayLongPress={500}
           >
-            <View style={estilos.itemContenido}>
-              <View style={estilos.itemTextoWrapper}>
-                <Text style={estilos.itemTexto}>{item.texto}</Text>
-              </View>
+            <View style={estilos.itemTextoWrapper}>
+              <Text style={estilos.itemTexto}>{item.texto}</Text>
+            </View>
+            <View style={[estilos.itemContenido, { marginTop: 10, justifyContent: 'flex-end' }]}>
               <Pressable
                 style={estilos.botonSecundario}
                 onPress={() => convertir(item)}
@@ -110,10 +118,13 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text style={estilos.vacio}>
-            Aún no tienes ideas guardadas. ¡Escribe la primera!
-          </Text>
+          <View style={estilos.vacioContenedor}>
+            <Text style={estilos.vacioIcono}>💡</Text>
+            <Text style={estilos.vacioTitulo}>Aún no tienes ideas guardadas</Text>
+            <Text style={estilos.vacioSubtexto}>¡Escribe la primera arriba!</Text>
+          </View>
         }
+        contentContainerStyle={ideas.length === 0 ? { flexGrow: 1 } : { paddingBottom: 8 }}
       />
     </KeyboardAvoidingView>
   );

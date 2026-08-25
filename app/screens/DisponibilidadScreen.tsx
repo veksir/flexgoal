@@ -178,6 +178,7 @@ export default function DisponibilidadScreen({ db }: Props) {
           <Text style={estilos.botonTexto}>Agregar bloque</Text>
         </Pressable>
       </View>
+      <Text style={estilos.subtitulo}>Bloques por día</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {bloquesPorDia.map((dia) => (
           <View key={dia.dia} style={estilos.bloqueDia}>

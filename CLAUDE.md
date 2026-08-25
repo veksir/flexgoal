@@ -63,7 +63,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [ ] Días libre mínimo, días libres
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
-- [ ] **Backlog:** editar una tarea ya creada (hoy solo se puede eliminar y recrear) — detectado durante pruebas de Historia 19, sin urgencia inmediata
+- [x] **Backlog:** editar una tarea ya creada — resuelto en Historia 20
 
 ## Explícitamente fuera de alcance (v1)
 
@@ -551,3 +551,30 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: "Modo mínimo / días libres" (resto de Fase 4), o retomar el
   spike de ADR-003 (runtime/modelo de IA local, pendiente desde el
   inicio).
+
+### 2026-08-25 — Tarea técnica 4: Rediseño visual y de UX
+
+- Revisión visual completa de la app (rediseño cosmético, sin cambios de
+  lógica). Se verificó que no hay regresiones: 130/130 tests pasando,
+  `tsc --noEmit` sin errores.
+- Nuevo archivo `app/screens/theme.ts`: centraliza colores (los mismos
+  que ya existían), espaciado en escala 4px, radios, sombras y
+  `toqueMinimo` (44px). Elimina literales de color sueltos repetidos
+  por archivo.
+- `app/screens/estilos.ts` reescrito: mismas claves existentes +
+  nuevas para tarjetas de sección, insignias de prioridad, barra de
+  progreso, compositor, navegación inferior. Cada pantalla reutiliza
+  estos estilos sin duplicar.
+- Navegación principal movida de top tabs (texto) a bottom navigation
+  (ícono + etiqueta + indicador), se oculta al entrar a detalle de
+  meta/objetivo.
+- Listas como tarjetas (borde redondeado + sombra) en vez de filas con
+  borde inferior. Estados vacíos con ícono + título + subtítulo.
+- Formularios con compositor (input + botón circular) en Ideas y
+  Metas.
+- `KeyboardAvoidingView` se mantiene en todas las pantallas con inputs.
+- `FormularioTarea.tsx` y `SemanaScreen.tsx` no se tocaron directamente:
+  heredan el look nuevo de `estilos.ts`.
+- Cero cambios en `app/db/*`: toda la lógica, validaciones y persistencia
+  quedan intactas.
+- Documento de referencia: `REDISENO-VISUAL.md` en la raíz del repo.
