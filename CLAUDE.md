@@ -578,3 +578,28 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Cero cambios en `app/db/*`: toda la lógica, validaciones y persistencia
   quedan intactas.
 - Documento de referencia: `REDISENO-VISUAL.md` en la raíz del repo.
+
+### 2026-08-25 — Historia 23: Confirmación al completar y exclusividad de sesión activa
+
+- Bug corregido: en `HoyScreen` y `ObjetivoDetalleScreen`, la fila
+  completa de cada tarea era un único `Pressable` sin ninguna validación
+  contra sesiones activas — se podía completar la tarea que tenía el
+  cronómetro corriendo (quedando "completada" con sesión huérfana en
+  segundo plano), y lo mismo con cualquier otra tarea del día mientras
+  esa sesión seguía activa.
+- Nueva función pura `puedeInteractuarConTarea` en `db/tareas.ts`
+  (`'libre' | 'sesion_propia' | 'bloqueada'`), reutilizada sin duplicar
+  lógica entre `HoyScreen` y `ObjetivoDetalleScreen`.
+- Reglas aplicadas: completar cualquier tarea ahora pide confirmación
+  (des-completar no); si la tarea tiene su propia sesión activa, la
+  confirmación además detiene y guarda esa sesión (mismo camino que el
+  botón "Detener"); si la sesión activa es de otra tarea, esa fila queda
+  bloqueada por completo hasta detenerla — solo se puede trabajar una
+  tarea a la vez.
+- De paso se confirmó que la barra de navegación inferior del rediseño
+  visual respeta el safe area en dispositivo real (la superposición que
+  se veía era un artefacto de Expo Go, no un bug del código).
+- 3 pruebas nuevas (133 totales), todas verdes + tsc sin errores.
+- Merge a main (--ff-only): commit `<PENDING_HASH>`.
+- Siguiente: por definir — queda pendiente "Modo mínimo" y "Días
+  libres" (resto de Fase 4), o retomar el spike de ADR-003.
