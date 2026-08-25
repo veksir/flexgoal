@@ -23,6 +23,7 @@ import {
   esFechaValida,
   esDuracionValida,
   actualizarTarea,
+  puedeInteractuarConTarea,
   type EstadoTarea,
   type Tarea,
   type Prioridad,
@@ -270,10 +271,51 @@ export default function ObjetivoDetalleScreen({
   }
 
   async function alternarTarea(tarea: Tarea) {
-    const nuevoEstado: EstadoTarea =
-      tarea.estado === 'completada' ? 'pendiente' : 'completada';
-    await alternarEstadoTarea(db, tarea.id, nuevoEstado);
-    await cargarTareas();
+    const interaccion = puedeInteractuarConTarea(tarea.id, sesionActiva);
+
+    if (interaccion === 'bloqueada') {
+      return;
+    }
+
+    if (tarea.estado === 'completada') {
+      await alternarEstadoTarea(db, tarea.id, 'pendiente');
+      await cargarTareas();
+      return;
+    }
+
+    if (interaccion === 'sesion_propia') {
+      Alert.alert(
+        'Completar tarea con sesión activa',
+        'Esta tarea tiene una sesión en curso. Si la completas, la sesión se detendrá y su tiempo se guardará.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Completar y detener',
+            onPress: async () => {
+              await onDetenerSesion();
+              await alternarEstadoTarea(db, tarea.id, 'completada');
+              await cargarTareas();
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Completar tarea',
+      '¿Marcar esta tarea como completada?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Completar',
+          onPress: async () => {
+            await alternarEstadoTarea(db, tarea.id, 'completada');
+            await cargarTareas();
+          },
+        },
+      ]
+    );
   }
 
   async function confirmarEliminacionTarea(tarea: Tarea) {

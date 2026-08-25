@@ -8,6 +8,7 @@ import {
   esFechaValida,
   listarTareasPorObjetivo,
   actualizarTarea,
+  puedeInteractuarConTarea,
 } from '../tareas';
 import { crearSesion } from '../sesiones';
 import { crearDbPruebas } from './testDb';
@@ -279,5 +280,19 @@ describe('actualizarTarea', () => {
       tarea.id
     );
     expect(sesiones).toHaveLength(1);
+  });
+});
+
+describe('puedeInteractuarConTarea', () => {
+  test('sin sesión activa → libre', () => {
+    expect(puedeInteractuarConTarea(1, null)).toBe('libre');
+  });
+
+  test('sesión activa para la misma tarea → sesion_propia', () => {
+    expect(puedeInteractuarConTarea(1, { tareaId: 1 })).toBe('sesion_propia');
+  });
+
+  test('sesión activa para otra tarea → bloqueada', () => {
+    expect(puedeInteractuarConTarea(2, { tareaId: 1 })).toBe('bloqueada');
   });
 });

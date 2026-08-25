@@ -204,3 +204,18 @@ export function formatearDiferencia(diferencia: number): string {
   const signo = diferencia > 0 ? '+' : '-';
   return `${signo}${Math.abs(diferencia)} min`;
 }
+
+export type InteraccionTarea = 'libre' | 'sesion_propia' | 'bloqueada';
+
+export function puedeInteractuarConTarea(
+  tareaId: number,
+  sesionActiva: { tareaId: number } | null
+): InteraccionTarea {
+  if (!sesionActiva) {
+    return 'libre';
+  }
+  if (sesionActiva.tareaId === tareaId) {
+    return 'sesion_propia';
+  }
+  return 'bloqueada';
+}
