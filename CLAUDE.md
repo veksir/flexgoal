@@ -54,13 +54,17 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
   - [x] Disponibilidad declarada
   - [x] Horarios
   - [x] Reprogramación
-- [ ] **Fase 4 — Adaptación**
+- [x] **Fase 4 — Adaptación** (cerrada)
   - [x] Comparación estimado vs. real por tarea individual
   - [x] Progreso agregado por meta (estimado vs. real, sumando todas sus tareas)
   - [x] Detección de sobrecarga
   - [x] Sugerencias de ajuste
-  - [ ] Modo mínimo
-  - [ ] Días libre mínimo, días libres
+  - ~~Modo mínimo~~ — descartado (ver nota de sesión 2026-08-25): sin
+    una definición original recuperable, se redefinió de cero y, tras
+    revisión, no se le encontró utilidad suficiente para justificar la
+    implementación.
+  - ~~Días libres / día libre mínimo~~ — descartado por la misma
+    decisión, sin desarrollar.
 - [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
 - [x] **Backlog:** editar una tarea ya creada — resuelto en Historia 20
@@ -603,3 +607,19 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Merge a main (--ff-only): commit `5fdfcce`.
 - Siguiente: por definir — queda pendiente "Modo mínimo" y "Días
   libres" (resto de Fase 4), o retomar el spike de ADR-003.
+
+### 2026-08-25 — Fase 4 cerrada: Modo mínimo y Días libres descartados
+
+- Se definió "Modo mínimo" de cero (Historia 24, sin implementación
+  final) al no encontrarse la definición original del documento de
+  producto. Tras revisión, Kevin decidió que no aporta suficiente valor
+  para justificarlo — se descarta, junto con "Días libres" (nunca
+  llegó a definirse).
+- Rama feature/modo-minimo descartada sin mergear a main.
+- Con esto, Fase 4 (Adaptación) se da por cerrada con lo ya construido:
+  comparación estimado/real (Historia 8), progreso agregado por meta,
+  detección de sobrecarga (Historia 21) y sugerencias de ajuste
+  (Historia 22).
+- Siguiente: por definir — Fase 5 (IA) requiere primero resolver el
+  spike de ADR-003 (runtime/modelo de IA local, pendiente desde el
+  inicio del proyecto), o revisar pulido general antes de avanzar.
