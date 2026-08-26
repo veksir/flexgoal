@@ -104,12 +104,9 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
         keyExtractor={(item) => String(item.id)}
         style={{ marginTop: 14 }}
         renderItem={({ item }) => (
-          <Pressable
+          <View
             style={estilos.item}
-            onLongPress={() => confirmarEliminacion(item)}
-            delayLongPress={500}
             accessibilityLabel={`Idea: ${item.texto}`}
-            accessibilityHint="Mantener presionado para eliminar"
           >
             <View style={estilos.itemTextoWrapper}>
               <Text style={estilos.itemTexto}>{item.texto}</Text>
@@ -130,7 +127,7 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
                 <Text style={estilos.botonBasuraTexto}>🗑️</Text>
               </Pressable>
             </View>
-          </Pressable>
+          </View>
         )}
         ListEmptyComponent={
           <View style={estilos.vacioContenedor}>
