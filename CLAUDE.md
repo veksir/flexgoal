@@ -706,3 +706,31 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Rama `feature/ia-crear-meta`, commit `15a3ba1`.
 - **Pendiente de merge a main** — requiere prueba manual con clave real
   de Gemini por parte de Kevin.
+
+### 2026-08-26 — Fixes de auditoría técnica (4 fixes)
+
+- Auditoría técnica externa (744 líneas) identificó 15 problemas. Se
+  resolvieron los 4 pendientes que la segunda pasada no había cubierto:
+  1. **LICENSE en ubicación incorrecta:** movida de `app/LICENSE` a la
+     raíz del repo (`LICENSE`). Copyright actualizado de "650 Industries"
+     a "flexgoal".
+  2. **DatePicker no se usaba en EditarTareaModal:** reemplazado
+     `TextInput` libre ("AAAA-MM-DD") por el componente `DatePicker`
+     nativo (`@react-native-community/datetimepicker`) que ya existía
+     y se usaba en `FormularioTarea` y `MetaDetalleScreen`. Consistencia
+     de UX en los 3 puntos de entrada de fecha.
+  3. **Touchables anidados en IdeasScreen:** eliminado `onLongPress` del
+     `Pressable` contenedor de cada idea (duplicaba la acción de borrar
+     que ya existía en el ícono 🗑️). Ahora solo hay un mecanismo de
+     borrado: el botón de basura. Antes: 2 mecanismos distintos para la
+     misma acción + antipatrón de touchables anidados.
+  4. **Tests de UI (22 nuevos):** configuración `jest.ui.config.js` con
+     mocks de `react-native`, `expo-sqlite`, `expo-secure-store` y
+     `@react-native-community/datetimepicker`. Tests de lógica pura
+     para `Button` (variantStyles), `DatePicker` (parseFecha,
+     formatearFechaLocal), `EditarTareaModal` (etiquetaPrioridad) y
+     `BottomNav` (VISTAS). Funcionan en `node` sin necesidad de
+     simulador ni Expo Go.
+- Commits: `6090960` (LICENSE), `fb06be2` (DatePicker), `15243d4`
+  (touchables), `5456eb7` (tests UI). Todos merged --ff-only a main.
+- 169 tests totales (147 db + 22 UI), `tsc --noEmit` sin errores.
