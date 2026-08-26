@@ -16,6 +16,8 @@ import {
 import { nombreDia } from '../db/disponibilidad';
 import { formatearDuracion, formatearDiferencia, formatearFecha } from '../db/tareas';
 import { estilos } from './estilos';
+import { espacio } from './theme';
+import Button from '../components/Button';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
 
@@ -218,13 +220,12 @@ export default function FormularioTarea({
           );
         })}
       </View>
-      <Pressable
-        style={[estilos.boton, { opacity: isSaving ? 0.5 : 1 }]}
+      <Button
+        title="Agregar tarea"
         onPress={guardarTarea}
         disabled={isSaving}
-      >
-        <Text style={estilos.botonTexto}>Agregar tarea</Text>
-      </Pressable>
+        style={{ marginTop: espacio.sm }}
+      />
     </>
   );
 }

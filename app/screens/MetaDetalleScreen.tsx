@@ -17,6 +17,8 @@ import type { Prioridad } from '../db/tareas';
 import { esFechaValida } from '../db/tareas';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
+import { espacio } from './theme';
+import Button from '../components/Button';
 
 const ESTADOS_META = ['activa', 'pausada', 'completada', 'abandonada'] as const;
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
@@ -142,13 +144,13 @@ export default function MetaDetalleScreen({
             placeholder="Ej. Salud, Trabajo, Finanzas..."
             placeholderTextColor="#999"
           />
-          <Pressable
-            style={[estilos.botonSesion, { marginTop: 0, opacity: isSaving ? 0.5 : 1 }]}
+          <Button
+            title="Guardar categoría"
             onPress={guardarCategoria}
+            variant="secondary"
             disabled={isSaving}
-          >
-            <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
-          </Pressable>
+            style={{ marginTop: 0 }}
+          />
         </View>
 
         <View style={estilos.seccion}>
@@ -189,13 +191,13 @@ export default function MetaDetalleScreen({
           {errorFechaObjetivo ? (
             <Text style={estilos.textoError}>{errorFechaObjetivo}</Text>
           ) : null}
-          <Pressable
-            style={[estilos.botonSesion, { marginTop: 0, opacity: isSaving ? 0.5 : 1 }]}
+          <Button
+            title="Guardar fecha objetivo"
             onPress={guardarFechaObjetivo}
+            variant="secondary"
             disabled={isSaving}
-          >
-            <Text style={estilos.botonSesionTexto}>Guardar fecha objetivo</Text>
-          </Pressable>
+            style={{ marginTop: 0 }}
+          />
         </View>
 
         <View style={estilos.seccion}>
@@ -235,14 +237,13 @@ export default function MetaDetalleScreen({
             placeholderTextColor="#999"
             multiline
           />
-          <Pressable
-            style={[estilos.composerBoton, (!textoObjetivo.trim() || isSaving) && { opacity: 0.4 }]}
+          <Button
+            title="+"
             onPress={guardarObjetivo}
             disabled={!textoObjetivo.trim() || isSaving}
             accessibilityLabel="Agregar objetivo"
-          >
-            <Text style={estilos.composerBotonTexto}>+</Text>
-          </Pressable>
+            style={[estilos.composerBoton, { minWidth: 0, paddingHorizontal: espacio.md }]}
+          />
         </View>
         <View style={{ marginTop: 14 }}>
           {objetivos.length === 0 ? (

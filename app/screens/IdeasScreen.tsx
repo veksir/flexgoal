@@ -29,6 +29,7 @@ import {
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import { color, espacio, radio } from './theme';
+import Button from '../components/Button';
 
 interface Props {
   db: SQLiteDatabase;
@@ -343,14 +344,13 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
           placeholderTextColor="#999"
           multiline
         />
-        <Pressable
-          style={[estilos.composerBoton, (!texto.trim() || isSaving) && { opacity: 0.4 }]}
+        <Button
+          title="➤"
           onPress={guardarIdea}
           disabled={!texto.trim() || isSaving}
           accessibilityLabel="Guardar idea"
-        >
-          <Text style={estilos.composerBotonTexto}>➤</Text>
-        </Pressable>
+          style={[estilos.composerBoton, { minWidth: 0, paddingHorizontal: espacio.md }]}
+        />
       </View>
       <FlatList
         data={ideas}
@@ -678,13 +678,12 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
                 </View>
 
                 <View style={{ flexDirection: 'row', gap: espacio.sm, marginTop: espacio.sm }}>
-                  <Pressable
-                    style={[estilos.boton, { flex: 1, marginBottom: 0, opacity: isSaving ? 0.5 : 1 }]}
+                  <Button
+                    title="Guardar"
                     onPress={guardarPropuestaIA}
                     disabled={isSaving}
-                  >
-                    <Text style={estilos.botonTexto}>Guardar</Text>
-                  </Pressable>
+                    style={{ flex: 1 }}
+                  />
                   <Pressable
                     style={[plantillaBotonCancelar, { flex: 1 }]}
                     onPress={cancelarConversion}
