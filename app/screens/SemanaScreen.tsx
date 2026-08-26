@@ -66,6 +66,8 @@ export default function SemanaScreen({ db }: Props) {
         <Pressable
           style={estilos.semanaNavBoton}
           onPress={() => setFechaInicio(semanaAnterior(fechaInicio))}
+          accessibilityLabel="Semana anterior"
+          accessibilityRole="button"
         >
           <Text style={estilos.semanaNavBotonTexto}>← Anterior</Text>
         </Pressable>
@@ -75,6 +77,8 @@ export default function SemanaScreen({ db }: Props) {
         <Pressable
           style={estilos.semanaNavBoton}
           onPress={() => setFechaInicio(semanaSiguiente(fechaInicio))}
+          accessibilityLabel="Semana siguiente"
+          accessibilityRole="button"
         >
           <Text style={estilos.semanaNavBotonTexto}>Siguiente →</Text>
         </Pressable>

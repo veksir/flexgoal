@@ -108,22 +108,24 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
             style={estilos.item}
             onLongPress={() => confirmarEliminacion(item)}
             delayLongPress={500}
+            accessibilityLabel={`Idea: ${item.texto}`}
+            accessibilityHint="Mantener presionado para eliminar"
           >
             <View style={estilos.itemTextoWrapper}>
               <Text style={estilos.itemTexto}>{item.texto}</Text>
             </View>
             <View style={[estilos.itemContenido, { marginTop: 10, justifyContent: 'flex-end' }]}>
-              <Pressable
-                style={estilos.botonSecundario}
+              <Button
+                title="Convertir en meta"
                 onPress={() => setIdeaAConvertir(item)}
-              >
-                <Text style={estilos.botonSecundarioTexto}>Convertir en meta</Text>
-              </Pressable>
+                variant="secondary"
+              />
               <Pressable
                 style={estilos.botonBasura}
                 onPress={() => confirmarEliminacion(item)}
                 hitSlop={8}
                 accessibilityLabel="Eliminar idea"
+                accessibilityRole="button"
               >
                 <Text style={estilos.botonBasuraTexto}>🗑️</Text>
               </Pressable>

@@ -32,6 +32,7 @@ import {
 import type { Objetivo } from '../db/objetivos';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import Button from '../components/Button';
 import { estilos } from './estilos';
 import FormularioTarea from './FormularioTarea';
 import type { ModoSesion } from '../db/sesiones';
@@ -212,7 +213,7 @@ export default function ObjetivoDetalleScreen({
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <Pressable style={estilos.botonVolver} onPress={onVolver}>
+      <Pressable style={estilos.botonVolver} onPress={onVolver} accessibilityLabel={`Volver a ${nombreMeta}`} accessibilityRole="button">
         <Text style={estilos.botonVolverTexto}>← Volver a {nombreMeta}</Text>
       </Pressable>
       <Text style={estilos.tituloDetalle}>{objetivo.nombre}</Text>
@@ -273,14 +274,14 @@ export default function ObjetivoDetalleScreen({
                     {interaccion === 'libre' && (
                       <View style={{ flexDirection: 'row', gap: 6 }}>
                         {totalMinutos > 0 && (
-                          <Pressable style={estilos.botonSesion} onPress={() => verHistorial(item)}>
+                          <Pressable style={estilos.botonSesion} onPress={() => verHistorial(item)} accessibilityLabel="Ver historial" accessibilityRole="button">
                             <Text style={estilos.botonSesionTexto}>📜</Text>
                           </Pressable>
                         )}
-                        <Pressable style={estilos.botonSesion} onPress={() => setTareaEditando(item)}>
+                        <Pressable style={estilos.botonSesion} onPress={() => setTareaEditando(item)} accessibilityLabel="Editar tarea" accessibilityRole="button">
                           <Text style={estilos.botonSesionTexto}>✏️</Text>
                         </Pressable>
-                        <Pressable style={estilos.botonBasura} onPress={() => confirmarEliminacionTarea(item)}>
+                        <Pressable style={estilos.botonBasura} onPress={() => confirmarEliminacionTarea(item)} accessibilityLabel="Eliminar tarea" accessibilityRole="button">
                           <Text style={estilos.botonBasuraTexto}>🗑️</Text>
                         </Pressable>
                       </View>
@@ -294,9 +295,13 @@ export default function ObjetivoDetalleScreen({
                         </Text>
                       ) : null}
                       <Text style={estilos.cronometro}>{formatearCronometro(tiempoSegundos)}</Text>
-                      <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
-                        <Text style={estilos.botonDetenerTexto}>Detener</Text>
-                      </Pressable>
+                      <Button
+                        title="Detener"
+                        onPress={onDetenerSesion}
+                        variant="danger"
+                        style={estilos.botonDetener}
+                        textStyle={estilos.botonDetenerTexto}
+                      />
                     </View>
                   ) : (
                     !sesionActiva && (
@@ -305,12 +310,18 @@ export default function ObjetivoDetalleScreen({
                           <Pressable
                             style={[estilos.modoBoton, modoSesion === 'libre' && estilos.modoBotonActivo]}
                             onPress={() => setModoSesion('libre')}
+                            accessibilityLabel="Sesión libre"
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: modoSesion === 'libre' }}
                           >
                             <Text style={[estilos.modoBotonTexto, modoSesion === 'libre' && estilos.modoBotonTextoActivo]}>Sesión libre</Text>
                           </Pressable>
                           <Pressable
                             style={[estilos.modoBoton, modoSesion === 'pomodoro' && estilos.modoBotonActivo]}
                             onPress={() => { setModoSesion('pomodoro'); onCargarConfigPomodoro(); }}
+                            accessibilityLabel="Pomodoro"
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: modoSesion === 'pomodoro' }}
                           >
                             <Text style={[estilos.modoBotonTexto, modoSesion === 'pomodoro' && estilos.modoBotonTextoActivo]}>Pomodoro</Text>
                           </Pressable>
@@ -329,9 +340,12 @@ export default function ObjetivoDetalleScreen({
                             </View>
                           </View>
                         )}
-                        <Pressable style={estilos.botonSesion} onPress={() => onIniciarSesion(item)}>
-                          <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
-                        </Pressable>
+                        <Button
+                          title="Iniciar sesión"
+                          onPress={() => onIniciarSesion(item)}
+                          style={estilos.botonSesion}
+                          textStyle={estilos.botonSesionTexto}
+                        />
                       </View>
                     )
                   )}
@@ -343,7 +357,7 @@ export default function ObjetivoDetalleScreen({
       </ScrollView>
 
       <Modal visible={historialVisible} transparent animationType="fade" onRequestClose={() => setHistorialVisible(false)}>
-        <Pressable style={estilos.modalFondo} onPress={() => setHistorialVisible(false)}>
+        <Pressable style={estilos.modalFondo} onPress={() => setHistorialVisible(false)} accessibilityLabel="Cerrar historial" accessibilityRole="button">
           <Pressable style={estilos.modalContenido} onPress={(e) => e.stopPropagation()}>
             <Text style={estilos.tituloDetalle}>Historial de sesiones</Text>
             <ScrollView>
@@ -358,9 +372,7 @@ export default function ObjetivoDetalleScreen({
                 ))
               )}
             </ScrollView>
-            <Pressable style={estilos.botonVolver} onPress={() => setHistorialVisible(false)}>
-              <Text style={estilos.botonVolverTexto}>Cerrar</Text>
-            </Pressable>
+            <Button title="Cerrar" onPress={() => setHistorialVisible(false)} />
           </Pressable>
         </Pressable>
       </Modal>

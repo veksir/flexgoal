@@ -85,6 +85,7 @@ export default function App() {
             hitSlop={8}
             style={{ padding: espacio.sm }}
             accessibilityLabel="Configuración"
+            accessibilityRole="button"
           >
             <Text style={{ fontSize: 20 }}>⚙️</Text>
           </Pressable>

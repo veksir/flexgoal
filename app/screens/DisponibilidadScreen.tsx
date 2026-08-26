@@ -42,6 +42,8 @@ function PickerHora({
         <Pressable
           style={estilos.pickerBoton}
           onPress={() => onChange((hora.h + 1) % 24, hora.m)}
+          accessibilityLabel="Subir hora"
+          accessibilityRole="button"
         >
           <Text style={estilos.pickerBotonTexto}>▲</Text>
         </Pressable>
@@ -49,6 +51,8 @@ function PickerHora({
         <Pressable
           style={estilos.pickerBoton}
           onPress={() => onChange((hora.h + 23) % 24, hora.m)}
+          accessibilityLabel="Bajar hora"
+          accessibilityRole="button"
         >
           <Text style={estilos.pickerBotonTexto}>▼</Text>
         </Pressable>
@@ -63,6 +67,8 @@ function PickerHora({
             const siguiente = (idx + 1) % MINUTOS.length;
             onChange(hora.h, MINUTOS[siguiente]);
           }}
+          accessibilityLabel="Subir minutos"
+          accessibilityRole="button"
         >
           <Text style={estilos.pickerBotonTexto}>▲</Text>
         </Pressable>
@@ -74,6 +80,8 @@ function PickerHora({
             const anterior = (idx + MINUTOS.length - 1) % MINUTOS.length;
             onChange(hora.h, MINUTOS[anterior]);
           }}
+          accessibilityLabel="Bajar minutos"
+          accessibilityRole="button"
         >
           <Text style={estilos.pickerBotonTexto}>▼</Text>
         </Pressable>
@@ -151,6 +159,9 @@ export default function DisponibilidadScreen({ db }: Props) {
                 diaSeleccionado === dia && estilos.diaBotonActivo,
               ]}
               onPress={() => setDiaSeleccionado(dia)}
+              accessibilityLabel={nombreDia(dia)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: diaSeleccionado === dia }}
             >
               <Text
                 style={[

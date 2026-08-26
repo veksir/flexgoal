@@ -87,6 +87,8 @@ export default function MetasScreen({ db, onSeleccionarMeta }: Props) {
           <Pressable
             style={estilos.item}
             onPress={() => onSeleccionarMeta(item)}
+            accessibilityLabel={`Meta: ${item.nombre}`}
+            accessibilityRole="button"
           >
             <View style={estilos.seccionEncabezadoFila}>
               <Text

@@ -28,6 +28,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from '../screens/estilos';
 import { color, radio } from '../screens/theme';
 import { formatearFecha } from '../db/tareas';
+import Button from '../components/Button';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
 
@@ -181,6 +182,8 @@ export default function EditarTareaModal({
                 <Pressable
                   style={estilos.botonSugerencia}
                   onPress={() => setFecha(sugerencia.fecha)}
+                  accessibilityLabel="Usar esta fecha sugerida"
+                  accessibilityRole="button"
                 >
                   <Text style={estilos.botonSugerenciaTexto}>Usar esta fecha</Text>
                 </Pressable>
@@ -194,6 +197,9 @@ export default function EditarTareaModal({
                     key={opcion}
                     style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
                     onPress={() => setPrioridad(activo ? null : opcion)}
+                    accessibilityLabel={`Prioridad ${etiquetaPrioridad(opcion)}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: activo }}
                   >
                     <Text style={[estilos.estadoBotonTexto, activo && estilos.estadoBotonTextoActivo]}>
                       {etiquetaPrioridad(opcion)}
@@ -203,19 +209,18 @@ export default function EditarTareaModal({
               })}
             </View>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              <Pressable
-                style={{ flex: 1, backgroundColor: color.oscuro, borderRadius: radio.md, paddingVertical: 12, alignItems: 'center', opacity: isSaving ? 0.5 : 1 }}
+              <Button
+                title="Guardar cambios"
                 onPress={handleSave}
                 disabled={isSaving}
-              >
-                <Text style={[estilos.botonTexto, { fontSize: 14 }]}>Guardar cambios</Text>
-              </Pressable>
-              <Pressable
-                style={{ flex: 1, backgroundColor: 'transparent', borderWidth: 1.5, borderColor: color.bordeInput, borderRadius: radio.md, paddingVertical: 12, alignItems: 'center' }}
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Cancelar"
                 onPress={onClose}
-              >
-                <Text style={{ color: color.textoTerciario, fontSize: 14, fontWeight: '700' }}>Cancelar</Text>
-              </Pressable>
+                variant="secondary"
+                style={{ flex: 1 }}
+              />
             </View>
           </Pressable>
         </Pressable>

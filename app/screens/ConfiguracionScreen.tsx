@@ -15,6 +15,7 @@ import {
   borrarClaveAPI,
   listarModelosDisponibles,
 } from '../ia/gemini';
+import Button from '../components/Button';
 import { estilos } from './estilos';
 import { color, espacio, radio } from './theme';
 
@@ -93,6 +94,8 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
       <Pressable
         style={estilos.botonVolver}
         onPress={onVolver}
+        accessibilityLabel="Volver"
+        accessibilityRole="button"
       >
         <Text style={estilos.botonVolverTexto}>← Volver</Text>
       </Pressable>
@@ -116,27 +119,19 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
         />
 
         <View style={{ flexDirection: 'row', gap: espacio.sm }}>
-          <Pressable
-            style={[estilos.boton, { flex: 1, marginBottom: 0 }]}
+          <Button
+            title="Guardar"
             onPress={guardar}
-          >
-            <Text style={estilos.botonTexto}>Guardar</Text>
-          </Pressable>
+            style={{ flex: 1, marginBottom: 0 }}
+          />
 
           {claveGuardada && (
-            <Pressable
-              style={[
-                estilos.boton,
-                {
-                  flex: 1,
-                  marginBottom: 0,
-                  backgroundColor: color.peligro,
-                },
-              ]}
+            <Button
+              title="Borrar"
               onPress={borrar}
-            >
-              <Text style={estilos.botonTexto}>Borrar</Text>
-            </Pressable>
+              variant="danger"
+              style={{ flex: 1, marginBottom: 0 }}
+            />
           )}
         </View>
       </View>
@@ -147,12 +142,12 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
           <Text style={estilos.itemTexto}>
             ✅ Clave configurada — la función de IA está disponible
           </Text>
-          <Pressable
+          <Button
+            title="Verificar modelos disponibles"
             onPress={verificarModelos}
-            style={[estilos.botonSecundario, { marginTop: espacio.sm, alignSelf: 'flex-start' }]}
-          >
-            <Text style={estilos.botonSecundarioTexto}>Verificar modelos disponibles</Text>
-          </Pressable>
+            variant="secondary"
+            style={{ marginTop: espacio.sm, alignSelf: 'flex-start' }}
+          />
           {modelos && (
             <Text style={[estilos.vacioSubtexto, { marginTop: espacio.sm }]}>
               Modelos con flash/pro: {modelos}

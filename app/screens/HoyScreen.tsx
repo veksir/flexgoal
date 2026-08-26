@@ -11,6 +11,7 @@ import {
 } from '../db/tareas';
 import type { SesionActiva } from '../App';
 import type { SQLiteDatabase } from 'expo-sqlite';
+import Button from '../components/Button';
 import { estilos } from './estilos';
 import { formatearCronometro } from './ObjetivoDetalleScreen';
 import type { ModoSesion } from '../db/sesiones';
@@ -157,9 +158,13 @@ export default function HoyScreen({
               <Text style={estilos.cronometro}>
                 {formatearCronometro(tiempoSegundos)}
               </Text>
-              <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
-                <Text style={estilos.botonDetenerTexto}>Detener</Text>
-              </Pressable>
+              <Button
+                title="Detener"
+                onPress={onDetenerSesion}
+                variant="danger"
+                style={estilos.botonDetener}
+                textStyle={estilos.botonDetenerTexto}
+              />
             </View>
           ) : (
             !sesionActiva && (
@@ -171,6 +176,9 @@ export default function HoyScreen({
                       modoSesion === 'libre' && estilos.modoBotonActivo,
                     ]}
                     onPress={() => setModoSesion('libre')}
+                    accessibilityLabel="Sesión libre"
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: modoSesion === 'libre' }}
                   >
                     <Text
                       style={[
@@ -190,6 +198,9 @@ export default function HoyScreen({
                       setModoSesion('pomodoro');
                       onCargarConfigPomodoro();
                     }}
+                    accessibilityLabel="Pomodoro"
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: modoSesion === 'pomodoro' }}
                   >
                     <Text
                       style={[
@@ -227,12 +238,12 @@ export default function HoyScreen({
                     </View>
                   </View>
                 )}
-                <Pressable
-                  style={estilos.botonSesion}
+                <Button
+                  title="Iniciar sesión"
                   onPress={() => onIniciarSesion(item)}
-                >
-                  <Text style={estilos.botonSesionTexto}>Iniciar sesión</Text>
-                </Pressable>
+                  style={estilos.botonSesion}
+                  textStyle={estilos.botonSesionTexto}
+                />
               </View>
             )
           )}

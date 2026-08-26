@@ -186,12 +186,13 @@ export default function FormularioTarea({
             {formatearFecha(sugerencia.fecha)} tiene{' '}
             {formatearDuracion(sugerencia.minutosDisponibles)} libres
           </Text>
-          <Pressable
-            style={estilos.botonSugerencia}
-            onPress={() => setTextoFechaTarea(sugerencia.fecha)}
-          >
-            <Text style={estilos.botonSugerenciaTexto}>Usar esta fecha</Text>
-          </Pressable>
+      <Button
+        title="Usar esta fecha"
+        onPress={() => setTextoFechaTarea(sugerencia.fecha)}
+        variant="ghost"
+        style={estilos.botonSugerencia}
+        textStyle={estilos.botonSugerenciaTexto}
+      />
         </View>
       ) : null}
       <View style={estilos.estadoContenedor}>
@@ -204,6 +205,9 @@ export default function FormularioTarea({
               onPress={() =>
                 setPrioridadTarea(activo ? null : opcion)
               }
+              accessibilityLabel={`Prioridad ${etiquetaPrioridad(opcion)}`}
+              accessibilityRole="button"
+              accessibilityState={{ selected: activo }}
             >
               <Text
                 style={[

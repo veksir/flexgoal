@@ -65,6 +65,8 @@ export default function ConversionModal({
               <Pressable
                 style={[styles.boton, { marginBottom: espacio.sm, borderColor: color.primario }]}
                 onPress={() => handleSeleccion('ia')}
+                accessibilityLabel="Automático con IA"
+                accessibilityRole="button"
               >
                 <Text style={[styles.botonTexto, { color: color.primario }]}>
                   ✨ Automático (IA)
@@ -76,6 +78,8 @@ export default function ConversionModal({
               <Pressable
                 style={[styles.boton, { marginBottom: espacio.sm }]}
                 onPress={() => handleSeleccion('plantillas')}
+                accessibilityLabel="Plantillas"
+                accessibilityRole="button"
               >
                 <Text style={styles.botonTexto}>📋 Plantillas</Text>
                 <Text style={styles.botonSubtexto}>
@@ -85,6 +89,8 @@ export default function ConversionModal({
               <Pressable
                 style={[styles.botonCancelar, { marginTop: espacio.xs }]}
                 onPress={onCancel}
+                accessibilityLabel="Cancelar"
+                accessibilityRole="button"
               >
                 <Text style={styles.botonCancelarTexto}>Cancelar</Text>
               </Pressable>
@@ -99,6 +105,8 @@ export default function ConversionModal({
               <Pressable
                 style={[styles.boton, { marginBottom: espacio.sm }]}
                 onPress={() => onConvertir()}
+                accessibilityLabel="Empezar vacío"
+                accessibilityRole="button"
               >
                 <Text style={styles.botonTexto}>Empezar vacío</Text>
                 <Text style={styles.botonSubtexto}>Solo crear la meta, sin objetivos</Text>
@@ -108,6 +116,8 @@ export default function ConversionModal({
                   key={p.id}
                   style={[styles.boton, { marginBottom: espacio.sm }]}
                   onPress={() => onConvertir(p.id)}
+                  accessibilityLabel={`Plantilla: ${p.nombre}`}
+                  accessibilityRole="button"
                 >
                   <Text style={styles.botonTexto}>{p.nombre}</Text>
                   <Text style={styles.botonSubtexto}>
@@ -119,6 +129,8 @@ export default function ConversionModal({
               <Pressable
                 style={[styles.botonCancelar, { marginTop: espacio.xs }]}
                 onPress={() => setPaso('seleccion')}
+                accessibilityLabel="Volver"
+                accessibilityRole="button"
               >
                 <Text style={styles.botonCancelarTexto}>← Volver</Text>
               </Pressable>

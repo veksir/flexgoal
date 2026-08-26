@@ -131,7 +131,7 @@ export default function MetaDetalleScreen({
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <Pressable style={estilos.botonVolver} onPress={onVolver}>
+      <Pressable style={estilos.botonVolver} onPress={onVolver} accessibilityLabel="Volver a Metas" accessibilityRole="button">
         <Text style={estilos.botonVolverTexto}>← Volver a Metas</Text>
       </Pressable>
       <Text style={estilos.tituloDetalle}>{meta.nombre}</Text>
@@ -164,6 +164,9 @@ export default function MetaDetalleScreen({
                   key={opcion}
                   style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
                   onPress={() => cambiarPrioridad(opcion)}
+                  accessibilityLabel={`Prioridad ${etiquetaEstado(opcion)}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activo }}
                 >
                   <Text
                     style={[
@@ -199,6 +202,9 @@ export default function MetaDetalleScreen({
                   key={opcion}
                   style={[estilos.estadoBoton, activo && estilos.estadoBotonActivo]}
                   onPress={() => cambiarEstado(opcion)}
+                  accessibilityLabel={`Estado: ${etiquetaEstado(opcion)}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activo }}
                 >
                   <Text
                     style={[
@@ -249,6 +255,8 @@ export default function MetaDetalleScreen({
                 key={item.id}
                 style={estilos.item}
                 onPress={() => onSeleccionarObjetivo(item)}
+                accessibilityLabel={`Objetivo: ${item.nombre}`}
+                accessibilityRole="button"
               >
                 <View style={estilos.itemContenido}>
                   <Text style={[estilos.itemTexto, { flex: 1 }]}>{item.nombre}</Text>
