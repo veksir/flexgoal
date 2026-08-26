@@ -66,7 +66,9 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
     implementación.
   - ~~Días libres / día libre mínimo~~ — descartado por la misma
     decisión, sin desarrollar.
-- [ ] **Fase 5 — IA:** creación de metas en lenguaje natural, análisis de comportamiento
+- [ ] **Fase 5 — IA:**
+  - [x] Crear estructura de meta con IA — Gemini API, tier gratuito (historia 26)
+  - [ ] Análisis de comportamiento
 - [ ] **Fase 6 — Sincronización:** cuentas, backup, multi-dispositivo
 - [x] **Backlog:** editar una tarea ya creada — resuelto en Historia 20
 
@@ -661,3 +663,33 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Reportado por Kevin durante la verificación de Historia 25: al agregar
   una tarea nueva, la lista "se corría" — la nueva aparecía arriba y
   empujaba las demás. Ahora la lista es estable.
+
+### 2026-08-25 — Historia 26: Crear estructura de meta con IA (Gemini)
+
+- Nueva dependencia: `expo-secure-store` (compatible con Expo Go) para
+  almacenar la clave de API de Gemini de forma segura en el dispositivo.
+- Nuevo módulo `app/ia/gemini.ts`: función `generarEstructuraDesdeIdea`
+  que llama a la API de Gemini (modelo Flash `gemini-3.6-flash`, gratis
+  en tier gratuito), valida la respuesta (2-4 objetivos, 1-3 tareas cada
+  uno) y lanza errores tipados distinguibles (`ErrorClaveNoConfigurada`,
+  `ErrorSinConexion`, `ErrorRespuestaIA`). Modelo actualizado desde
+  `gemini-2.0-flash` (apagado junio 2026) a `gemini-3.6-flash`.
+- Nueva pantalla `app/screens/ConfiguracionScreen.tsx`: campo para
+  pegar/guardar/borrar la clave de Gemini, con instrucciones de cómo
+  obtenerla en Google AI Studio. Acceso desde ícono ⚙️ en el header
+  de App.tsx.
+- Flujo de conversión modificado en `IdeasScreen.tsx`: al tocar
+  "Convertir en meta", ahora se muestra una elección entre "Automático
+  (IA)" y "Plantillas". Elegir "Automático" dispara la llamada a Gemini
+  con estado de carga; la respuesta se muestra como propuesta editable
+  (objetivos + tareas) antes de guardar. Si no hay clave/conexión/error,
+  se muestra mensaje claro y se ofrece caer a "Plantillas".
+- `app/db/conversiones.ts`: nueva interfaz `PropuestaEstructura` y
+  `convertirIdeaEnMeta` ahora acepta un 4º parámetro opcional
+  `propuestaIA?: PropuestaEstructura` — reutiliza el mismo patrón de
+  inserción atómica que las plantillas.
+- 5 pruebas nuevas en `propuestaIA.test.ts` (147 totales), todas verdes
+  + tsc sin errores.
+- Sin migración de BD — usa tablas existentes.
+- **Pendiente de merge a main** — requiere prueba manual con clave real
+  de Gemini por parte de Kevin.
