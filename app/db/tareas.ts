@@ -44,7 +44,7 @@ export async function listarTareasPorObjetivo(
   objetivoId: number
 ): Promise<Tarea[]> {
   const rows = await db.getAllAsync<Tarea>(
-    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, prioridad, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en DESC',
+    'SELECT id, objetivo_id, nombre, estado, fecha_planificada, duracion_estimada_minutos, prioridad, creado_en FROM tareas WHERE objetivo_id = ? ORDER BY creado_en ASC',
     objetivoId
   );
   return rows;

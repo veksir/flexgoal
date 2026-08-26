@@ -26,7 +26,7 @@ export async function crearMeta(
 
 export async function listarMetas(db: SQLiteDatabase): Promise<Meta[]> {
   const rows = await db.getAllAsync<Meta>(
-    'SELECT id, nombre, estado, categoria, prioridad, fecha_objetivo, creado_en FROM metas ORDER BY creado_en DESC'
+    'SELECT id, nombre, estado, categoria, prioridad, fecha_objetivo, creado_en FROM metas ORDER BY creado_en ASC'
   );
   return rows;
 }

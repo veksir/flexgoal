@@ -19,7 +19,7 @@ export async function crearIdea(
 
 export async function listarIdeas(db: SQLiteDatabase): Promise<Idea[]> {
   const rows = await db.getAllAsync<Idea>(
-    'SELECT id, texto, creado_en FROM ideas ORDER BY creado_en DESC'
+    'SELECT id, texto, creado_en FROM ideas ORDER BY creado_en ASC'
   );
   return rows;
 }

@@ -19,7 +19,7 @@ describe('metas', () => {
     expect(metas[0].estado).toBe('activa');
   });
 
-  test('listarMetas ordena de más reciente a más antigua', async () => {
+  test('listarMetas ordena de más antigua a más reciente', async () => {
     const db = crearDbPruebas();
     await crearMeta(db, 'primera');
     await esperar(5);
@@ -27,7 +27,7 @@ describe('metas', () => {
 
     const metas = await listarMetas(db);
 
-    expect(metas.map((m) => m.nombre)).toEqual(['segunda', 'primera']);
+    expect(metas.map((m) => m.nombre)).toEqual(['primera', 'segunda']);
   });
 
   test('actualizarEstadoMeta cambia el estado de una meta', async () => {

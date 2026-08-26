@@ -25,7 +25,7 @@ export async function listarObjetivosPorMeta(
   metaId: number
 ): Promise<Objetivo[]> {
   const rows = await db.getAllAsync<Objetivo>(
-    'SELECT id, meta_id, nombre, creado_en FROM objetivos WHERE meta_id = ? ORDER BY creado_en DESC',
+    'SELECT id, meta_id, nombre, creado_en FROM objetivos WHERE meta_id = ? ORDER BY creado_en ASC',
     metaId
   );
   return rows;

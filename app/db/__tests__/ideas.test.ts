@@ -19,7 +19,7 @@ describe('ideas', () => {
     expect(ideas[0].texto).toBe('Aprender a tocar guitarra');
   });
 
-  test('listarIdeas ordena de más reciente a más antigua', async () => {
+  test('listarIdeas ordena de más antigua a más reciente', async () => {
     const db = crearDbPruebas();
     await crearIdea(db, 'primera');
     await esperar(5);
@@ -27,7 +27,7 @@ describe('ideas', () => {
 
     const ideas = await listarIdeas(db);
 
-    expect(ideas.map((i) => i.texto)).toEqual(['segunda', 'primera']);
+    expect(ideas.map((i) => i.texto)).toEqual(['primera', 'segunda']);
   });
 
   test('eliminarIdea borra solo la idea indicada', async () => {

@@ -647,3 +647,17 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Confirmación visual/funcional de Kevin: plantilla funciona
   correctamente.
 - **Pendiente de merge a main** — esperando confirmación final.
+
+### 2026-08-25 — Tarea técnica 4: Orden estable de listas (más antigua primero)
+
+- Cambio de `ORDER BY creado_en DESC` → `ORDER BY creado_en ASC` en
+  `ideas.ts`, `metas.ts`, `objetivos.ts` y `tareas.ts` — las listas
+  ahora muestran la primera entrada creada arriba y las nuevas se
+  agregan abajo (orden estable, predecible).
+- `sesiones.ts` sin cambios — se mantiene `DESC` (historial de eventos,
+  lo más reciente arriba).
+- 2 pruebas actualizadas (ideas y metas) para reflejar el nuevo orden
+  esperado — 142 pruebas totales, todas verdes + tsc sin errores.
+- Reportado por Kevin durante la verificación de Historia 25: al agregar
+  una tarea nueva, la lista "se corría" — la nueva aparecía arriba y
+  empujaba las demás. Ahora la lista es estable.
