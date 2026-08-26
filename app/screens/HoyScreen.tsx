@@ -155,9 +155,7 @@ export default function HoyScreen({
                 </Text>
               ) : null}
               <Text style={estilos.cronometro}>
-                {sesionActiva.modo === 'pomodoro'
-                  ? formatearCronometro(tiempoSegundos)
-                  : formatearCronometro(tiempoSegundos)}
+                {formatearCronometro(tiempoSegundos)}
               </Text>
               <Pressable style={estilos.botonDetener} onPress={onDetenerSesion}>
                 <Text style={estilos.botonDetenerTexto}>Detener</Text>
