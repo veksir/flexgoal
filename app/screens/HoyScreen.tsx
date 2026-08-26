@@ -124,11 +124,19 @@ export default function HoyScreen({
       }
       ListHeaderComponentStyle={{ marginBottom: 10 }}
       renderItem={({ item }) => (
-        <Pressable style={estilos.item} onPress={() => alternarTarea(item)}>
+        <View style={estilos.item}>
+          <Pressable
+            style={estilos.tareaCheckbox}
+            onPress={() => alternarTarea(item)}
+            accessibilityLabel={item.estado === 'completada' ? 'Descompletar tarea' : 'Completar tarea'}
+          >
+            <Text style={estilos.tareaCheck}>
+              {item.estado === 'completada' ? '☑' : '☐'}
+            </Text>
+          </Pressable>
           <View style={estilos.tareaContenido}>
-            <Text style={estilos.tareaCheck}>☐</Text>
             <View style={estilos.itemTextoWrapper}>
-              <Text style={estilos.itemTexto}>
+              <Text style={[estilos.itemTexto, item.estado === 'completada' && { textDecorationLine: 'line-through', opacity: 0.5 }]}>
                 {item.nombre}
                 {item.fecha_planificada
                   ? ` — ${formatearFecha(item.fecha_planificada)}`
@@ -230,7 +238,7 @@ export default function HoyScreen({
               </View>
             )
           )}
-        </Pressable>
+        </View>
       )}
       ListEmptyComponent={
         <View style={estilos.vacioContenedor}>

@@ -187,6 +187,10 @@ export const estilos = StyleSheet.create({
     textAlign: 'center',
     color: color.bordeFuerte,
   },
+  tareaCheckbox: {
+    padding: espacio.xs,
+    marginRight: espacio.xs,
+  },
   tareaCheckCompletado: {
     color: color.exito,
   },
