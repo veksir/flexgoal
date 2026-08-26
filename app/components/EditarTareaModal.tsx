@@ -33,7 +33,7 @@ import Button from '../components/Button';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
 
-function etiquetaPrioridad(prioridad: Prioridad): string {
+export function etiquetaPrioridad(prioridad: Prioridad): string {
   return prioridad.charAt(0).toUpperCase() + prioridad.slice(1);
 }
 

@@ -11,7 +11,7 @@ interface Props {
   error?: string;
 }
 
-function parseFecha(fecha: string): Date | null {
+export function parseFecha(fecha: string): Date | null {
   if (!fecha) return null;
   const match = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
@@ -19,7 +19,7 @@ function parseFecha(fecha: string): Date | null {
   return new Date(Number(y), Number(m) - 1, Number(d));
 }
 
-function formatearFechaLocal(fecha: Date): string {
+export function formatearFechaLocal(fecha: Date): string {
   const y = fecha.getFullYear();
   const m = String(fecha.getMonth() + 1).padStart(2, '0');
   const d = String(fecha.getDate()).padStart(2, '0');
