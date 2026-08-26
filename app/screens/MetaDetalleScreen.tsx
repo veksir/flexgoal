@@ -19,6 +19,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import { espacio } from './theme';
 import Button from '../components/Button';
+import DatePicker from '../components/DatePicker';
 
 const ESTADOS_META = ['activa', 'pausada', 'completada', 'abandonada'] as const;
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
@@ -180,23 +181,11 @@ export default function MetaDetalleScreen({
 
         <View style={estilos.seccion}>
           <Text style={estilos.seccionTitulo}>Fecha objetivo</Text>
-          <TextInput
-            style={estilos.input}
+          <DatePicker
             value={textoFechaObjetivo}
-            onChangeText={setTextoFechaObjetivo}
-            placeholder="AAAA-MM-DD, ej. 2026-12-31"
-            placeholderTextColor="#999"
-            keyboardType="numbers-and-punctuation"
-          />
-          {errorFechaObjetivo ? (
-            <Text style={estilos.textoError}>{errorFechaObjetivo}</Text>
-          ) : null}
-          <Button
-            title="Guardar fecha objetivo"
-            onPress={guardarFechaObjetivo}
-            variant="secondary"
-            disabled={isSaving}
-            style={{ marginTop: 0 }}
+            onChange={setTextoFechaObjetivo}
+            placeholder="Fecha objetivo (opcional)"
+            error={errorFechaObjetivo}
           />
         </View>
 

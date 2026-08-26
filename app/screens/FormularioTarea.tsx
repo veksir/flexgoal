@@ -18,6 +18,7 @@ import { formatearDuracion, formatearDiferencia, formatearFecha } from '../db/ta
 import { estilos } from './estilos';
 import { espacio } from './theme';
 import Button from '../components/Button';
+import DatePicker from '../components/DatePicker';
 
 const PRIORIDADES: Prioridad[] = ['alta', 'media', 'baja'];
 
@@ -151,16 +152,12 @@ export default function FormularioTarea({
         placeholderTextColor="#999"
         multiline
       />
-      <TextInput
-        style={estilos.input}
+      <DatePicker
         value={textoFechaTarea}
-        onChangeText={setTextoFechaTarea}
-        placeholder="AAAA-MM-DD (opcional)"
-        placeholderTextColor="#999"
+        onChange={setTextoFechaTarea}
+        placeholder="Fecha planificada (opcional)"
+        error={errorFechaTarea}
       />
-      {errorFechaTarea ? (
-        <Text style={estilos.textoError}>{errorFechaTarea}</Text>
-      ) : null}
       <TextInput
         style={estilos.input}
         value={textoDuracionTarea}
