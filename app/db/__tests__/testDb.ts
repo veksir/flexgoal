@@ -12,7 +12,7 @@ function crearTxn(nodo: DatabaseSync): SQLiteDatabase {
       const resultado = nodo.prepare(sql).run(...params);
       return {
         changes: Number(resultado.changes),
-        lastInsertRowid: Number(resultado.lastInsertRowid),
+        lastInsertRowId: Number(resultado.lastInsertRowid),
       };
     },
   } as unknown as SQLiteDatabase;

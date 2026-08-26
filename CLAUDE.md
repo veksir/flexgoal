@@ -35,6 +35,7 @@ Planificador adaptativo de metas, local-first, mobile-first. Ver
 - [x] **Fase 1 — Fundamentos**
   - [x] Bandeja de ideas (crear, listar, eliminar) — persistencia SQLite validada
   - [x] Convertir idea en meta
+  - [x] Plantillas de estructura al convertir idea en meta (historia 25)
   - [x] Áreas — categoría/área textual opcional por meta (historia 13)
   - [x] Objetivos — jerarquía Meta→Objetivo con aislamiento por meta_id validado
   - [x] Tareas — con estado pendiente/completada, navegación de 3 niveles validada
@@ -623,3 +624,26 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Siguiente: por definir — Fase 5 (IA) requiere primero resolver el
   spike de ADR-003 (runtime/modelo de IA local, pendiente desde el
   inicio del proyecto), o revisar pulido general antes de avanzar.
+
+### 2026-08-25 — Historia 25: Plantillas de estructura al convertir idea en meta
+
+- Nuevo archivo `app/db/plantillasMeta.ts`: 4 plantillas como datos
+  puros (Aprender habilidad, Proyecto con fecha límite, Hábito/salud,
+  Genérica), cada una con 3 objetivos y 3 tareas predefinidas.
+- `app/db/conversiones.ts`: `convertirIdeaEnMeta` acepta parámetro
+  opcional `plantillaId?: string`. Dentro de la misma
+  `withExclusiveTransactionAsync` ya existente, si se pasa una
+  plantilla válida, inserta sus objetivos y tareas usando SQL directo
+  (reutiliza patrón de queries de `db/objetivos.ts`/`db/tareas.ts`).
+- UI: modal selector de plantilla en `IdeasScreen.tsx` que aparece
+  al tocar "Convertir en meta" — 4 opciones + "Empezar vacío" +
+  cancelar. Mismo patrón de modales ya existentes en la app.
+- Fix en `app/db/__tests__testDb.ts`: `lastInsertRowId` (capital I)
+  en el wrapper de transacciones de prueba — el tipo `SQLiteRunResult`
+  usa esa convención, no `lastInsertRowid`.
+- 9 pruebas nuevas (142 totales), todas verdes + tsc sin errores.
+- Sin migración de BD — usa tablas `metas`, `objetivos`, `tareas`
+  ya existentes.
+- Confirmación visual/funcional de Kevin: plantilla funciona
+  correctamente.
+- **Pendiente de merge a main** — esperando confirmación final.
