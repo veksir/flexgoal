@@ -126,6 +126,7 @@ export default function ObjetivoDetalleScreen({
   const [editErrorDuracion, setEditErrorDuracion] = useState('');
   const [editVistaPrevia, setEditVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
   const [editSugerencia, setEditSugerencia] = useState<SugerenciaDia | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const sesionActivaAnterior = useRef(sesionActiva);
 
   useEffect(() => {
@@ -245,7 +246,7 @@ export default function ObjetivoDetalleScreen({
   }
 
   async function guardarEdicion() {
-    if (!tareaEditando) return;
+    if (!tareaEditando || isSaving) return;
     const nombreLimpio = editNombre.trim();
     if (!nombreLimpio) return;
     const fechaLimpia = editFecha.trim();
@@ -258,16 +259,21 @@ export default function ObjetivoDetalleScreen({
       setEditErrorDuracion('Duración inválida. Usa un número entero positivo.');
       return;
     }
-    await actualizarTarea(db, tareaEditando.id, {
-      nombre: nombreLimpio,
-      fechaPlanificada: fechaLimpia || null,
-      duracionEstimadaMinutos: duracionLimpia
-        ? parseInt(duracionLimpia, 10)
-        : null,
-      prioridad: editPrioridad ?? null,
-    });
-    setTareaEditando(null);
-    await cargarTareas();
+    setIsSaving(true);
+    try {
+      await actualizarTarea(db, tareaEditando.id, {
+        nombre: nombreLimpio,
+        fechaPlanificada: fechaLimpia || null,
+        duracionEstimadaMinutos: duracionLimpia
+          ? parseInt(duracionLimpia, 10)
+          : null,
+        prioridad: editPrioridad ?? null,
+      });
+      setTareaEditando(null);
+      await cargarTareas();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function alternarTarea(tarea: Tarea) {
@@ -691,8 +697,10 @@ export default function ObjetivoDetalleScreen({
                   borderRadius: radio.md,
                   paddingVertical: 12,
                   alignItems: 'center',
+                  opacity: isSaving ? 0.5 : 1,
                 }}
                 onPress={guardarEdicion}
+                disabled={isSaving}
               >
                 <Text style={[estilos.botonTexto, { fontSize: 14 }]}>
                   Guardar cambios

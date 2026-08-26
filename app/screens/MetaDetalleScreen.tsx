@@ -48,6 +48,7 @@ export default function MetaDetalleScreen({
   const [prioridad, setPrioridad] = useState<Prioridad | null>(meta.prioridad);
   const [textoFechaObjetivo, setTextoFechaObjetivo] = useState(meta.fecha_objetivo ?? '');
   const [errorFechaObjetivo, setErrorFechaObjetivo] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     cargarObjetivos();
@@ -64,16 +65,23 @@ export default function MetaDetalleScreen({
   }
 
   async function guardarCategoria() {
-    const textoCategoriaLimpio = textoCategoria.trim();
-    await actualizarCategoriaMeta(
-      db,
-      meta.id,
-      textoCategoriaLimpio === '' ? null : textoCategoriaLimpio
-    );
-    setTextoCategoria(textoCategoriaLimpio);
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const textoCategoriaLimpio = textoCategoria.trim();
+      await actualizarCategoriaMeta(
+        db,
+        meta.id,
+        textoCategoriaLimpio === '' ? null : textoCategoriaLimpio
+      );
+      setTextoCategoria(textoCategoriaLimpio);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function guardarFechaObjetivo() {
+    if (isSaving) return;
     const fechaLimpia = textoFechaObjetivo.trim();
     if (fechaLimpia && !esFechaValida(fechaLimpia)) {
       setErrorFechaObjetivo(
@@ -81,13 +89,18 @@ export default function MetaDetalleScreen({
       );
       return;
     }
-    setErrorFechaObjetivo('');
-    await actualizarFechaObjetivoMeta(
-      db,
-      meta.id,
-      fechaLimpia === '' ? null : fechaLimpia
-    );
-    setTextoFechaObjetivo(fechaLimpia);
+    setIsSaving(true);
+    try {
+      setErrorFechaObjetivo('');
+      await actualizarFechaObjetivoMeta(
+        db,
+        meta.id,
+        fechaLimpia === '' ? null : fechaLimpia
+      );
+      setTextoFechaObjetivo(fechaLimpia);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function cargarObjetivos() {
@@ -97,12 +110,17 @@ export default function MetaDetalleScreen({
 
   async function guardarObjetivo() {
     const textoLimpio = textoObjetivo.trim();
-    if (!textoLimpio) {
+    if (!textoLimpio || isSaving) {
       return;
     }
-    await crearObjetivo(db, meta.id, textoLimpio);
-    setTextoObjetivo('');
-    await cargarObjetivos();
+    setIsSaving(true);
+    try {
+      await crearObjetivo(db, meta.id, textoLimpio);
+      setTextoObjetivo('');
+      await cargarObjetivos();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -124,7 +142,11 @@ export default function MetaDetalleScreen({
             placeholder="Ej. Salud, Trabajo, Finanzas..."
             placeholderTextColor="#999"
           />
-          <Pressable style={[estilos.botonSesion, { marginTop: 0 }]} onPress={guardarCategoria}>
+          <Pressable
+            style={[estilos.botonSesion, { marginTop: 0, opacity: isSaving ? 0.5 : 1 }]}
+            onPress={guardarCategoria}
+            disabled={isSaving}
+          >
             <Text style={estilos.botonSesionTexto}>Guardar categoría</Text>
           </Pressable>
         </View>
@@ -167,7 +189,11 @@ export default function MetaDetalleScreen({
           {errorFechaObjetivo ? (
             <Text style={estilos.textoError}>{errorFechaObjetivo}</Text>
           ) : null}
-          <Pressable style={[estilos.botonSesion, { marginTop: 0 }]} onPress={guardarFechaObjetivo}>
+          <Pressable
+            style={[estilos.botonSesion, { marginTop: 0, opacity: isSaving ? 0.5 : 1 }]}
+            onPress={guardarFechaObjetivo}
+            disabled={isSaving}
+          >
             <Text style={estilos.botonSesionTexto}>Guardar fecha objetivo</Text>
           </Pressable>
         </View>
@@ -210,9 +236,9 @@ export default function MetaDetalleScreen({
             multiline
           />
           <Pressable
-            style={[estilos.composerBoton, !textoObjetivo.trim() && { opacity: 0.4 }]}
+            style={[estilos.composerBoton, (!textoObjetivo.trim() || isSaving) && { opacity: 0.4 }]}
             onPress={guardarObjetivo}
-            disabled={!textoObjetivo.trim()}
+            disabled={!textoObjetivo.trim() || isSaving}
             accessibilityLabel="Agregar objetivo"
           >
             <Text style={estilos.composerBotonTexto}>+</Text>

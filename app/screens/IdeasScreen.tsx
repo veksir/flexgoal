@@ -49,6 +49,7 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
   const [feedback, setFeedback] = useState('');
   const [objetivosAceptados, setObjetivosAceptados] = useState<Record<number, boolean>>({});
   const [tareasAceptadas, setTareasAceptadas] = useState<Record<string, boolean>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     cargarIdeas();
@@ -61,10 +62,15 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
 
   async function guardarIdea() {
     const textoLimpio = texto.trim();
-    if (!textoLimpio) return;
-    await crearIdea(db, textoLimpio);
-    setTexto('');
-    await cargarIdeas();
+    if (!textoLimpio || isSaving) return;
+    setIsSaving(true);
+    try {
+      await crearIdea(db, textoLimpio);
+      setTexto('');
+      await cargarIdeas();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function convertir(plantillaId?: string) {
@@ -267,18 +273,23 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
   }
 
   async function guardarPropuestaIA() {
-    if (!ideaAConvertir || !propuestaIA) return;
+    if (!ideaAConvertir || !propuestaIA || isSaving) return;
     const aceptada = propuestaAceptada();
     if (aceptada.objetivos.length === 0) {
       Alert.alert('Sin elementos', 'No seleccionaste ningún objetivo o tarea para guardar.');
       return;
     }
-    await convertirIdeaEnMeta(db, ideaAConvertir, undefined, aceptada);
-    setIdeaAConvertir(null);
-    setPropuestaIA(null);
-    setFeedback('');
-    setPaso('seleccion');
-    await cargarIdeas();
+    setIsSaving(true);
+    try {
+      await convertirIdeaEnMeta(db, ideaAConvertir, undefined, aceptada);
+      setIdeaAConvertir(null);
+      setPropuestaIA(null);
+      setFeedback('');
+      setPaso('seleccion');
+      await cargarIdeas();
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function cancelarConversion() {
@@ -333,9 +344,9 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
           multiline
         />
         <Pressable
-          style={[estilos.composerBoton, !texto.trim() && { opacity: 0.4 }]}
+          style={[estilos.composerBoton, (!texto.trim() || isSaving) && { opacity: 0.4 }]}
           onPress={guardarIdea}
-          disabled={!texto.trim()}
+          disabled={!texto.trim() || isSaving}
           accessibilityLabel="Guardar idea"
         >
           <Text style={estilos.composerBotonTexto}>➤</Text>
@@ -668,8 +679,9 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
 
                 <View style={{ flexDirection: 'row', gap: espacio.sm, marginTop: espacio.sm }}>
                   <Pressable
-                    style={[estilos.boton, { flex: 1, marginBottom: 0 }]}
+                    style={[estilos.boton, { flex: 1, marginBottom: 0, opacity: isSaving ? 0.5 : 1 }]}
                     onPress={guardarPropuestaIA}
+                    disabled={isSaving}
                   >
                     <Text style={estilos.botonTexto}>Guardar</Text>
                   </Pressable>

@@ -63,6 +63,7 @@ export default function FormularioTarea({
 }: Props) {
   const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaSobrecarga | null>(null);
   const [sugerencia, setSugerencia] = useState<SugerenciaDia | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fechaLimpia = textoFechaTarea.trim();
@@ -102,7 +103,7 @@ export default function FormularioTarea({
   }, [db, textoFechaTarea, textoDuracionTarea]);
   async function guardarTarea() {
     const textoLimpio = textoTarea.trim();
-    if (!textoLimpio) {
+    if (!textoLimpio || isSaving) {
       return;
     }
     const fechaLimpia = textoFechaTarea.trim();
@@ -119,18 +120,23 @@ export default function FormularioTarea({
       );
       return;
     }
-    setErrorFechaTarea('');
-    setErrorDuracionTarea('');
-    await onAgregarTarea(
-      textoLimpio,
-      fechaLimpia || undefined,
-      duracionLimpia ? parseInt(duracionLimpia, 10) : undefined,
-      prioridadTarea ?? undefined
-    );
-    setTextoTarea('');
-    setTextoFechaTarea('');
-    setTextoDuracionTarea('');
-    setPrioridadTarea(null);
+    setIsSaving(true);
+    try {
+      setErrorFechaTarea('');
+      setErrorDuracionTarea('');
+      await onAgregarTarea(
+        textoLimpio,
+        fechaLimpia || undefined,
+        duracionLimpia ? parseInt(duracionLimpia, 10) : undefined,
+        prioridadTarea ?? undefined
+      );
+      setTextoTarea('');
+      setTextoFechaTarea('');
+      setTextoDuracionTarea('');
+      setPrioridadTarea(null);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -212,7 +218,11 @@ export default function FormularioTarea({
           );
         })}
       </View>
-      <Pressable style={estilos.boton} onPress={guardarTarea}>
+      <Pressable
+        style={[estilos.boton, { opacity: isSaving ? 0.5 : 1 }]}
+        onPress={guardarTarea}
+        disabled={isSaving}
+      >
         <Text style={estilos.botonTexto}>Agregar tarea</Text>
       </Pressable>
     </>
