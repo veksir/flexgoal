@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   StyleSheet,
@@ -293,7 +294,9 @@ export default function App() {
         ) : null}
       </View>
       <View style={styles.contenido}>
-      {!db ? null : objetivoSeleccionado && metaSeleccionada ? (
+      {!db ? (
+        <ActivityIndicator size="large" color={color.primario} style={styles.spinner} />
+      ) : objetivoSeleccionado && metaSeleccionada ? (
         <ObjetivoDetalleScreen
           db={db}
           objetivo={objetivoSeleccionado}
@@ -438,6 +441,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: espacio.base,
     paddingTop: espacio.md,
+  },
+  spinner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabs: {
     flexDirection: 'row',
