@@ -16,6 +16,7 @@ import {
   type BloqueDisponibilidad,
 } from '../db/disponibilidad';
 import { estilos } from './estilos';
+import Button from '../components/Button';
 
 interface Props {
   db: SQLiteDatabase;
@@ -174,9 +175,11 @@ export default function DisponibilidadScreen({ db }: Props) {
           </View>
         </View>
         {error ? <Text style={estilos.textoError}>{error}</Text> : null}
-        <Pressable style={estilos.boton} onPress={agregarBloque}>
-          <Text style={estilos.botonTexto}>Agregar bloque</Text>
-        </Pressable>
+        <Button
+          title="Agregar bloque"
+          onPress={agregarBloque}
+          accessibilityLabel="Agregar bloque de disponibilidad"
+        />
       </View>
       <Text style={estilos.subtitulo}>Bloques por día</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
@@ -194,6 +197,8 @@ export default function DisponibilidadScreen({ db }: Props) {
                   <Pressable
                     onPress={() => eliminarBloque(bloque.id)}
                     hitSlop={8}
+                    accessibilityLabel={`Eliminar bloque ${bloque.hora_inicio} a ${bloque.hora_fin}`}
+                    accessibilityRole="button"
                   >
                     <Text style={estilos.botonBasuraTexto}>🗑️</Text>
                   </Pressable>
