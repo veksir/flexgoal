@@ -668,28 +668,41 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 
 - Nueva dependencia: `expo-secure-store` (compatible con Expo Go) para
   almacenar la clave de API de Gemini de forma segura en el dispositivo.
-- Nuevo módulo `app/ia/gemini.ts`: función `generarEstructuraDesdeIdea`
-  que llama a la API de Gemini (modelo Flash `gemini-3.6-flash`, gratis
-  en tier gratuito), valida la respuesta (2-4 objetivos, 1-3 tareas cada
-  uno) y lanza errores tipados distinguibles (`ErrorClaveNoConfigurada`,
-  `ErrorSinConexion`, `ErrorRespuestaIA`). Modelo actualizado desde
-  `gemini-2.0-flash` (apagado junio 2026) a `gemini-3.6-flash`.
-- Nueva pantalla `app/screens/ConfiguracionScreen.tsx`: campo para
-  pegar/guardar/borrar la clave de Gemini, con instrucciones de cómo
-  obtenerla en Google AI Studio. Acceso desde ícono ⚙️ en el header
-  de App.tsx.
-- Flujo de conversión modificado en `IdeasScreen.tsx`: al tocar
-  "Convertir en meta", ahora se muestra una elección entre "Automático
-  (IA)" y "Plantillas". Elegir "Automático" dispara la llamada a Gemini
-  con estado de carga; la respuesta se muestra como propuesta editable
-  (objetivos + tareas) antes de guardar. Si no hay clave/conexión/error,
-  se muestra mensaje claro y se ofrece caer a "Plantillas".
-- `app/db/conversiones.ts`: nueva interfaz `PropuestaEstructura` y
-  `convertirIdeaEnMeta` ahora acepta un 4º parámetro opcional
-  `propuestaIA?: PropuestaEstructura` — reutiliza el mismo patrón de
-  inserción atómica que las plantillas.
+- Nuevo módulo `app/ia/gemini.ts`:
+  - `generarEstructuraDesdeIdea(textoIdea, configuracion?)` — genera
+    propuesta con configuración de cantidad de objetivos/tareas.
+  - `corregirEstructura(textoIdea, propuestaActual, feedback, configuracion?)` —
+    regenera manteniendo elementos aceptados + aplicando feedback del
+    usuario.
+  - Interfaz `ConfiguracionIA` con `cantidadObjetivos` (2-6) y
+    `tareasPorObjetivo` (2-5).
+  - Interfaz `PropuestaTarea` con `nombre` y
+    `duracion_estimada_minutos?`.
+  - Errores tipados: `ErrorClaveNoConfigurada`, `ErrorSinConexion`,
+    `ErrorRespuestaIA`.
+  - Modelo: `gemini-3.6-flash` (gratis en tier gratuito).
+- Nuevo módulo `app/screens/ConfiguracionScreen.tsx`: campo para
+  pegar/guardar/borrar la clave de Gemini, con verificación de modelos
+  disponibles. Acceso desde ícono ⚙️ en el header de App.tsx.
+- `app/screens/IdeasScreen.tsx` — flujo completo de IA:
+  - Nuevo paso `'configuracion'` con selectores numéricos de objetivos
+    (2-6) y tareas por objetivo (2-5).
+  - Nuevo paso `'corrigiendo'` para estado de carga de corrección.
+  - Checkboxes ✅/⬜ por objetivo y tarea para aceptar/rechazar
+    individualmente.
+  - Campo de duración estimada (minutos) editable por tarea.
+  - ScrollView en revisión (no FlatList) para ver todo el contenido
+    sin scroll horizontal en los inputs.
+  - Botón "Pedir corrección" con campo de feedback que envía solo lo
+    aceptado + feedback a la IA.
+  - Botón "Guardar" que solo persiste los elementos aceptados.
+- `app/db/conversiones.ts`:
+  - `PropuestaEstructura` incluye `duracion_estimada_minutos?` en
+    tareas.
+  - `insertarPropuestaEnTxn` guarda la duración en BD.
 - 5 pruebas nuevas en `propuestaIA.test.ts` (147 totales), todas verdes
   + tsc sin errores.
 - Sin migración de BD — usa tablas existentes.
+- Rama `feature/ia-crear-meta`, commit `15a3ba1`.
 - **Pendiente de merge a main** — requiere prueba manual con clave real
   de Gemini por parte de Kevin.
