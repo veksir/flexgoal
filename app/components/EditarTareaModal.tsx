@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import DatePicker from './DatePicker';
 
 import {
   esFechaValida,
@@ -145,14 +146,12 @@ export default function EditarTareaModal({
               placeholderTextColor="#999"
               multiline
             />
-            <TextInput
-              style={estilos.input}
+            <DatePicker
               value={fecha}
-              onChangeText={setFecha}
-              placeholder="AAAA-MM-DD (opcional)"
-              placeholderTextColor="#999"
+              onChange={setFecha}
+              placeholder="Seleccionar fecha (opcional)"
+              error={errorFecha}
             />
-            {errorFecha ? <Text style={estilos.textoError}>{errorFecha}</Text> : null}
             <TextInput
               style={estilos.input}
               value={duracion}
