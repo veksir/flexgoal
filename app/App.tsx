@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   Vibration,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
