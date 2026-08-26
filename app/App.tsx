@@ -18,6 +18,7 @@ import MetaDetalleScreen from './screens/MetaDetalleScreen';
 import ObjetivoDetalleScreen from './screens/ObjetivoDetalleScreen';
 import DisponibilidadScreen from './screens/DisponibilidadScreen';
 import SemanaScreen from './screens/SemanaScreen';
+import ConfiguracionScreen from './screens/ConfiguracionScreen';
 import { getDb } from './db/database';
 import {
   crearSesion,
@@ -73,6 +74,7 @@ export default function App() {
   const [modoSesion, setModoSesion] = useState<ModoSesion>('libre');
   const [duracionTrabajo, setDuracionTrabajo] = useState('25');
   const [duracionDescanso, setDuracionDescanso] = useState('5');
+  const [mostrarConfig, setMostrarConfig] = useState(false);
   const sesionActivaRef = useRef<SesionActiva | null>(null);
 
   useEffect(() => {
@@ -256,11 +258,35 @@ export default function App() {
   const enDetalle = Boolean(metaSeleccionada || objetivoSeleccionado);
   const vistaActual = VISTAS.find((v) => v.id === vista);
 
+  if (mostrarConfig) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerFila}>
+            <Text style={styles.titulo}>Flexgoal</Text>
+          </View>
+          <Text style={styles.headerSubtitulo}>Configuración</Text>
+        </View>
+        <View style={styles.contenido}>
+          <ConfiguracionScreen onVolver={() => setMostrarConfig(false)} />
+        </View>
+        <StatusBar style="auto" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerFila}>
           <Text style={styles.titulo}>Flexgoal</Text>
+          <Pressable
+            onPress={() => setMostrarConfig(true)}
+            hitSlop={8}
+            style={{ padding: espacio.sm }}
+          >
+            <Text style={{ fontSize: 20 }}>⚙️</Text>
+          </Pressable>
         </View>
         {!enDetalle && vistaActual ? (
           <Text style={styles.headerSubtitulo}>{vistaActual.subtitulo}</Text>
