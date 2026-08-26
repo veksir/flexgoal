@@ -497,8 +497,9 @@ export const estilos = StyleSheet.create({
     paddingVertical: espacio.xs,
   },
   pickerBoton: {
-    paddingVertical: espacio.xs,
-    paddingHorizontal: espacio.md - 2,
+    minHeight: toqueMinimo,
+    justifyContent: 'center',
+    paddingHorizontal: espacio.sm,
   },
   pickerBotonTexto: {
     fontSize: 14,
