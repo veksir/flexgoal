@@ -757,3 +757,34 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
   `convertirIdeaEnMeta` con la propuesta filtrada.
 - Commits: `abab253` merged --ff-only a main.
 - 169 tests, `tsc --noEmit` sin errores.
+
+### 2026-08-26 — Fix: 7 bugs de sesiones, Pomodoro y configuración
+
+- Origen: documento "notas para opencode.txt" en el escritorio de Kevin,
+  que identificó 7 bugs tras investigar el bug original del selector
+  Libre/Pomodoro compartido entre tarjetas.
+- Bugs corregidos:
+  1. **Selector de modo global → local por fila:** `modoSesion` era un
+     único estado global en `useSesion`, por eso cambiarlo en una tarjeta
+     afectaba todas. Ahora cada tarjeta en `HoyScreen` y
+     `ObjetivoDetalleScreen` maneja su propio estado local
+     (`modosPorTarea`), y el modo se pasa a `iniciarSesion` como
+     parámetro al presionar "Iniciar sesión".
+  2. **Escrituras sin await:** `iniciarSesion()` era síncrona, no
+     esperaba `iniciarPomodoro`/`iniciarSesionActiva`. Ahora es `async`
+     con `await` + `try/catch` que muestra alerta si falla.
+  3. **sesion_activa sin UNIQUE:** migración v14 recrea la tabla con
+     `UNIQUE(tarea_id)`, limpia duplicados con `INSERT OR IGNORE`, y
+     `obtenerSesionActiva` ahora usa `ORDER BY id DESC LIMIT 1`.
+     `iniciarSesionActiva` e `iniciarPomodoro` hacen `DELETE` previo.
+  4. **Mensaje "30 segundos" incorrecto:** verificaba `< 1 min` pero
+     decía "30 segundos". Corregido a "1 minuto".
+  5. **Texto privacidad engañoso:** "nunca se envía a ningún lado" era
+     falso (se envía a Google Gemini). Corregido a "se envía únicamente a
+     los servidores de Google Gemini".
+  6. **Sin isSaving en ConfiguracionScreen:** botones Guardar/Borrar sin
+     protección contra doble-tap. Agregado `isSaving` + `disabled`.
+  7. **Dynamic import innecesario:** `await import('../db/tareas')` en
+     `agregarTarea` reemplazado por import estático (ya existía).
+- Commit: `de45850` en main.
+- 169 tests, `tsc --noEmit` sin errores.
