@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 
 import { crearIdea, eliminarIdea, listarIdeas, type Idea } from '../db/ideas';
-import { convertirIdeaEnMeta } from '../db/conversiones';
+import { convertirIdeaEnMeta, type PropuestaEstructura } from '../db/conversiones';
+import type { PropuestaIA } from '../ia/gemini';
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { estilos } from './estilos';
 import { color, espacio } from './theme';
@@ -55,6 +56,18 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
     setIsSaving(true);
     try {
       await convertirIdeaEnMeta(db, ideaAConvertir, plantillaId);
+      setIdeaAConvertir(null);
+      await cargarIdeas();
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function guardarPropuestaIA(propuesta: PropuestaIA) {
+    if (!ideaAConvertir) return;
+    setIsSaving(true);
+    try {
+      await convertirIdeaEnMeta(db, ideaAConvertir, undefined, propuesta as PropuestaEstructura);
       setIdeaAConvertir(null);
       await cargarIdeas();
     } finally {
@@ -144,7 +157,7 @@ export default function IdeasScreen({ db, texto, setTexto }: Props) {
         ideaTexto={ideaAConvertir?.texto ?? ''}
         onCancel={() => setIdeaAConvertir(null)}
         onConvertir={convertir}
-        onGuardar={() => {}}
+        onGuardar={guardarPropuestaIA}
         isSaving={isSaving}
       />
     </KeyboardAvoidingView>
