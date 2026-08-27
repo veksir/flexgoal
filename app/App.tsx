@@ -40,8 +40,6 @@ export default function App() {
   const {
     sesionActiva,
     tiempoSegundos,
-    modoSesion,
-    setModoSesion,
     duracionTrabajo,
     setDuracionTrabajo,
     duracionDescanso,
@@ -119,8 +117,6 @@ export default function App() {
             setErrorDuracionTarea={setErrorDuracionTarea}
             prioridadTarea={prioridadTarea}
             setPrioridadTarea={setPrioridadTarea}
-            modoSesion={modoSesion}
-            setModoSesion={setModoSesion}
             duracionTrabajo={duracionTrabajo}
             setDuracionTrabajo={setDuracionTrabajo}
             duracionDescanso={duracionDescanso}
@@ -145,8 +141,6 @@ export default function App() {
                 tiempoSegundos={tiempoSegundos}
                 onIniciarSesion={iniciarSesion}
                 onDetenerSesion={detenerSesion}
-                modoSesion={modoSesion}
-                setModoSesion={setModoSesion}
                 duracionTrabajo={duracionTrabajo}
                 setDuracionTrabajo={setDuracionTrabajo}
                 duracionDescanso={duracionDescanso}

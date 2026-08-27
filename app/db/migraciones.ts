@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 13;
+export const DATABASE_VERSION = 14;
 
 export interface Migracion {
   version: number;
@@ -126,6 +126,23 @@ export const MIGRACIONES: Migracion[] = [
         hora_inicio TEXT NOT NULL,
         hora_fin TEXT NOT NULL
       );
+    `,
+  },
+  {
+    version: 14,
+    sql: `
+      CREATE TABLE sesion_activa_nueva (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tarea_id INTEGER NOT NULL UNIQUE REFERENCES tareas(id),
+        inicio TEXT NOT NULL,
+        modo TEXT NOT NULL DEFAULT 'libre',
+        fase TEXT,
+        fin_esperado TEXT
+      );
+      INSERT OR IGNORE INTO sesion_activa_nueva (tarea_id, inicio, modo, fase, fin_esperado)
+        SELECT tarea_id, inicio, modo, fase, fin_esperado FROM sesion_activa;
+      DROP TABLE sesion_activa;
+      ALTER TABLE sesion_activa_nueva RENAME TO sesion_activa;
     `,
   },
 ];

@@ -28,6 +28,7 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
   const [claveGuardada, setClaveGuardada] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [modelos, setModelos] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     cargarClave();
@@ -53,10 +54,15 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
       Alert.alert('Clave vacía', 'Pegá tu clave de Gemini antes de guardar.');
       return;
     }
-    await guardarClaveAPI(limpia);
-    setClave(limpia);
-    setClaveGuardada(true);
-    Alert.alert('Guardado', 'Tu clave de Gemini quedó guardada en este dispositivo.');
+    setIsSaving(true);
+    try {
+      await guardarClaveAPI(limpia);
+      setClave(limpia);
+      setClaveGuardada(true);
+      Alert.alert('Guardado', 'Tu clave de Gemini quedó guardada en este dispositivo.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function borrar() {
@@ -69,9 +75,14 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
           text: 'Borrar',
           style: 'destructive',
           onPress: async () => {
-            await borrarClaveAPI();
-            setClave('');
-            setClaveGuardada(false);
+            setIsSaving(true);
+            try {
+              await borrarClaveAPI();
+              setClave('');
+              setClaveGuardada(false);
+            } finally {
+              setIsSaving(false);
+            }
           },
         },
       ]
@@ -122,6 +133,7 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
           <Button
             title="Guardar"
             onPress={guardar}
+            disabled={isSaving}
             style={{ flex: 1, marginBottom: 0 }}
           />
 
@@ -130,6 +142,7 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
               title="Borrar"
               onPress={borrar}
               variant="danger"
+              disabled={isSaving}
               style={{ flex: 1, marginBottom: 0 }}
             />
           )}
@@ -164,7 +177,7 @@ export default function ConfiguracionScreen({ onVolver }: Props) {
           3. Pegala aquí y guardala
         </Text>
         <Text style={[estilos.vacioSubtexto, { marginTop: espacio.sm }]}>
-          La clave se guarda solo en este dispositivo, nunca se envía a ningún lado.
+          La clave se guarda solo en este dispositivo y se envía únicamente a los servidores de Google Gemini para las llamadas de IA.
         </Text>
       </View>
     </KeyboardAvoidingView>

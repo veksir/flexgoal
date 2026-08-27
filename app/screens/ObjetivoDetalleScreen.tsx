@@ -21,6 +21,7 @@ import {
   calcularDiferencia,
   actualizarTarea,
   puedeInteractuarConTarea,
+  crearTarea,
   type Tarea,
   type Prioridad,
 } from '../db/tareas';
@@ -66,7 +67,7 @@ interface Props {
   onVolver: () => void;
   sesionActiva: SesionActiva | null;
   tiempoSegundos: number;
-  onIniciarSesion: (tarea: Tarea) => void;
+  onIniciarSesion: (tarea: Tarea, modo?: ModoSesion) => void;
   onDetenerSesion: () => void;
   textoTarea: string;
   setTextoTarea: (texto: string) => void;
@@ -80,8 +81,6 @@ interface Props {
   setErrorDuracionTarea: (error: string) => void;
   prioridadTarea: Prioridad | null;
   setPrioridadTarea: (prioridad: Prioridad | null) => void;
-  modoSesion: ModoSesion;
-  setModoSesion: (modo: ModoSesion) => void;
   duracionTrabajo: string;
   setDuracionTrabajo: (texto: string) => void;
   duracionDescanso: string;
@@ -110,8 +109,6 @@ export default function ObjetivoDetalleScreen({
   setErrorDuracionTarea,
   prioridadTarea,
   setPrioridadTarea,
-  modoSesion,
-  setModoSesion,
   duracionTrabajo,
   setDuracionTrabajo,
   duracionDescanso,
@@ -124,7 +121,16 @@ export default function ObjetivoDetalleScreen({
   const [sesionesHistorial, setSesionesHistorial] = useState<Sesion[]>([]);
   const [tareaEditando, setTareaEditando] = useState<Tarea | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [modosPorTarea, setModosPorTarea] = useState<Record<number, ModoSesion>>({});
   const sesionActivaAnterior = useRef(sesionActiva);
+
+  function getModoTarea(tareaId: number): ModoSesion {
+    return modosPorTarea[tareaId] ?? 'libre';
+  }
+
+  function setModoTarea(tareaId: number, modo: ModoSesion) {
+    setModosPorTarea((prev) => ({ ...prev, [tareaId]: modo }));
+  }
 
   useEffect(() => { cargarTareas(); }, []);
 
@@ -146,7 +152,6 @@ export default function ObjetivoDetalleScreen({
   }
 
   async function agregarTarea(nombre: string, fechaPlanificada?: string, duracionEstimadaMinutos?: number, prioridad?: Prioridad | null) {
-    const { crearTarea } = await import('../db/tareas');
     await crearTarea(db, objetivo.id, nombre, fechaPlanificada, duracionEstimadaMinutos, prioridad);
     setTextoTarea('');
     setTextoFechaTarea('');
@@ -308,25 +313,25 @@ export default function ObjetivoDetalleScreen({
                       <View style={estilos.sesionInicio}>
                         <View style={estilos.modoSelector}>
                           <Pressable
-                            style={[estilos.modoBoton, modoSesion === 'libre' && estilos.modoBotonActivo]}
-                            onPress={() => setModoSesion('libre')}
+                            style={[estilos.modoBoton, getModoTarea(item.id) === 'libre' && estilos.modoBotonActivo]}
+                            onPress={() => setModoTarea(item.id, 'libre')}
                             accessibilityLabel="Sesión libre"
                             accessibilityRole="button"
-                            accessibilityState={{ selected: modoSesion === 'libre' }}
+                            accessibilityState={{ selected: getModoTarea(item.id) === 'libre' }}
                           >
-                            <Text style={[estilos.modoBotonTexto, modoSesion === 'libre' && estilos.modoBotonTextoActivo]}>Sesión libre</Text>
+                            <Text style={[estilos.modoBotonTexto, getModoTarea(item.id) === 'libre' && estilos.modoBotonTextoActivo]}>Sesión libre</Text>
                           </Pressable>
                           <Pressable
-                            style={[estilos.modoBoton, modoSesion === 'pomodoro' && estilos.modoBotonActivo]}
-                            onPress={() => { setModoSesion('pomodoro'); onCargarConfigPomodoro(); }}
+                            style={[estilos.modoBoton, getModoTarea(item.id) === 'pomodoro' && estilos.modoBotonActivo]}
+                            onPress={() => { setModoTarea(item.id, 'pomodoro'); onCargarConfigPomodoro(); }}
                             accessibilityLabel="Pomodoro"
                             accessibilityRole="button"
-                            accessibilityState={{ selected: modoSesion === 'pomodoro' }}
+                            accessibilityState={{ selected: getModoTarea(item.id) === 'pomodoro' }}
                           >
-                            <Text style={[estilos.modoBotonTexto, modoSesion === 'pomodoro' && estilos.modoBotonTextoActivo]}>Pomodoro</Text>
+                            <Text style={[estilos.modoBotonTexto, getModoTarea(item.id) === 'pomodoro' && estilos.modoBotonTextoActivo]}>Pomodoro</Text>
                           </Pressable>
                         </View>
-                        {modoSesion === 'pomodoro' && (
+                        {getModoTarea(item.id) === 'pomodoro' && (
                           <View style={estilos.pomodoroInputs}>
                             <View style={estilos.pomodoroInputFila}>
                               <Text style={estilos.pomodoroLabel}>Trabajo:</Text>
@@ -342,7 +347,7 @@ export default function ObjetivoDetalleScreen({
                         )}
                         <Button
                           title="Iniciar sesión"
-                          onPress={() => onIniciarSesion(item)}
+                          onPress={() => onIniciarSesion(item, getModoTarea(item.id))}
                           style={estilos.botonSesion}
                           textStyle={estilos.botonSesionTexto}
                         />

@@ -26,7 +26,6 @@ export interface SesionActiva {
 export function useSesion(db: SQLiteDatabase | null) {
   const [sesionActiva, setSesionActiva] = useState<SesionActiva | null>(null);
   const [tiempoSegundos, setTiempoSegundos] = useState(0);
-  const [modoSesion, setModoSesion] = useState<ModoSesion>('libre');
   const [duracionTrabajo, setDuracionTrabajo] = useState('25');
   const [duracionDescanso, setDuracionDescanso] = useState('5');
   const sesionActivaRef = useRef<SesionActiva | null>(null);
@@ -115,42 +114,47 @@ export function useSesion(db: SQLiteDatabase | null) {
     }
   }
 
-  function iniciarSesion(tarea: Tarea) {
+  async function iniciarSesion(tarea: Tarea, modo: ModoSesion = 'libre') {
     if (sesionActiva && sesionActiva.tareaId !== tarea.id) {
       Alert.alert('Sesión activa', 'Ya hay una sesión en curso. Detén la sesión activa antes de iniciar otra.');
       return;
     }
-    if (modoSesion === 'pomodoro') {
-      const trabajo = parseInt(duracionTrabajo, 10);
-      const descanso = parseInt(duracionDescanso, 10);
-      if (isNaN(trabajo) || trabajo < 1 || isNaN(descanso) || descanso < 1) {
-        Alert.alert('Duración inválida', 'Las duraciones deben ser números positivos.');
-        return;
+    if (!db) return;
+    try {
+      if (modo === 'pomodoro') {
+        const trabajo = parseInt(duracionTrabajo, 10);
+        const descanso = parseInt(duracionDescanso, 10);
+        if (isNaN(trabajo) || trabajo < 1 || isNaN(descanso) || descanso < 1) {
+          Alert.alert('Duración inválida', 'Las duraciones deben ser números positivos.');
+          return;
+        }
+        await iniciarPomodoro(db, tarea.id, trabajo, descanso);
+        const ahora = Date.now();
+        const nueva: SesionActiva = {
+          tareaId: tarea.id,
+          inicioTimestamp: ahora,
+          modo: 'pomodoro',
+          fase: 'trabajo',
+          finEsperadoTimestamp: ahora + trabajo * 60000,
+        };
+        setSesionActiva(nueva);
+        sesionActivaRef.current = nueva;
+        setTiempoSegundos(trabajo * 60);
+      } else {
+        await iniciarSesionActiva(db, tarea.id);
+        const nueva: SesionActiva = {
+          tareaId: tarea.id,
+          inicioTimestamp: Date.now(),
+          modo: 'libre',
+          fase: null,
+          finEsperadoTimestamp: null,
+        };
+        setSesionActiva(nueva);
+        sesionActivaRef.current = nueva;
+        setTiempoSegundos(0);
       }
-      if (db) iniciarPomodoro(db, tarea.id, trabajo, descanso);
-      const ahora = Date.now();
-      const nueva: SesionActiva = {
-        tareaId: tarea.id,
-        inicioTimestamp: ahora,
-        modo: 'pomodoro',
-        fase: 'trabajo',
-        finEsperadoTimestamp: ahora + trabajo * 60000,
-      };
-      setSesionActiva(nueva);
-      sesionActivaRef.current = nueva;
-      setTiempoSegundos(trabajo * 60);
-    } else {
-      if (db) iniciarSesionActiva(db, tarea.id);
-      const nueva: SesionActiva = {
-        tareaId: tarea.id,
-        inicioTimestamp: Date.now(),
-        modo: 'libre',
-        fase: null,
-        finEsperadoTimestamp: null,
-      };
-      setSesionActiva(nueva);
-      sesionActivaRef.current = nueva;
-      setTiempoSegundos(0);
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo iniciar la sesión. Intentá de nuevo.');
     }
   }
 
@@ -165,7 +169,7 @@ export function useSesion(db: SQLiteDatabase | null) {
     }
     const minutos = Math.round((Date.now() - sesionActiva.inicioTimestamp) / 60000);
     if (minutos < 1) {
-      Alert.alert('Sesión muy corta', 'La sesión duró menos de 30 segundos y no se guardó.');
+      Alert.alert('Sesión muy corta', 'La sesión duró menos de 1 minuto y no se guardó.');
       await finalizarSesionActiva(db, sesionActiva.tareaId);
       setSesionActiva(null);
       sesionActivaRef.current = null;
@@ -181,8 +185,6 @@ export function useSesion(db: SQLiteDatabase | null) {
   return {
     sesionActiva,
     tiempoSegundos,
-    modoSesion,
-    setModoSesion,
     duracionTrabajo,
     setDuracionTrabajo,
     duracionDescanso,

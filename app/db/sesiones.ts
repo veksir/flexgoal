@@ -64,6 +64,7 @@ export async function iniciarSesionActiva(
   db: SQLiteDatabase,
   tareaId: number
 ): Promise<void> {
+  await db.runAsync('DELETE FROM sesion_activa WHERE tarea_id = ?', tareaId);
   await db.runAsync(
     'INSERT INTO sesion_activa (tarea_id, inicio) VALUES (?, ?)',
     tareaId,
@@ -81,7 +82,7 @@ export async function obtenerSesionActiva(
     fase: string | null;
     fin_esperado: string | null;
   }>(
-    'SELECT tarea_id, inicio, modo, fase, fin_esperado FROM sesion_activa LIMIT 1'
+    'SELECT tarea_id, inicio, modo, fase, fin_esperado FROM sesion_activa ORDER BY id DESC LIMIT 1'
   );
   if (!fila) {
     return null;
@@ -152,6 +153,7 @@ export async function iniciarPomodoro(
   trabajoMin: number,
   descansoMin: number
 ): Promise<void> {
+  await db.runAsync('DELETE FROM sesion_activa WHERE tarea_id = ?', tareaId);
   const ahora = new Date();
   const finEsperado = new Date(ahora.getTime() + trabajoMin * 60000);
   await db.runAsync(

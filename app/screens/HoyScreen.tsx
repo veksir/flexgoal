@@ -20,10 +20,8 @@ interface Props {
   db: SQLiteDatabase;
   sesionActiva: SesionActiva | null;
   tiempoSegundos: number;
-  onIniciarSesion: (tarea: TareaConContexto) => void;
+  onIniciarSesion: (tarea: TareaConContexto, modo?: ModoSesion) => void;
   onDetenerSesion: () => void;
-  modoSesion: ModoSesion;
-  setModoSesion: (modo: ModoSesion) => void;
   duracionTrabajo: string;
   setDuracionTrabajo: (texto: string) => void;
   duracionDescanso: string;
@@ -37,8 +35,6 @@ export default function HoyScreen({
   tiempoSegundos,
   onIniciarSesion,
   onDetenerSesion,
-  modoSesion,
-  setModoSesion,
   duracionTrabajo,
   setDuracionTrabajo,
   duracionDescanso,
@@ -46,6 +42,15 @@ export default function HoyScreen({
   onCargarConfigPomodoro,
 }: Props) {
   const [tareas, setTareas] = useState<TareaConContexto[]>([]);
+  const [modosPorTarea, setModosPorTarea] = useState<Record<number, ModoSesion>>({});
+
+  function getModoTarea(tareaId: number): ModoSesion {
+    return modosPorTarea[tareaId] ?? 'libre';
+  }
+
+  function setModoTarea(tareaId: number, modo: ModoSesion) {
+    setModosPorTarea((prev) => ({ ...prev, [tareaId]: modo }));
+  }
 
   useEffect(() => {
     cargarTareas();
@@ -173,17 +178,17 @@ export default function HoyScreen({
                   <Pressable
                     style={[
                       estilos.modoBoton,
-                      modoSesion === 'libre' && estilos.modoBotonActivo,
+                      getModoTarea(item.id) === 'libre' && estilos.modoBotonActivo,
                     ]}
-                    onPress={() => setModoSesion('libre')}
+                    onPress={() => setModoTarea(item.id, 'libre')}
                     accessibilityLabel="Sesión libre"
                     accessibilityRole="button"
-                    accessibilityState={{ selected: modoSesion === 'libre' }}
+                    accessibilityState={{ selected: getModoTarea(item.id) === 'libre' }}
                   >
                     <Text
                       style={[
                         estilos.modoBotonTexto,
-                        modoSesion === 'libre' && estilos.modoBotonTextoActivo,
+                        getModoTarea(item.id) === 'libre' && estilos.modoBotonTextoActivo,
                       ]}
                     >
                       Sesión libre
@@ -192,27 +197,27 @@ export default function HoyScreen({
                   <Pressable
                     style={[
                       estilos.modoBoton,
-                      modoSesion === 'pomodoro' && estilos.modoBotonActivo,
+                      getModoTarea(item.id) === 'pomodoro' && estilos.modoBotonActivo,
                     ]}
                     onPress={() => {
-                      setModoSesion('pomodoro');
+                      setModoTarea(item.id, 'pomodoro');
                       onCargarConfigPomodoro();
                     }}
                     accessibilityLabel="Pomodoro"
                     accessibilityRole="button"
-                    accessibilityState={{ selected: modoSesion === 'pomodoro' }}
+                    accessibilityState={{ selected: getModoTarea(item.id) === 'pomodoro' }}
                   >
                     <Text
                       style={[
                         estilos.modoBotonTexto,
-                        modoSesion === 'pomodoro' && estilos.modoBotonTextoActivo,
+                        getModoTarea(item.id) === 'pomodoro' && estilos.modoBotonTextoActivo,
                       ]}
                     >
                       Pomodoro
                     </Text>
                   </Pressable>
                 </View>
-                {modoSesion === 'pomodoro' && (
+                {getModoTarea(item.id) === 'pomodoro' && (
                   <View style={estilos.pomodoroInputs}>
                     <View style={estilos.pomodoroInputFila}>
                       <Text style={estilos.pomodoroLabel}>Trabajo:</Text>
@@ -240,7 +245,7 @@ export default function HoyScreen({
                 )}
                 <Button
                   title="Iniciar sesión"
-                  onPress={() => onIniciarSesion(item)}
+                  onPress={() => onIniciarSesion(item, getModoTarea(item.id))}
                   style={estilos.botonSesion}
                   textStyle={estilos.botonSesionTexto}
                 />
