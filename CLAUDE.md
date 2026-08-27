@@ -734,3 +734,26 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
 - Commits: `6090960` (LICENSE), `fb06be2` (DatePicker), `15243d4`
   (touchables), `5456eb7` (tests UI). Todos merged --ff-only a main.
 - 169 tests totales (147 db + 22 UI), `tsc --noEmit` sin errores.
+
+### 2026-08-26 — Fix: reconectar flujo de IA en ConversionModal
+
+- La rama `feature/ia-crear-meta` (commit `15a3ba1`,Historia 26) nunca
+  se mergeó a main. Cuando se extrajo `ConversionModal` como componente
+  separado (TT-017), solo se extrajo la selección de plantillas — el
+  flujo de IA completo se perdió.
+- **Causa:** `onGuardar` en IdeasScreen estaba conectado a `() => {}`
+  (función vacía). Al tocar "✨ Automático (IA)", el modal llamaba
+  `onConvertir()` sin argumentos → creaba meta vacía sin objetivos.
+- **Fix:** Reescrito `ConversionModal.tsx` con el flujo completo:
+  - Selección (IA / Plantillas / Cancelar)
+  - Configuración (cantidad de objetivos 2-6, tareas por objetivo 2-5)
+  - Carga con ActivityIndicator
+  - Revisión con checkboxes ✅/⬜ por objetivo y tarea
+  - Edición inline de nombres y duraciones
+  - Agregar/eliminar objetivos y tareas
+  - Corrección con feedback a la IA
+  - Guardado de propuesta aceptada
+- `IdeasScreen.tsx`: nueva función `guardarPropuestaIA` conectada a
+  `convertirIdeaEnMeta` con la propuesta filtrada.
+- Commits: `abab253` merged --ff-only a main.
+- 169 tests, `tsc --noEmit` sin errores.
