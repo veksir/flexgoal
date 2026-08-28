@@ -788,3 +788,35 @@ obligatorio, IA obligatoria, dependencia de APIs de pago.
      `agregarTarea` reemplazado por import estático (ya existía).
 - Commit: `de45850` en main.
 - 169 tests, `tsc --noEmit` sin errores.
+### 2026-08-28 — Tarea técnica 5: Rediseño visual de Hoy, Semana y Disponibilidad
+
+- **HoyScreen:** reconstruida como línea de tiempo visual (riel + punto por
+  tarea, con estado completado/sesión activa/vencido codificado en el punto).
+  Se agrupan "Vencidas" y "Hoy" con etiquetas de grupo dentro de un único
+  FlatList (el riel se dibuja por fila, sin posicionamiento absoluto, seguro
+  con virtualización). Se agregó aviso de sobrecarga del día arriba del
+  timeline reutilizando `calcularCargaDia` (solo informativo, no afecta la
+  lista). Todas las tarjetas son ahora `lineaTiempoTarjeta`.
+- **SemanaScreen:** se rediseñó como comparativa de barras: 7 columnas de
+  altura proporcional a la carga planificada (día de hoy resaltado, día
+  sobrecargado en color de advertencia), leyenda de "Carga normal" vs
+  "Sobrecargado", y al tocar una barra se selecciona ese día para ver su
+  detalle (totales planificado/disponible, diferencia, aviso de sobrecarga y
+  sus tareas). Ya no muestra los 7 días expandidos.
+- **DisponibilidadScreen:** agregada grilla semanal de vista previa (bloques
+  horarios posicionados por día, solo lectura, rango visual 6:00–23:00 — los
+  bloques fuera de ese rango se recortan solo visualmente, se guardan tal
+  cual). El día actual se resalta en la grilla.
+- `estilos.ts`: nuevos bloques `avisoSobrecarga`, `lineaTiempo*`,
+  `semanaBarras*` / `semanaLeyenda*` y `dispGrilla*`. Se agregó `flex: 1` a
+  `tareaContenido` (necesario para el layout de la nueva tarjeta).
+- Cero cambios en `app/db/*` — toda la lógica, validaciones y persistencia
+  quedan intactas. Reutiliza `calcularCargaDia`, `calcularCargaSemana`,
+  `formatearDiferencia` y `DiaCarga` ya existentes.
+- Como beneficio colateral se eliminó el warning de lint `EstadoTarea` no
+  usado en HoyScreen (el original tenía 4 warnings, ahora quedan 3, todos
+  preexistentes de `exhaustive-deps`).
+- Verificado: 169 tests (147 + 22) verdes, `tsc --noEmit` sin errores, 0
+  errores de lint. Falta confirmación visual de Kevin en dispositivo antes
+  del merge definitivo; en esta sesión se mergeó con `--ff-only` por
+  instrucción expresa del usuario.
