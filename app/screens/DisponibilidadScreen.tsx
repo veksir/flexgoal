@@ -25,8 +25,32 @@ interface Props {
 const DIAS = [1, 2, 3, 4, 5, 6, 0];
 const MINUTOS = [0, 15, 30, 45];
 
+// Rango horario que cubre la vista previa en grilla (solo lectura). Un
+// bloque fuera de este rango sigue guardado tal cual — el recorte es
+// únicamente visual, para no dedicar toda la grilla a horas de
+// madrugada que casi nunca se usan.
+const RANGO_GRILLA_INICIO_MIN = 6 * 60;
+const RANGO_GRILLA_FIN_MIN = 23 * 60;
+const RANGO_GRILLA_TOTAL_MIN = RANGO_GRILLA_FIN_MIN - RANGO_GRILLA_INICIO_MIN;
+
 function formatearNumero(n: number): string {
   return String(n).padStart(2, '0');
+}
+
+function minutosDesdeHora(hora: string): number {
+  const [h, m] = hora.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function posicionEnGrilla(
+  horaInicio: string,
+  horaFin: string
+): { top: `${number}%`; height: `${number}%` } {
+  const inicioMin = Math.max(RANGO_GRILLA_INICIO_MIN, minutosDesdeHora(horaInicio));
+  const finMin = Math.min(RANGO_GRILLA_FIN_MIN, minutosDesdeHora(horaFin));
+  const topPct = ((inicioMin - RANGO_GRILLA_INICIO_MIN) / RANGO_GRILLA_TOTAL_MIN) * 100;
+  const alturaPct = Math.max(3, ((finMin - inicioMin) / RANGO_GRILLA_TOTAL_MIN) * 100);
+  return { top: `${topPct}%`, height: `${alturaPct}%` };
 }
 
 function PickerHora({
@@ -146,9 +170,58 @@ export default function DisponibilidadScreen({ db }: Props) {
     bloques: bloques.filter((b) => b.dia_semana === dia),
   }));
 
+  const hoyDiaSemana = new Date().getDay();
+
   return (
     <View style={{ flex: 1 }}>
       <Text style={estilos.tituloDetalle}>Disponibilidad semanal</Text>
+
+      <View style={estilos.dispGrillaContenedor}>
+        <View style={estilos.dispGrillaCabeceraFila}>
+          <View style={estilos.dispGrillaCabeceraHueco} />
+          {DIAS.map((dia) => (
+            <Text
+              key={dia}
+              style={[
+                estilos.dispGrillaCabeceraDia,
+                dia === hoyDiaSemana && estilos.dispGrillaCabeceraDiaHoy,
+              ]}
+            >
+              {nombreDia(dia).slice(0, 2)}
+            </Text>
+          ))}
+        </View>
+        <View style={estilos.dispGrillaCuerpoFila}>
+          <View style={estilos.dispGrillaEtiquetasHora}>
+            <Text style={estilos.dispGrillaEtiquetaHora}>6</Text>
+            <Text style={estilos.dispGrillaEtiquetaHora}>12</Text>
+            <Text style={estilos.dispGrillaEtiquetaHora}>18</Text>
+            <Text style={estilos.dispGrillaEtiquetaHora}>23</Text>
+          </View>
+          <View style={estilos.dispGrillaColumnas}>
+            {bloquesPorDia.map(({ dia, bloques: bloquesDelDia }) => (
+              <View
+                key={dia}
+                style={[
+                  estilos.dispGrillaColumna,
+                  dia === hoyDiaSemana && estilos.dispGrillaColumnaHoy,
+                ]}
+              >
+                {bloquesDelDia.map((bloque) => (
+                  <View
+                    key={bloque.id}
+                    style={[
+                      estilos.dispGrillaBloque,
+                      posicionEnGrilla(bloque.hora_inicio, bloque.hora_fin),
+                    ]}
+                  />
+                ))}
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+
       <View style={estilos.formularioDisponibilidad}>
         <View style={estilos.diaSelector}>
           {DIAS.map((dia) => (

@@ -9,10 +9,16 @@ import {
 } from '../db/carga';
 import { formatearDuracion, formatearDiferencia } from '../db/tareas';
 import { estilos } from './estilos';
+import { color } from './theme';
 
 interface Props {
   db: SQLiteDatabase;
 }
+
+// Abreviatura de un día de la semana (0=Domingo … 6=Sábado, igual que
+// Date.getDay() y que db/disponibilidad.ts). Estándar de calendario en
+// español: L M X J V S D.
+const ABREVIATURA_DIA = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 
 function semanaAnterior(fecha: string): string {
   const [anio, mes, dia] = fecha.split('-').map(Number);
@@ -50,6 +56,7 @@ export default function SemanaScreen({ db }: Props) {
   const hoy = new Date().toISOString().split('T')[0];
   const [fechaInicio, setFechaInicio] = useState(() => inicioDeSemana(hoy));
   const [dias, setDias] = useState<DiaCarga[]>([]);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<string | null>(null);
 
   useEffect(() => {
     cargarSemana();
@@ -58,7 +65,21 @@ export default function SemanaScreen({ db }: Props) {
   async function cargarSemana() {
     const resultado = await calcularCargaSemana(db, fechaInicio);
     setDias(resultado);
+    // Si el día antes seleccionado ya no pertenece a la semana visible
+    // (cambiamos de semana), volvemos a elegir un día por defecto.
+    const siguePerteneciendo = resultado.some((d) => d.fecha === fechaSeleccionada);
+    if (!siguePerteneciendo) {
+      const diaHoyEnSemana = resultado.find((d) => d.fecha === hoy);
+      setFechaSeleccionada(diaHoyEnSemana ? diaHoyEnSemana.fecha : (resultado[0]?.fecha ?? null));
+    }
   }
+
+  const diaActivo = dias.find((d) => d.fecha === fechaSeleccionada) ?? null;
+
+  const maxMinutos = Math.max(
+    1,
+    ...dias.map((d) => Math.max(d.minutosPlanificados, d.minutosDisponibles))
+  );
 
   return (
     <View style={{ flex: 1 }}>
@@ -83,59 +104,102 @@ export default function SemanaScreen({ db }: Props) {
           <Text style={estilos.semanaNavBotonTexto}>Siguiente →</Text>
         </Pressable>
       </View>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        {dias.map((dia) => (
-          <View key={dia.fecha} style={estilos.semanaDia}>
-            <View style={estilos.semanaDiaHeader}>
-              <Text style={estilos.semanaDiaNombre}>
-                {dia.nombreDia}
-              </Text>
-              <Text style={estilos.semanaDiaFecha}>{dia.fecha}</Text>
-            </View>
-            <View style={estilos.semanaDiaCuerpo}>
-              <View style={estilos.semanaColumna}>
-                <Text style={estilos.semanaColumnaTitulo}>Tareas</Text>
-                {dia.tareas.length === 0 ? (
-                  <Text style={estilos.semanaVacio}>Sin tareas</Text>
-                ) : (
-                  dia.tareas.map((t) => (
-                    <View key={t.id} style={estilos.item}>
-                      <Text style={estilos.semanaTarea}>
-                        {t.nombre}
-                        {t.duracion_estimada_minutos == null
-                          ? ' (sin estimar)'
-                          : ''}
-                      </Text>
-                    </View>
-                  ))
-                )}
-              </View>
-              <View style={estilos.semanaColumna}>
-                <Text style={estilos.semanaColumnaTitulo}>Disponible</Text>
-                {dia.minutosDisponibles > 0 ? (
-                  <Text style={estilos.semanaTotal}>
-                    {formatearDuracion(dia.minutosDisponibles)}
-                  </Text>
-                ) : (
-                  <Text style={estilos.semanaVacio}>Sin disponibilidad</Text>
-                )}
-              </View>
-              <View style={estilos.semanaColumna}>
-                <Text style={estilos.semanaColumnaTitulo}>Balance</Text>
-                <Text style={estilos.semanaTotal}>
-                  {formatearDuracion(dia.minutosPlanificados)} /{' '}
-                  {formatearDuracion(dia.minutosDisponibles)}
+        <View style={estilos.semanaBarrasFila}>
+          {dias.map((dia) => {
+            const esHoy = dia.fecha === hoy;
+            const seleccionado = dia.fecha === fechaSeleccionada;
+            const alturaPorcentaje = Math.round(
+              (Math.max(dia.minutosPlanificados, 1) / maxMinutos) * 100
+            );
+            return (
+              <Pressable
+                key={dia.fecha}
+                style={estilos.semanaBarraColumna}
+                onPress={() => setFechaSeleccionada(dia.fecha)}
+                accessibilityLabel={`Ver ${dia.nombreDia} ${dia.fecha}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: seleccionado }}
+              >
+                <View
+                  style={[
+                    estilos.semanaBarraFondo,
+                    esHoy && estilos.semanaBarraFondoHoy,
+                    seleccionado && !esHoy && { borderColor: color.bordeFuerte },
+                  ]}
+                >
+                  {dia.minutosPlanificados > 0 ? (
+                    <View
+                      style={[
+                        estilos.semanaBarraRelleno,
+                        esHoy && estilos.semanaBarraRellenoHoy,
+                        dia.estaSobrecargado && estilos.semanaBarraRellenoSobrecarga,
+                        { height: `${alturaPorcentaje}%` },
+                      ]}
+                    />
+                  ) : null}
+                </View>
+                <Text
+                  style={[
+                    estilos.semanaBarraEtiqueta,
+                    esHoy && estilos.semanaBarraEtiquetaHoy,
+                  ]}
+                >
+                  {ABREVIATURA_DIA[dia.diaSemana]}
                 </Text>
-                <Text style={estilos.semanaDiferencia}>
-                  {formatearDiferencia(dia.diferencia)}
-                </Text>
-                {dia.estaSobrecargado ? (
-                  <Text style={estilos.textoAviso}>Sobrecargado</Text>
-                ) : null}
-              </View>
-            </View>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={estilos.semanaLeyendaFila}>
+          <View style={estilos.semanaLeyendaItem}>
+            <View style={[estilos.semanaLeyendaPunto, { backgroundColor: color.primario, opacity: 0.4 }]} />
+            <Text style={estilos.semanaLeyendaTexto}>Carga normal</Text>
           </View>
-        ))}
+          <View style={estilos.semanaLeyendaItem}>
+            <View style={[estilos.semanaLeyendaPunto, { backgroundColor: color.advertencia, opacity: 0.55 }]} />
+            <Text style={estilos.semanaLeyendaTexto}>Sobrecargado</Text>
+          </View>
+        </View>
+
+        {diaActivo ? (
+          <View style={{ marginTop: 20 }}>
+            <View style={estilos.semanaDiaHeader}>
+              <Text style={estilos.semanaDiaNombre}>{diaActivo.nombreDia}</Text>
+              <Text style={estilos.semanaDiaFecha}>{diaActivo.fecha}</Text>
+            </View>
+
+            <Text style={estilos.semanaTotal}>
+              {formatearDuracion(diaActivo.minutosPlanificados)} planificados de{' '}
+              {formatearDuracion(diaActivo.minutosDisponibles)} disponibles
+            </Text>
+            <Text style={estilos.semanaDiferencia}>
+              {formatearDiferencia(diaActivo.diferencia)}
+            </Text>
+            {diaActivo.estaSobrecargado ? (
+              <View style={estilos.avisoSobrecarga}>
+                <Text style={estilos.avisoSobrecargaIcono}>⚠️</Text>
+                <Text style={estilos.avisoSobrecargaTexto}>Este día está sobrecargado</Text>
+              </View>
+            ) : null}
+
+            <Text style={[estilos.semanaColumnaTitulo, { marginTop: 12 }]}>Tareas</Text>
+            {diaActivo.tareas.length === 0 ? (
+              <Text style={estilos.semanaVacio}>Sin tareas planificadas</Text>
+            ) : (
+              diaActivo.tareas.map((t) => (
+                <View key={t.id} style={estilos.item}>
+                  <Text style={estilos.semanaTarea}>
+                    {t.nombre}
+                    {t.duracion_estimada_minutos == null ? ' (sin estimar)' : ''}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );

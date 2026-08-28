@@ -175,6 +175,7 @@ export const estilos = StyleSheet.create({
   // Tareas (checkbox + estado)
   // ---------------------------------------------------------------------
   tareaContenido: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: espacio.md,
@@ -863,5 +864,232 @@ export const estilos = StyleSheet.create({
     height: 1,
     backgroundColor: color.borde,
     marginVertical: espacio.md,
+  },
+
+  // ---------------------------------------------------------------------
+  // Aviso de sobrecarga (Hoy, Disponibilidad al crear/editar tarea)
+  // ---------------------------------------------------------------------
+  avisoSobrecarga: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.sm,
+    backgroundColor: color.advertenciaSuave,
+    borderRadius: radio.md,
+    paddingVertical: espacio.sm,
+    paddingHorizontal: espacio.base,
+    marginBottom: espacio.base,
+  },
+  avisoSobrecargaIcono: {
+    fontSize: 16,
+  },
+  avisoSobrecargaTexto: {
+    flex: 1,
+    fontSize: 12.5,
+    color: color.advertencia,
+    fontWeight: '600',
+  },
+
+  // ---------------------------------------------------------------------
+  // Línea de tiempo del día (HoyScreen) — riel dibujado por fila (sin
+  // posicionamiento absoluto ni medición de alturas, seguro dentro de
+  // una FlatList virtualizada).
+  // ---------------------------------------------------------------------
+  lineaTiempoFila: {
+    flexDirection: 'row',
+    marginBottom: espacio.sm + 2,
+  },
+  lineaTiempoRielColumna: {
+    width: 22,
+    alignItems: 'center',
+  },
+  lineaTiempoRielSegmento: {
+    width: 1,
+    flex: 1,
+    backgroundColor: color.borde,
+  },
+  lineaTiempoRielSegmentoInvisible: {
+    backgroundColor: 'transparent',
+  },
+  lineaTiempoPunto: {
+    width: 9,
+    height: 9,
+    borderRadius: radio.completo,
+    backgroundColor: color.bordeFuerte,
+    borderWidth: 2,
+    borderColor: color.fondo,
+  },
+  lineaTiempoPuntoCompletada: {
+    backgroundColor: color.exito,
+  },
+  lineaTiempoPuntoActiva: {
+    width: 11,
+    height: 11,
+    backgroundColor: color.primario,
+  },
+  lineaTiempoPuntoVencida: {
+    backgroundColor: color.peligro,
+  },
+  lineaTiempoTarjetaWrapper: {
+    flex: 1,
+    paddingLeft: espacio.sm,
+  },
+  lineaTiempoTarjeta: {
+    backgroundColor: color.fondo,
+    borderRadius: radio.lg,
+    paddingVertical: espacio.md,
+    paddingHorizontal: espacio.base,
+    borderWidth: 1,
+    borderColor: color.borde,
+    ...sombraSuave,
+  },
+  lineaTiempoTarjetaCompletada: {
+    opacity: 0.55,
+  },
+  lineaTiempoTarjetaActiva: {
+    borderWidth: 1.5,
+    borderColor: color.primario,
+  },
+  lineaTiempoEtiquetaGrupo: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: color.textoTerciario,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: espacio.sm,
+    marginTop: espacio.xs,
+  },
+
+  // ---------------------------------------------------------------------
+  // Columnas de carga semanal (SemanaScreen)
+  // ---------------------------------------------------------------------
+  semanaBarrasFila: {
+    flexDirection: 'row',
+    gap: espacio.xs + 2,
+    paddingHorizontal: espacio.xs,
+    height: 170,
+    alignItems: 'flex-end',
+  },
+  semanaBarraColumna: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  semanaBarraFondo: {
+    flex: 1,
+    borderRadius: radio.sm,
+    backgroundColor: color.fondoSutil,
+    borderWidth: 1,
+    borderColor: color.borde,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  semanaBarraFondoHoy: {
+    borderWidth: 1.5,
+    borderColor: color.primario,
+    backgroundColor: color.primarioSuave,
+  },
+  semanaBarraRelleno: {
+    width: '100%',
+    backgroundColor: color.primario,
+    opacity: 0.4,
+    borderRadius: radio.sm,
+  },
+  semanaBarraRellenoHoy: {
+    opacity: 1,
+  },
+  semanaBarraRellenoSobrecarga: {
+    backgroundColor: color.advertencia,
+    opacity: 0.55,
+  },
+  semanaBarraEtiqueta: {
+    fontSize: 11,
+    color: color.textoInactivo,
+    textAlign: 'center',
+    marginTop: espacio.xs,
+  },
+  semanaBarraEtiquetaHoy: {
+    fontWeight: '700',
+    color: color.primario,
+  },
+  semanaLeyendaFila: {
+    flexDirection: 'row',
+    gap: espacio.base,
+    marginTop: espacio.base,
+    paddingHorizontal: espacio.xs,
+  },
+  semanaLeyendaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espacio.xs,
+  },
+  semanaLeyendaPunto: {
+    width: 8,
+    height: 8,
+    borderRadius: 2,
+  },
+  semanaLeyendaTexto: {
+    fontSize: 11.5,
+    color: color.textoTerciario,
+  },
+
+  // ---------------------------------------------------------------------
+  // Grilla semanal de disponibilidad (vista previa, DisponibilidadScreen)
+  // ---------------------------------------------------------------------
+  dispGrillaContenedor: {
+    marginBottom: espacio.lg,
+  },
+  dispGrillaCabeceraFila: {
+    flexDirection: 'row',
+  },
+  dispGrillaCabeceraHueco: {
+    width: 26,
+  },
+  dispGrillaCabeceraDia: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 11,
+    color: color.textoInactivo,
+  },
+  dispGrillaCabeceraDiaHoy: {
+    fontWeight: '700',
+    color: color.primario,
+  },
+  dispGrillaCuerpoFila: {
+    flexDirection: 'row',
+    marginTop: espacio.xs + 2,
+  },
+  dispGrillaEtiquetasHora: {
+    width: 26,
+    justifyContent: 'space-between',
+  },
+  dispGrillaEtiquetaHora: {
+    fontSize: 10,
+    color: color.textoInactivo,
+  },
+  dispGrillaColumnas: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 2,
+    height: 160,
+  },
+  dispGrillaColumna: {
+    flex: 1,
+    borderRadius: radio.sm,
+    backgroundColor: color.fondoSutil,
+    borderWidth: 1,
+    borderColor: color.borde,
+    borderStyle: 'dashed',
+  },
+  dispGrillaColumnaHoy: {
+    borderStyle: 'solid',
+    borderColor: color.bordeFuerte,
+  },
+  dispGrillaBloque: {
+    position: 'absolute',
+    left: 2,
+    right: 2,
+    backgroundColor: color.primario,
+    opacity: 0.45,
+    borderRadius: radio.sm - 2,
   },
 });
