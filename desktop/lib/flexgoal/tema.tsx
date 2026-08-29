@@ -35,7 +35,7 @@ export const MODOS = [
   { id: 'sistema', nombre: 'Sistema' },
 ] as const
 
-export type Acento = (typeof ACENTOS)[number]['id']
+export type Acento = (typeof ACENTOS)[number]['id'] | 'personalizado'
 export type Densidad = (typeof DENSIDADES)[number]['id']
 export type Radio = (typeof RADIOS)[number]['id']
 export type Modo = (typeof MODOS)[number]['id']
@@ -45,6 +45,8 @@ export interface Tema {
   densidad: Densidad
   radio: Radio
   modo: Modo
+  /** Hex (#rrggbb). Solo se usa cuando acento === 'personalizado'. */
+  colorPersonalizado?: string
 }
 
 export const TEMA_POR_DEFECTO: Tema = {
@@ -62,6 +64,17 @@ const Ctx = createContext<{
   reiniciarTema: () => void
 } | null>(null)
 
+/** Negro o blanco según qué de los dos contrasta mejor contra `hex`
+ * (fórmula de luminancia perceptual estándar, WCAG-ish). */
+function textoLegibleSobre(hex: string): string {
+  const limpio = hex.replace('#', '')
+  const r = parseInt(limpio.slice(0, 2), 16) / 255
+  const g = parseInt(limpio.slice(2, 4), 16) / 255
+  const b = parseInt(limpio.slice(4, 6), 16) / 255
+  const luminancia = 0.299 * r + 0.587 * g + 0.114 * b
+  return luminancia > 0.6 ? 'oklch(0.2 0 0)' : 'oklch(0.98 0 0)'
+}
+
 export function aplicarTema(tema: Tema) {
   const raiz = document.documentElement
   raiz.dataset.accent = tema.acento
@@ -72,6 +85,26 @@ export function aplicarTema(tema: Tema) {
     (tema.modo === 'sistema' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches)
   raiz.classList.toggle('dark', oscuro)
+
+  // Acento personalizado: no hay preset en globals.css para esto (los
+  // 5 acentos de fábrica tienen valores OKLCH calibrados a mano para
+  // luz y oscuridad), así que se pisan las variables directo con
+  // color-mix()/contraste calculado, en vez de intentar adivinar un
+  // par light/dark "bonito" para cualquier color arbitrario.
+  if (tema.acento === 'personalizado' && tema.colorPersonalizado) {
+    raiz.style.setProperty('--primary', tema.colorPersonalizado)
+    raiz.style.setProperty('--primary-foreground', textoLegibleSobre(tema.colorPersonalizado))
+    raiz.style.setProperty('--ring', tema.colorPersonalizado)
+    raiz.style.setProperty(
+      '--signal-soft',
+      `color-mix(in oklch, ${tema.colorPersonalizado} 16%, var(--background))`,
+    )
+  } else {
+    raiz.style.removeProperty('--primary')
+    raiz.style.removeProperty('--primary-foreground')
+    raiz.style.removeProperty('--ring')
+    raiz.style.removeProperty('--signal-soft')
+  }
 }
 
 export function ProveedorTema({ children }: { children: ReactNode }) {

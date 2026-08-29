@@ -128,23 +128,31 @@ export default function PaginaTiempo() {
                 </div>
 
                 {declarada && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {PASOS.map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => actualizarDisponibilidad(dia, p, true)}
-                        aria-pressed={minutos === p}
-                        className={cn(
-                          'tnum focus-visible:ring-ring min-h-9 rounded-md border px-2.5 text-[13px] transition-colors focus-visible:ring-2 focus-visible:outline-none',
-                          minutos === p
-                            ? 'border-primary bg-primary text-primary-foreground font-medium'
-                            : 'text-muted-foreground hover:bg-accent',
-                        )}
-                      >
-                        {p === 0 ? '0' : formatoMin(p)}
-                      </button>
-                    ))}
+                  <div className="mt-3 space-y-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {PASOS.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => actualizarDisponibilidad(dia, p, true)}
+                          aria-pressed={minutos === p}
+                          className={cn(
+                            'tnum focus-visible:ring-ring min-h-9 rounded-md border px-2.5 text-[13px] transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                            minutos === p
+                              ? 'border-primary bg-primary text-primary-foreground font-medium'
+                              : 'text-muted-foreground hover:bg-accent',
+                          )}
+                        >
+                          {p === 0 ? '0' : formatoMin(p)}
+                        </button>
+                      ))}
+                    </div>
+                    <ControlPersonalizado
+                      dia={dia}
+                      minutosActuales={minutos}
+                      esPersonalizado={!PASOS.includes(minutos)}
+                      onAplicar={(valor) => actualizarDisponibilidad(dia, valor, true)}
+                    />
                   </div>
                 )}
               </li>
@@ -224,6 +232,71 @@ export default function PaginaTiempo() {
           </div>
         </section>
       </div>
+    </div>
+  )
+}
+
+function ControlPersonalizado({
+  dia,
+  minutosActuales,
+  esPersonalizado,
+  onAplicar,
+}: {
+  dia: number
+  minutosActuales: number
+  esPersonalizado: boolean
+  onAplicar: (minutos: number) => void
+}) {
+  const [horas, setHoras] = useState('')
+  const [minutos, setMinutos] = useState('')
+
+  const aplicar = () => {
+    const h = Number(horas) || 0
+    const m = Number(minutos) || 0
+    const total = h * 60 + m
+    if (total <= 0) return
+    onAplicar(total)
+    setHoras('')
+    setMinutos('')
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="text-muted-foreground text-[11.5px]">Personalizado:</span>
+      <input
+        type="number"
+        min={0}
+        inputMode="numeric"
+        placeholder="hs"
+        value={horas}
+        onChange={(e) => setHoras(e.target.value)}
+        className="tnum focus-visible:ring-ring h-8 w-14 rounded-md border bg-transparent px-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+        aria-label={`Horas personalizadas, día ${dia}`}
+      />
+      <input
+        type="number"
+        min={0}
+        max={59}
+        inputMode="numeric"
+        placeholder="min"
+        value={minutos}
+        onChange={(e) => setMinutos(e.target.value)}
+        className="tnum focus-visible:ring-ring h-8 w-16 rounded-md border bg-transparent px-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+        aria-label={`Minutos personalizados, día ${dia}`}
+      />
+      <button
+        type="button"
+        onClick={aplicar}
+        disabled={!horas && !minutos}
+        className="focus-visible:ring-ring h-8 rounded-md border px-2.5 text-[12px] transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40"
+      >
+        Aplicar
+      </button>
+      {esPersonalizado && (
+        <span className="text-primary text-[11px]">
+          Actual: {formatoMin(minutosActuales)} (personalizado)
+        </span>
+      )}
     </div>
   )
 }

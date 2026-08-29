@@ -46,6 +46,7 @@ interface Acciones {
   descartarIdea: (id: string) => void
   actualizarDisponibilidad: (dia: number, minutos: number, declarada: boolean) => void
   alternarEstadoMeta: (id: string) => void
+  editarMeta: (id: string, cambios: Partial<Pick<Meta, 'titulo' | 'porQue' | 'horizonte'>>) => void
   reiniciar: () => void
   importar: (json: string) => { ok: boolean; error?: string }
 }
@@ -324,6 +325,13 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
         mut((e) => {
           const m = e.metas.find((x) => x.id === id)
           if (m) m.estado = m.estado === 'activa' ? 'pausada' : 'activa'
+          return e
+        }),
+
+      editarMeta: (id, cambios) =>
+        mut((e) => {
+          const m = e.metas.find((x) => x.id === id)
+          if (m) Object.assign(m, cambios)
           return e
         }),
 

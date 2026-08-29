@@ -115,7 +115,7 @@ export function DialogoPromoverIdea({ idea, onCerrar, onIrAAjustes }: Props) {
         if (!abierto) reiniciarYCerrar()
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] w-full min-w-0 overflow-y-auto sm:max-w-lg">
         {paso === 'elegir' && idea && (
           <>
             <DialogHeader>
@@ -194,22 +194,31 @@ export function DialogoPromoverIdea({ idea, onCerrar, onIrAAjustes }: Props) {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-2">
+            <div className="min-w-0 space-y-4 py-2">
               {propuesta.objetivos.map((obj, i) => (
-                <div key={i} className="rounded-lg border p-3">
-                  <p className="text-[14px] font-medium text-pretty">{obj.titulo}</p>
-                  {obj.criterioExito && (
-                    <p className="text-muted-foreground mt-1 text-[12px]">
-                      Listo cuando: {obj.criterioExito}
-                    </p>
-                  )}
-                  <ul className="mt-2 space-y-1">
+                <div key={i} className="min-w-0 rounded-lg border p-3">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <span className="bg-primary/15 text-primary mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] leading-snug font-semibold break-words">
+                        {obj.titulo}
+                      </p>
+                      {obj.criterioExito && (
+                        <p className="text-primary/90 mt-1 text-[12px] leading-snug break-words">
+                          Listo cuando: {obj.criterioExito}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <ul className="mt-3 ml-7 space-y-1.5 border-l pl-3">
                     {obj.tareas.map((t, j) => (
                       <li
                         key={j}
-                        className="text-muted-foreground flex items-center justify-between gap-2 text-[13px]"
+                        className="text-muted-foreground flex min-w-0 items-start justify-between gap-2 text-[12.5px]"
                       >
-                        <span className="min-w-0 flex-1 truncate">{t.titulo}</span>
+                        <span className="min-w-0 flex-1 break-words">{t.titulo}</span>
                         <span className="shrink-0 tabular-nums">{t.estimacionMin} min</span>
                       </li>
                     ))}

@@ -12,6 +12,7 @@ import {
   RADIOS,
   useTema,
 } from '@/lib/flexgoal/tema'
+import { useCronometro } from '@/lib/flexgoal/cronometro'
 import {
   borrarClaveAPI,
   claveEstaCifrada,
@@ -30,6 +31,7 @@ export default function PaginaDiseno() {
 
       <div className="mt-8 space-y-8">
         <SeccionApariencia />
+        <SeccionPomodoro />
         <SeccionIA />
       </div>
     </div>
@@ -37,14 +39,23 @@ export default function PaginaDiseno() {
 }
 
 function SeccionApariencia() {
-  const { tema, setTema } = useTema()
+  const { tema, setTema, reiniciarTema } = useTema()
 
   return (
     <section className="space-y-5">
-      <h2 className="label-instrumento text-muted-foreground">Apariencia</h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="label-instrumento text-muted-foreground">Apariencia</h2>
+        <button
+          type="button"
+          onClick={reiniciarTema}
+          className="text-muted-foreground hover:text-foreground text-[12px] underline underline-offset-2"
+        >
+          Restaurar valores por defecto
+        </button>
+      </div>
 
       <Campo etiqueta="Acento">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {ACENTOS.map((a) => (
             <button
               key={a.id}
@@ -64,6 +75,29 @@ function SeccionApariencia() {
               {tema.acento === a.id && <Check className="size-3.5" aria-hidden />}
             </button>
           ))}
+          <label
+            className={cn(
+              'flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] transition-colors',
+              tema.acento === 'personalizado'
+                ? 'border-foreground'
+                : 'border-border hover:bg-muted',
+            )}
+          >
+            <span
+              className="size-3 rounded-full border"
+              style={{ backgroundColor: tema.colorPersonalizado || '#888888' }}
+              aria-hidden
+            />
+            Personalizado
+            <input
+              type="color"
+              value={tema.colorPersonalizado || '#6b7280'}
+              onChange={(e) =>
+                setTema({ acento: 'personalizado', colorPersonalizado: e.target.value })
+              }
+              className="sr-only"
+            />
+          </label>
         </div>
       </Campo>
 
@@ -90,6 +124,53 @@ function SeccionApariencia() {
           onCambiar={(id) => setTema({ modo: id })}
         />
       </Campo>
+    </section>
+  )
+}
+
+function SeccionPomodoro() {
+  const { configPomodoro, setConfigPomodoro } = useCronometro()
+
+  return (
+    <section className="space-y-4">
+      <h2 className="label-instrumento text-muted-foreground">Pomodoro</h2>
+      <div className="bg-card flex flex-wrap items-center gap-6 rounded-xl border pad-card">
+        <div className="space-y-1.5">
+          <label htmlFor="pomodoro-trabajo" className="text-muted-foreground text-[12px]">
+            Trabajo (min)
+          </label>
+          <input
+            id="pomodoro-trabajo"
+            type="number"
+            min={1}
+            max={180}
+            value={configPomodoro.trabajoMin}
+            onChange={(e) =>
+              setConfigPomodoro({ trabajoMin: Math.max(1, Number(e.target.value) || 1) })
+            }
+            className="tnum focus-visible:ring-ring h-9 w-20 rounded-md border bg-transparent px-2.5 text-[14px] focus-visible:ring-2 focus-visible:outline-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor="pomodoro-descanso" className="text-muted-foreground text-[12px]">
+            Descanso (min)
+          </label>
+          <input
+            id="pomodoro-descanso"
+            type="number"
+            min={1}
+            max={60}
+            value={configPomodoro.descansoMin}
+            onChange={(e) =>
+              setConfigPomodoro({ descansoMin: Math.max(1, Number(e.target.value) || 1) })
+            }
+            className="tnum focus-visible:ring-ring h-9 w-20 rounded-md border bg-transparent px-2.5 text-[14px] focus-visible:ring-2 focus-visible:outline-none"
+          />
+        </div>
+        <p className="text-muted-foreground max-w-[28ch] text-[12px] leading-relaxed">
+          Se usa cuando elegís modo Pomodoro al iniciar una sesión desde Hoy.
+        </p>
+      </div>
     </section>
   )
 }

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Quote } from 'lucide-react'
+import { ChevronDown, Pencil, Quote, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { estimacionEfectiva, fechaLegible, formatoMin } from '@/lib/flexgoal/engine'
+import { estimacionEfectiva, fechaLegible, formatoMin, indiceDia } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import type { Meta, Objetivo, Tarea } from '@/lib/flexgoal/types'
 import { EtiquetaEstadoMeta, EtiquetaEstadoTarea } from '@/components/etiqueta-estado'
@@ -24,8 +24,32 @@ export function TarjetaMeta({
     minutosInvertidos: number
   }
 }) {
-  const { alternarTarea, alternarEstadoMeta } = useFlexgoal()
+  const { estado, alternarTarea, alternarEstadoMeta, editarMeta, agregarSesion } = useFlexgoal()
   const [abierto, setAbierto] = useState(meta.estado === 'activa')
+  const [editando, setEditando] = useState(false)
+  const [porQueBorrador, setPorQueBorrador] = useState(meta.porQue)
+  const [horizonteBorrador, setHorizonteBorrador] = useState(meta.horizonte)
+  const [programandoId, setProgramandoId] = useState<string | null>(null)
+  const [fechaProgramar, setFechaProgramar] = useState('')
+
+  function guardarEdicion() {
+    editarMeta(meta.id, {
+      porQue: porQueBorrador.trim() || meta.porQue,
+      horizonte: horizonteBorrador || meta.horizonte,
+    })
+    setEditando(false)
+  }
+
+  function tieneSesion(tareaId: string) {
+    return estado.sesiones.some((s) => s.tareaId === tareaId)
+  }
+
+  function confirmarProgramacion(tarea: Tarea) {
+    if (!fechaProgramar) return
+    agregarSesion(tarea.id, fechaProgramar, estimacionEfectiva(tarea))
+    setProgramandoId(null)
+    setFechaProgramar('')
+  }
 
   return (
     <article
@@ -45,10 +69,58 @@ export function TarjetaMeta({
             </div>
 
             {/* El "por qué" es el ancla emocional del producto: se muestra siempre */}
-            <div className="text-muted-foreground mt-2.5 flex gap-2 text-[13px] leading-relaxed">
-              <Quote className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              <p className="max-w-[58ch] text-pretty italic">{meta.porQue}</p>
-            </div>
+            {editando ? (
+              <div className="mt-2.5 space-y-2">
+                <textarea
+                  value={porQueBorrador}
+                  onChange={(e) => setPorQueBorrador(e.target.value)}
+                  rows={2}
+                  placeholder="¿Por qué importa esta meta?"
+                  className="placeholder:text-muted-foreground focus-visible:ring-ring w-full resize-none rounded-md border bg-transparent px-2.5 py-2 text-[13px] leading-relaxed focus-visible:ring-2 focus-visible:outline-none"
+                />
+                <div className="flex items-center gap-2">
+                  <label className="text-muted-foreground text-[12px]">Horizonte</label>
+                  <input
+                    type="date"
+                    value={horizonteBorrador}
+                    onChange={(e) => setHorizonteBorrador(e.target.value)}
+                    className="focus-visible:ring-ring rounded-md border bg-transparent px-2 py-1 text-[12.5px] focus-visible:ring-2 focus-visible:outline-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-8" onClick={guardarEdicion}>
+                    Guardar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8"
+                    onClick={() => {
+                      setPorQueBorrador(meta.porQue)
+                      setHorizonteBorrador(meta.horizonte)
+                      setEditando(false)
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setEditando(true)}
+                className="hover:bg-accent/40 group mt-2.5 flex w-full items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors"
+              >
+                <Quote className="text-muted-foreground mt-0.5 size-3.5 shrink-0" aria-hidden />
+                <p className="text-muted-foreground max-w-[58ch] text-[13px] leading-relaxed text-pretty italic">
+                  {meta.porQue}
+                </p>
+                <Pencil
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground/70 mt-0.5 size-3 shrink-0 transition-colors"
+                  aria-hidden
+                />
+              </button>
+            )}
           </div>
 
           <Button
@@ -127,34 +199,85 @@ export function TarjetaMeta({
               <ul className="mt-2 space-y-1 pl-3">
                 {tareas.map((tarea) => (
                   <li key={tarea.id}>
-                    <label className="hover:bg-accent/60 flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={tarea.estado === 'hecha'}
-                        onChange={() => alternarTarea(tarea.id)}
-                        className="accent-primary size-4 shrink-0"
-                      />
-                      <span
-                        className={cn(
-                          'min-w-0 flex-1 text-[13px]',
-                          tarea.estado === 'hecha' &&
-                            'text-muted-foreground line-through',
-                        )}
-                      >
-                        {tarea.titulo}
-                      </span>
-                      <span className="tnum text-muted-foreground shrink-0 text-[11px]">
-                        {formatoMin(estimacionEfectiva(tarea))}
-                        {tarea.ajusteAceptadoMin !== 0 && (
-                          <span className="text-foreground/60">
-                            {' '}
-                            ({tarea.ajusteAceptadoMin > 0 ? '+' : ''}
-                            {tarea.ajusteAceptadoMin})
-                          </span>
-                        )}
-                      </span>
-                      <EtiquetaEstadoTarea estado={tarea.estado} />
-                    </label>
+                    <div className="hover:bg-accent/60 flex min-h-11 flex-wrap items-center gap-3 rounded-md px-2 py-1.5 transition-colors">
+                      <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={tarea.estado === 'hecha'}
+                          onChange={() => alternarTarea(tarea.id)}
+                          className="accent-primary size-4 shrink-0"
+                        />
+                        <span
+                          className={cn(
+                            'min-w-0 flex-1 text-[13px]',
+                            tarea.estado === 'hecha' &&
+                              'text-muted-foreground line-through',
+                          )}
+                        >
+                          {tarea.titulo}
+                        </span>
+                        <span className="tnum text-muted-foreground shrink-0 text-[11px]">
+                          {formatoMin(estimacionEfectiva(tarea))}
+                          {tarea.ajusteAceptadoMin !== 0 && (
+                            <span className="text-foreground/60">
+                              {' '}
+                              ({tarea.ajusteAceptadoMin > 0 ? '+' : ''}
+                              {tarea.ajusteAceptadoMin})
+                            </span>
+                          )}
+                        </span>
+                        <EtiquetaEstadoTarea estado={tarea.estado} />
+                      </label>
+
+                      {!tieneSesion(tarea.id) &&
+                        (programandoId === tarea.id ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="date"
+                                value={fechaProgramar}
+                                onChange={(e) => setFechaProgramar(e.target.value)}
+                                autoFocus
+                                className="focus-visible:ring-ring rounded-md border bg-transparent px-2 py-1 text-[11.5px] focus-visible:ring-2 focus-visible:outline-none"
+                              />
+                              <Button
+                                size="sm"
+                                className="h-7 px-2 text-[11px]"
+                                disabled={!fechaProgramar}
+                                onClick={() => confirmarProgramacion(tarea)}
+                              >
+                                Agendar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() => setProgramandoId(null)}
+                                aria-label="Cancelar"
+                              >
+                                <X className="size-3.5" aria-hidden />
+                              </Button>
+                            </div>
+                            {fechaProgramar &&
+                              !estado.disponibilidad.find(
+                                (d) => d.dia === indiceDia(fechaProgramar),
+                              )?.declarada && (
+                                <p className="text-amber-600 text-[11px]">
+                                  Ese día no tiene tiempo declarado en Tiempo.
+                                </p>
+                              )}
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-muted-foreground h-7 shrink-0 px-2 text-[11px]"
+                            onClick={() => setProgramandoId(tarea.id)}
+                          >
+                            Sin programar · elegir día
+                          </Button>
+                        ))}
+                    </div>
                   </li>
                 ))}
               </ul>

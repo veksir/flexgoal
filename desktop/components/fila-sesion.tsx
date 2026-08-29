@@ -7,12 +7,15 @@ import {
   CircleSlash,
   CornerDownRight,
   Minus,
+  Play,
   Plus,
+  Square,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { formatoMin, type ContextoSesion } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
+import { formatearCronometro, useCronometro, type ModoSesion } from '@/lib/flexgoal/cronometro'
 import { EtiquetaEstadoSesion } from '@/components/etiqueta-estado'
 
 export function FilaSesion({
@@ -25,12 +28,21 @@ export function FilaSesion({
   const { sesion, tarea, objetivo, meta } = ctx
   const { registrarSesion, omitirSesion, reprogramarSesion, moverMinutos } =
     useFlexgoal()
+  const { activa, configPomodoro, iniciar, detener } = useCronometro()
   const [abierto, setAbierto] = useState(false)
   const [real, setReal] = useState(sesion.minutosPlan)
+  const [modoElegido, setModoElegido] = useState<ModoSesion>('libre')
 
   const cerrada = sesion.estado !== 'planificada'
   const delta =
     sesion.minutosReal === null ? null : sesion.minutosReal - sesion.minutosPlan
+  const estaActiva = activa?.sesionId === sesion.id
+  const otraSesionActiva = activa !== null && !estaActiva
+
+  function detenerYRegistrar() {
+    const resultado = detener()
+    if (resultado) registrarSesion(resultado.sesionId, resultado.minutos)
+  }
 
   return (
     <li
@@ -109,8 +121,74 @@ export function FilaSesion({
         )}
       </div>
 
-      {!cerrada && (
+      {!cerrada && estaActiva && (
+        <div className="border-t px-[var(--pad-card)] py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {activa.modo === 'pomodoro' && (
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                    activa.fase === 'trabajo'
+                      ? 'bg-primary/15 text-primary'
+                      : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {activa.fase === 'trabajo' ? 'Trabajo' : 'Descanso'}
+                </span>
+              )}
+              <span className="tnum text-2xl font-semibold tabular-nums">
+                {formatearCronometro(
+                  activa.modo === 'pomodoro' ? activa.segundosFaseActual : activa.segundosTrabajo,
+                )}
+              </span>
+            </div>
+            <Button size="sm" variant="destructive" onClick={detenerYRegistrar} className="h-9">
+              <Square className="size-3.5" aria-hidden />
+              Detener y registrar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!cerrada && !estaActiva && (
         <div className="flex flex-wrap items-center gap-2 border-t px-[var(--pad-card)] py-2.5">
+          <div className="bg-muted flex rounded-md p-0.5">
+            <button
+              type="button"
+              onClick={() => setModoElegido('libre')}
+              aria-pressed={modoElegido === 'libre'}
+              className={cn(
+                'rounded px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+                modoElegido === 'libre' ? 'bg-background shadow-sm' : 'text-muted-foreground',
+              )}
+            >
+              Libre
+            </button>
+            <button
+              type="button"
+              onClick={() => setModoElegido('pomodoro')}
+              aria-pressed={modoElegido === 'pomodoro'}
+              className={cn(
+                'rounded px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+                modoElegido === 'pomodoro' ? 'bg-background shadow-sm' : 'text-muted-foreground',
+              )}
+            >
+              Pomodoro {configPomodoro.trabajoMin}/{configPomodoro.descansoMin}
+            </button>
+          </div>
+
+          <Button
+            size="sm"
+            disabled={otraSesionActiva}
+            onClick={() => iniciar(sesion.id, tarea.id, modoElegido)}
+            className="h-9"
+            title={otraSesionActiva ? 'Ya hay otra sesión corriendo' : undefined}
+          >
+            <Play className="size-3.5" aria-hidden />
+            Iniciar
+          </Button>
+
           <Button
             size="sm"
             onClick={() => registrarSesion(sesion.id, sesion.minutosPlan)}

@@ -212,7 +212,7 @@ export default function PaginaIdeas() {
       <DialogoPromoverIdea
         idea={ideaAPromover}
         onCerrar={() => setIdeaAPromover(null)}
-        onIrAAjustes={() => router.push('/ajustes')}
+        onIrAAjustes={() => router.push('/diseno')}
       />
     </div>
   )

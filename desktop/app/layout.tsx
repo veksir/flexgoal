@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { CLAVE_TEMA, TEMA_POR_DEFECTO, ProveedorTema } from '@/lib/flexgoal/tema'
 import { ProveedorFlexgoal } from '@/lib/flexgoal/store'
+import { ProveedorCronometro } from '@/lib/flexgoal/cronometro'
 import { Shell } from '@/components/shell'
 import './globals.css'
 
@@ -65,7 +66,9 @@ export default function RootLayout({
       <body className="bg-background text-foreground font-sans antialiased">
         <ProveedorTema>
           <ProveedorFlexgoal>
-            <Shell>{children}</Shell>
+            <ProveedorCronometro>
+              <Shell>{children}</Shell>
+            </ProveedorCronometro>
           </ProveedorFlexgoal>
         </ProveedorTema>
       </body>
