@@ -44,3 +44,4 @@ desktop/node_modules/
 desktop/.next/
 desktop/out/
 desktop/release/
+desktop/tsconfig.tsbuildinfo
