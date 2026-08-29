@@ -1,0 +1,223 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* Señales de estado: nunca punitivas, siempre acompañadas de texto/ícono */
+  --color-signal-soft: var(--signal-soft);
+  --color-signal-attention: var(--signal-attention);
+  --color-signal-attention-soft: var(--signal-attention-soft);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ---------------------------------------------------------------
+   Base neutra — "instrumento de precisión": grafito frío, sin calidez
+   --------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --background: oklch(0.974 0.0025 255);
+  --foreground: oklch(0.215 0.014 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.215 0.014 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.215 0.014 262);
+  --secondary: oklch(0.955 0.004 258);
+  --secondary-foreground: oklch(0.28 0.013 262);
+  --muted: oklch(0.958 0.004 258);
+  --muted-foreground: oklch(0.525 0.012 260);
+  --accent: oklch(0.945 0.005 258);
+  --accent-foreground: oklch(0.24 0.014 262);
+  --destructive: oklch(0.55 0.17 22);
+  --border: oklch(0.902 0.006 258);
+  --input: oklch(0.902 0.006 258);
+
+  --signal-attention: oklch(0.58 0.09 72);
+  --signal-attention-soft: oklch(0.955 0.03 82);
+
+  --radius: 0.625rem;
+  --pad-card: 1rem;
+  --row-gap: 0.625rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.183 0.008 260);
+  --foreground: oklch(0.955 0.004 262);
+  --card: oklch(0.223 0.009 260);
+  --card-foreground: oklch(0.955 0.004 262);
+  --popover: oklch(0.223 0.009 260);
+  --popover-foreground: oklch(0.955 0.004 262);
+  --secondary: oklch(0.268 0.01 260);
+  --secondary-foreground: oklch(0.955 0.004 262);
+  --muted: oklch(0.262 0.01 260);
+  --muted-foreground: oklch(0.715 0.013 260);
+  --accent: oklch(0.288 0.011 260);
+  --accent-foreground: oklch(0.965 0.004 262);
+  --destructive: oklch(0.67 0.16 22);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+
+  --signal-attention: oklch(0.76 0.1 78);
+  --signal-attention-soft: oklch(0.32 0.045 78);
+}
+
+/* ---------------------------------------------------------------
+   Acentos intercambiables (un solo color de marca por vez)
+   --------------------------------------------------------------- */
+[data-accent='salvia'] {
+  --primary: oklch(0.505 0.075 183);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.505 0.075 183);
+  --signal-soft: oklch(0.955 0.022 183);
+}
+.dark[data-accent='salvia'] {
+  --primary: oklch(0.755 0.095 183);
+  --primary-foreground: oklch(0.19 0.02 200);
+  --ring: oklch(0.755 0.095 183);
+  --signal-soft: oklch(0.3 0.035 190);
+}
+
+[data-accent='indigo'] {
+  --primary: oklch(0.472 0.145 271);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.472 0.145 271);
+  --signal-soft: oklch(0.955 0.028 271);
+}
+.dark[data-accent='indigo'] {
+  --primary: oklch(0.73 0.12 271);
+  --primary-foreground: oklch(0.19 0.03 271);
+  --ring: oklch(0.73 0.12 271);
+  --signal-soft: oklch(0.3 0.05 271);
+}
+
+[data-accent='arcilla'] {
+  --primary: oklch(0.545 0.12 38);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.545 0.12 38);
+  --signal-soft: oklch(0.955 0.028 38);
+}
+.dark[data-accent='arcilla'] {
+  --primary: oklch(0.755 0.11 42);
+  --primary-foreground: oklch(0.2 0.03 38);
+  --ring: oklch(0.755 0.11 42);
+  --signal-soft: oklch(0.3 0.045 38);
+}
+
+[data-accent='ciruela'] {
+  --primary: oklch(0.47 0.12 340);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.47 0.12 340);
+  --signal-soft: oklch(0.955 0.026 340);
+}
+.dark[data-accent='ciruela'] {
+  --primary: oklch(0.74 0.11 340);
+  --primary-foreground: oklch(0.2 0.03 340);
+  --ring: oklch(0.74 0.11 340);
+  --signal-soft: oklch(0.3 0.045 340);
+}
+
+[data-accent='grafito'] {
+  --primary: oklch(0.29 0.013 262);
+  --primary-foreground: oklch(0.98 0 0);
+  --ring: oklch(0.42 0.013 262);
+  --signal-soft: oklch(0.94 0.004 258);
+}
+.dark[data-accent='grafito'] {
+  --primary: oklch(0.9 0.005 262);
+  --primary-foreground: oklch(0.2 0.01 262);
+  --ring: oklch(0.72 0.01 262);
+  --signal-soft: oklch(0.3 0.008 262);
+}
+
+/* ---------------------------------------------------------------
+   Densidad y radio configurables por el usuario
+   --------------------------------------------------------------- */
+[data-density='compacta'] {
+  --pad-card: 0.75rem;
+  --row-gap: 0.375rem;
+}
+[data-density='amplia'] {
+  --pad-card: 1.25rem;
+  --row-gap: 0.875rem;
+}
+
+[data-radius='recto'] {
+  --radius: 0.2rem;
+}
+[data-radius='redondo'] {
+  --radius: 1.1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Todo dato numérico se lee como instrumento: cifras de ancho fijo */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+}
+
+@utility pad-card {
+  padding: var(--pad-card);
+}
+
+@utility gap-row {
+  gap: var(--row-gap);
+}
+
+/* Etiqueta de instrumento: mayúsculas pequeñas y espaciadas */
+@utility label-instrumento {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

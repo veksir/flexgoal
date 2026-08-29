@@ -38,3 +38,9 @@ yarn-error.log*
 
 # Notas conversacionales de trabajo (mantener fuera del historial público)
 docs/notas-privadas/
+
+# Desktop (Next.js + Electron)
+desktop/node_modules/
+desktop/.next/
+desktop/out/
+desktop/release/
