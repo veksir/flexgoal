@@ -258,6 +258,26 @@
   }
 }
 
+/* Granito de arena cayendo por el cuello del reloj de arena. Usa
+   transform-box: fill-box (declarado inline en el componente) para
+   que el origen de la traslación sea el propio granito. */
+@keyframes caer-arena {
+  0% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+
 /* Textura de grano opcional para el fondo (Diseño → Apariencia →
    Textura de fondo). Se activa con data-texture="grano" en <html>. */
 [data-texture='grano']::before {

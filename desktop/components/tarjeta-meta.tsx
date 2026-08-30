@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronDown, Pencil, Quote, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { estimacionEfectiva, fechaLegible, formatoMin, indiceDia } from '@/lib/flexgoal/engine'
+import { calcularCarga, estimacionEfectiva, fechaLegible, formatoMin, indiceDia } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import type { Meta, Objetivo, Tarea } from '@/lib/flexgoal/types'
 import { EtiquetaEstadoMeta, EtiquetaEstadoTarea } from '@/components/etiqueta-estado'
@@ -46,7 +46,26 @@ export function TarjetaMeta({
 
   function confirmarProgramacion(tarea: Tarea) {
     if (!fechaProgramar) return
-    agregarSesion(tarea.id, fechaProgramar, estimacionEfectiva(tarea))
+    const minutosTarea = estimacionEfectiva(tarea)
+    const minutosYaEseDia = estado.sesiones
+      .filter((s) => s.fecha === fechaProgramar)
+      .reduce((acc, s) => acc + s.minutosPlan, 0)
+    const disponibilidadDestino = estado.disponibilidad.find(
+      (d) => d.dia === indiceDia(fechaProgramar),
+    )
+    const cargaDestino = calcularCarga(minutosYaEseDia + minutosTarea, disponibilidadDestino)
+
+    if (cargaDestino.estado === 'excedido') {
+      if (
+        !window.confirm(
+          `Ese día queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Agendarla igual?`,
+        )
+      ) {
+        return
+      }
+    }
+
+    agregarSesion(tarea.id, fechaProgramar, minutosTarea)
     setProgramandoId(null)
     setFechaProgramar('')
   }

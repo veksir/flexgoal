@@ -10,11 +10,12 @@ import {
   Play,
   Plus,
   Square,
+  Trash2,
   Undo2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { formatoMin, type ContextoSesion } from '@/lib/flexgoal/engine'
+import { calcularCarga, formatoMin, indiceDia, type ContextoSesion } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import { formatearCronometro, useCronometro, type ModoSesion } from '@/lib/flexgoal/cronometro'
 import { EtiquetaEstadoSesion } from '@/components/etiqueta-estado'
@@ -27,8 +28,15 @@ export function FilaSesion({
   siguienteFecha: string
 }) {
   const { sesion, tarea, objetivo, meta } = ctx
-  const { registrarSesion, reabrirSesion, omitirSesion, reprogramarSesion, moverMinutos } =
-    useFlexgoal()
+  const {
+    estado,
+    registrarSesion,
+    reabrirSesion,
+    quitarSesion,
+    omitirSesion,
+    reprogramarSesion,
+    moverMinutos,
+  } = useFlexgoal()
   const { activa, configPomodoro, iniciar, detener } = useCronometro()
   const [abierto, setAbierto] = useState(false)
   const [real, setReal] = useState(sesion.minutosPlan)
@@ -43,6 +51,39 @@ export function FilaSesion({
   function detenerYRegistrar() {
     const resultado = detener()
     if (resultado) registrarSesion(resultado.sesionId, resultado.minutos)
+  }
+
+  function moverAManana() {
+    const minutosYaEnDestino = estado.sesiones
+      .filter((s) => s.fecha === siguienteFecha && s.id !== sesion.id)
+      .reduce((acc, s) => acc + s.minutosPlan, 0)
+    const disponibilidadDestino = estado.disponibilidad.find(
+      (d) => d.dia === indiceDia(siguienteFecha),
+    )
+    const cargaDestino = calcularCarga(
+      minutosYaEnDestino + sesion.minutosPlan,
+      disponibilidadDestino,
+    )
+
+    if (cargaDestino.estado === 'excedido') {
+      if (
+        !window.confirm(
+          `Mañana queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Moverla igual?`,
+        )
+      ) {
+        return
+      }
+    } else if (!cargaDestino.declarada) {
+      if (
+        !window.confirm(
+          'Mañana no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga. ¿Moverla igual?',
+        )
+      ) {
+        return
+      }
+    }
+
+    reprogramarSesion(sesion.id, siguienteFecha)
   }
 
   return (
@@ -216,7 +257,7 @@ export function FilaSesion({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => reprogramarSesion(sesion.id, siguienteFecha)}
+            onClick={moverAManana}
             className="text-muted-foreground h-9"
           >
             <CornerDownRight className="size-4" aria-hidden />
@@ -236,10 +277,10 @@ export function FilaSesion({
       )}
 
       {cerrada && (
-        <div className="border-t px-[var(--pad-card)] py-2">
+        <div className="flex flex-wrap items-center gap-2 border-t px-[var(--pad-card)] py-3">
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             onClick={() => {
               const teniaProgreso = (sesion.minutosReal ?? 0) > 0
               if (
@@ -252,10 +293,28 @@ export function FilaSesion({
               }
               reabrirSesion(sesion.id)
             }}
-            className="text-muted-foreground h-8 text-[12px]"
+            className="h-9"
           >
-            <Undo2 className="size-3.5" aria-hidden />
-            Reabrir
+            <Undo2 className="size-4" aria-hidden />
+            ¿Te equivocaste? Reabrir
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              if (
+                !window.confirm(
+                  `Eliminar el registro de "${tarea.titulo}" de este día. Esto borra la sesión (y el tiempo real que hayas cargado) — no se puede deshacer. La tarea en sí sigue existiendo en Metas.`,
+                )
+              ) {
+                return
+              }
+              quitarSesion(sesion.id)
+            }}
+            className="text-muted-foreground hover:text-destructive h-9"
+          >
+            <Trash2 className="size-4" aria-hidden />
+            Eliminar
           </Button>
         </div>
       )}

@@ -1,8 +1,15 @@
 'use client'
 
-import { CircleSlash, CornerDownRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleSlash } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatoMin, type Carga, type ContextoSesion } from '@/lib/flexgoal/engine'
+import {
+  calcularCarga,
+  formatoMin,
+  indiceDia,
+  sumarDias,
+  type Carga,
+  type ContextoSesion,
+} from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 
 export function ColumnaDia({
@@ -20,7 +27,34 @@ export function ColumnaDia({
   sesiones: ContextoSesion[]
   carga: Carga
 }) {
-  const { reprogramarSesion } = useFlexgoal()
+  const { estado, reprogramarSesion } = useFlexgoal()
+
+  function moverSesion(sesion: ContextoSesion['sesion'], tareaTitulo: string, fechaDestino: string) {
+    const minutosYaEnDestino = estado.sesiones
+      .filter((s) => s.fecha === fechaDestino && s.id !== sesion.id)
+      .reduce((acc, s) => acc + s.minutosPlan, 0)
+    const disponibilidadDestino = estado.disponibilidad.find(
+      (d) => d.dia === indiceDia(fechaDestino),
+    )
+    const cargaDestino = calcularCarga(
+      minutosYaEnDestino + sesion.minutosPlan,
+      disponibilidadDestino,
+    )
+
+    if (cargaDestino.estado === 'excedido') {
+      const seguir = window.confirm(
+        `Mover "${tareaTitulo}" a ese día lo deja en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Moverla igual?`,
+      )
+      if (!seguir) return
+    } else if (!cargaDestino.declarada) {
+      const seguir = window.confirm(
+        `Ese día no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga. ¿Moverla igual?`,
+      )
+      if (!seguir) return
+    }
+
+    reprogramarSesion(sesion.id, fechaDestino)
+  }
 
   return (
     <section
@@ -119,14 +153,24 @@ export function ColumnaDia({
                     : `${sesion.minutosPlan} min`}
                 </span>
                 {sesion.estado === 'planificada' && (
-                  <button
-                    type="button"
-                    onClick={() => reprogramarSesion(sesion.id, fecha)}
-                    aria-label={`Mover ${tarea.titulo} al día siguiente`}
-                    className="text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-ring rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <CornerDownRight className="size-3.5" aria-hidden />
-                  </button>
+                  <div className="flex gap-0.5 opacity-60 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => moverSesion(sesion, tarea.titulo, sumarDias(fecha, -1))}
+                      aria-label={`Mover ${tarea.titulo} al día anterior`}
+                      className="text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-ring rounded p-1 focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <ChevronLeft className="size-3.5" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moverSesion(sesion, tarea.titulo, sumarDias(fecha, 1))}
+                      aria-label={`Mover ${tarea.titulo} al día siguiente`}
+                      className="text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:ring-ring rounded p-1 focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <ChevronRight className="size-3.5" aria-hidden />
+                    </button>
+                  </div>
                 )}
                 {sesion.estado === 'omitida' && (
                   <CircleSlash

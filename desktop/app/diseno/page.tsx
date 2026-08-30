@@ -166,7 +166,8 @@ function SeccionApariencia() {
 }
 
 function SeccionPomodoro() {
-  const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj } = useCronometro()
+  const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj, sonidoActivo, setSonidoActivo } =
+    useCronometro()
 
   return (
     <section className="space-y-4">
@@ -214,6 +215,17 @@ function SeccionPomodoro() {
           opciones={ESTILOS_RELOJ}
           valor={estiloReloj}
           onCambiar={setEstiloReloj}
+        />
+      </Campo>
+
+      <Campo etiqueta="Sonido al cambiar de enfoque a descanso (y viceversa)">
+        <SelectorPill
+          opciones={[
+            { id: 'on', nombre: 'Activado' },
+            { id: 'off', nombre: 'Silenciado' },
+          ]}
+          valor={sonidoActivo ? 'on' : 'off'}
+          onCambiar={(v) => setSonidoActivo(v === 'on')}
         />
       </Campo>
     </section>

@@ -2,11 +2,17 @@
 
 /**
  * Los tres estilos de reloj de la ventana de sesión enfocada.
- * Todos reciben los mismos datos (segundos transcurridos, progreso de
- * la fase si aplica, si está pausado) y deciden solos cómo animarse.
- * Nada de @keyframes ciegos: la posición de manecillas/arena se
- * calcula del estado real cada segundo, con transition-transform
- * suavizando el paso de un segundo a otro.
+ * Todos comparten el mismo layout: SVG arriba, número debajo (sin
+ * superposición — nada de absolute compitiendo por el mismo espacio).
+ *
+ * Nota técnica del bug de la primera versión: en SVG el
+ * transform-origin de un `transform: scale()` por defecto NO es el
+ * centro del elemento (a diferencia de HTML) sino el origen del
+ * viewport, salvo que se declare `transform-box: fill-box`
+ * explícitamente. Por eso el hilo de arena "se escapaba" del dibujo
+ * en vez de quedarse en su lugar — quedó corregido animando la
+ * posición (una translación real dentro de un @keyframes propio,
+ * `caer-arena`, con transform-box: fill-box) en vez de un scale.
  */
 
 import { formatearCronometro } from '@/lib/flexgoal/cronometro'
@@ -24,30 +30,30 @@ export function RelojCronometro({ segundos, progreso, pausada }: PropsReloj) {
   const offset = circunferencia * (1 - avance)
 
   return (
-    <div className="relative flex size-40 items-center justify-center">
-      <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90">
-        <circle cx="60" cy="60" r="54" className="stroke-muted fill-none" strokeWidth="6" />
-        <circle
-          cx="60"
-          cy="60"
-          r="54"
-          className="stroke-primary fill-none transition-[stroke-dashoffset] duration-1000 ease-linear"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={circunferencia}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="flex flex-col items-center gap-1">
-        <span className="tnum text-3xl font-semibold tabular-nums">
-          {formatearCronometro(segundos)}
-        </span>
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative flex size-32 shrink-0 items-center justify-center">
+        <svg viewBox="0 0 120 120" className="absolute inset-0 size-full -rotate-90">
+          <circle cx="60" cy="60" r="54" className="stroke-muted fill-none" strokeWidth="6" />
+          <circle
+            cx="60"
+            cy="60"
+            r="54"
+            className="stroke-primary fill-none transition-[stroke-dashoffset] duration-1000 ease-linear"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circunferencia}
+            strokeDashoffset={offset}
+          />
+        </svg>
         <span
-          className="bg-primary size-1.5 rounded-full"
+          className="bg-primary absolute top-3 size-1.5 rounded-full"
           style={{ animation: pausada ? 'none' : 'pulso-suave 1.8s ease-in-out infinite' }}
           aria-hidden
         />
       </div>
+      <span className="tnum text-3xl font-semibold tabular-nums">
+        {formatearCronometro(segundos)}
+      </span>
     </div>
   )
 }
@@ -63,8 +69,8 @@ export function RelojArena({ segundos, progreso, pausada }: PropsReloj) {
   const alturaAbajo = 34 * fraccion
 
   return (
-    <div className="relative flex size-40 items-center justify-center">
-      <svg viewBox="0 0 100 120" className="size-28">
+    <div className="flex flex-col items-center gap-3">
+      <svg viewBox="0 0 100 120" className="size-28 shrink-0">
         <path
           d="M22 8 H78 V8 C78 30 58 40 50 48 C42 40 22 30 22 8 Z
              M22 112 H78 V112 C78 90 58 80 50 72 C42 80 22 90 22 112 Z"
@@ -89,21 +95,24 @@ export function RelojArena({ segundos, progreso, pausada }: PropsReloj) {
           className="fill-primary/70 transition-all duration-1000 ease-linear"
           clipPath="url(#clipAbajo)"
         />
-        {/* hilo de arena cayendo */}
-        {!pausada && (
-          <rect
-            x="49"
-            y="50"
-            width="2"
-            height="20"
-            className="fill-primary/80"
-            style={{ animation: 'pulso-suave 0.6s ease-in-out infinite' }}
+        {/* granito cayendo por el cuello — animación de POSICIÓN real
+            (no scale), con transform-box: fill-box para que el origen
+            de la transformación sea el propio granito y no el viewport */}
+        {!pausada && alturaArriba > 1 && (
+          <circle
+            cx="50"
+            cy="50"
+            r="1.3"
+            className="fill-primary"
+            style={{
+              transformBox: 'fill-box',
+              transformOrigin: 'center',
+              animation: 'caer-arena 0.7s linear infinite',
+            }}
           />
         )}
       </svg>
-      <span className="tnum absolute bottom-0 text-[13px] font-medium">
-        {formatearCronometro(segundos)}
-      </span>
+      <span className="tnum text-[15px] font-medium">{formatearCronometro(segundos)}</span>
     </div>
   )
 }
@@ -113,8 +122,8 @@ export function RelojPared({ segundos, progreso, pausada }: PropsReloj) {
   const gradosMinutero = (segundos / 60) * 6
 
   return (
-    <div className="relative flex size-40 items-center justify-center">
-      <svg viewBox="0 0 120 120" className="size-36">
+    <div className="flex flex-col items-center gap-3">
+      <svg viewBox="0 0 120 120" className="size-32 shrink-0">
         <circle cx="60" cy="60" r="56" className="fill-card stroke-border" strokeWidth="2" />
         {progreso !== null && (
           <path
@@ -136,7 +145,9 @@ export function RelojPared({ segundos, progreso, pausada }: PropsReloj) {
             transform={`rotate(${i * 30} 60 60)`}
           />
         ))}
-        {/* minutero */}
+        {/* minutero — pivota sobre el centro del reloj (coordenada
+            absoluta del SVG), no sobre su propio bounding box: por
+            eso NO lleva transform-box: fill-box acá */}
         <line
           x1="60"
           y1="60"
@@ -150,7 +161,7 @@ export function RelojPared({ segundos, progreso, pausada }: PropsReloj) {
             transformOrigin: '60px 60px',
           }}
         />
-        {/* segundero */}
+        {/* segundero — mismo pivote */}
         <line
           x1="60"
           y1="66"
@@ -167,9 +178,7 @@ export function RelojPared({ segundos, progreso, pausada }: PropsReloj) {
         />
         <circle cx="60" cy="60" r="3" className="fill-primary" />
       </svg>
-      <span className="tnum absolute bottom-0 text-[12px] font-medium">
-        {formatearCronometro(segundos)}
-      </span>
+      <span className="tnum text-[15px] font-medium">{formatearCronometro(segundos)}</span>
     </div>
   )
 }

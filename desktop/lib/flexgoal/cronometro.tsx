@@ -19,6 +19,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { reproducirTonoCambioFase } from './sonido'
 
 export type ModoSesion = 'libre' | 'pomodoro'
 export type FasePomodoro = 'trabajo' | 'descanso'
@@ -31,6 +32,7 @@ export interface ConfigPomodoro {
 
 const CLAVE_CONFIG_POMODORO = 'flexgoal:pomodoro:v1'
 const CLAVE_ESTILO_RELOJ = 'flexgoal:estilo-reloj:v1'
+const CLAVE_SONIDO = 'flexgoal:sonido-fase:v1'
 const CONFIG_DEFAULT: ConfigPomodoro = { trabajoMin: 25, descansoMin: 5 }
 const ESTILO_DEFAULT: EstiloReloj = 'cronometro'
 
@@ -54,6 +56,8 @@ interface ContextoCronometro {
   setConfigPomodoro: (config: Partial<ConfigPomodoro>) => void
   estiloReloj: EstiloReloj
   setEstiloReloj: (estilo: EstiloReloj) => void
+  sonidoActivo: boolean
+  setSonidoActivo: (activo: boolean) => void
   iniciar: (sesionId: string, tareaId: string, modo: ModoSesion) => void
   pausar: () => void
   reanudar: () => void
@@ -66,7 +70,9 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
   const [activa, setActiva] = useState<SesionActiva | null>(null)
   const [configPomodoro, setConfigEstado] = useState<ConfigPomodoro>(CONFIG_DEFAULT)
   const [estiloReloj, setEstiloRelojEstado] = useState<EstiloReloj>(ESTILO_DEFAULT)
+  const [sonidoActivo, setSonidoActivoEstado] = useState(true)
   const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const sonidoActivoRef = useRef(true)
 
   useEffect(() => {
     try {
@@ -76,8 +82,23 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       if (estilo === 'cronometro' || estilo === 'arena' || estilo === 'pared') {
         setEstiloRelojEstado(estilo)
       }
+      const sonido = window.localStorage.getItem(CLAVE_SONIDO)
+      if (sonido === '0') {
+        setSonidoActivoEstado(false)
+        sonidoActivoRef.current = false
+      }
     } catch {
       /* config por defecto */
+    }
+  }, [])
+
+  const setSonidoActivo = useCallback((activo: boolean) => {
+    setSonidoActivoEstado(activo)
+    sonidoActivoRef.current = activo
+    try {
+      window.localStorage.setItem(CLAVE_SONIDO, activo ? '1' : '0')
+    } catch {
+      /* sigue funcionando en memoria */
     }
   }, [])
 
@@ -119,9 +140,11 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
           const limiteSeg =
             (prev.fase === 'trabajo' ? configPomodoro.trabajoMin : configPomodoro.descansoMin) * 60
           if (segundosFaseActual >= limiteSeg) {
+            const nuevaFase = prev.fase === 'trabajo' ? 'descanso' : 'trabajo'
+            if (sonidoActivoRef.current) reproducirTonoCambioFase(nuevaFase)
             return {
               ...prev,
-              fase: prev.fase === 'trabajo' ? 'descanso' : 'trabajo',
+              fase: nuevaFase,
               segundosFaseActual: 0,
               segundosTrabajo,
             }
@@ -174,6 +197,8 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
         setConfigPomodoro,
         estiloReloj,
         setEstiloReloj,
+        sonidoActivo,
+        setSonidoActivo,
         iniciar,
         pausar,
         reanudar,

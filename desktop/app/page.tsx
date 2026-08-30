@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
-import { CalendarPlus } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { CalendarPlus, ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import {
   calcularCarga,
@@ -25,6 +26,7 @@ import { Encabezado } from '@/components/encabezado'
 export default function PaginaHoy() {
   const { estado, listo } = useFlexgoal()
   const hoy = hoyISO()
+  const [archivoAbierto, setArchivoAbierto] = useState(false)
 
   const { sesiones, carga, sugerencias, pendientes, cerradas } = useMemo(() => {
     const delDia = sesionesDelDia(estado, hoy)
@@ -105,21 +107,29 @@ export default function PaginaHoy() {
 
         {cerradas.length > 0 && (
           <section aria-labelledby="titulo-cerradas" className="space-y-3">
-            <h2
-              id="titulo-cerradas"
-              className="label-instrumento text-muted-foreground"
+            <button
+              type="button"
+              onClick={() => setArchivoAbierto((v) => !v)}
+              aria-expanded={archivoAbierto}
+              className="label-instrumento text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
             >
-              Ya registrado
-            </h2>
-            <ul className="space-y-2">
-              {cerradas.map((ctx) => (
-                <FilaSesion
-                  key={ctx.sesion.id}
-                  ctx={ctx}
-                  siguienteFecha={sumarDias(hoy, 1)}
-                />
-              ))}
-            </ul>
+              <span id="titulo-cerradas">Ya registrado ({cerradas.length})</span>
+              <ChevronDown
+                className={cn('size-3.5 transition-transform', archivoAbierto && 'rotate-180')}
+                aria-hidden
+              />
+            </button>
+            {archivoAbierto && (
+              <ul className="space-y-2">
+                {cerradas.map((ctx) => (
+                  <FilaSesion
+                    key={ctx.sesion.id}
+                    ctx={ctx}
+                    siguienteFecha={sumarDias(hoy, 1)}
+                  />
+                ))}
+              </ul>
+            )}
           </section>
         )}
       </div>
