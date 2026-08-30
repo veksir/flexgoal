@@ -12,13 +12,20 @@ import {
   RADIOS,
   useTema,
 } from '@/lib/flexgoal/tema'
-import { useCronometro } from '@/lib/flexgoal/cronometro'
+import { useCronometro, type EstiloReloj } from '@/lib/flexgoal/cronometro'
 import {
   borrarClaveAPI,
   claveEstaCifrada,
   guardarClaveAPI,
   obtenerClaveAPI,
 } from '@/lib/flexgoal/ia'
+
+const CLAVE_TEXTURA = 'flexgoal:textura-fondo:v1'
+const ESTILOS_RELOJ: { id: EstiloReloj; nombre: string }[] = [
+  { id: 'cronometro', nombre: 'Cronómetro' },
+  { id: 'arena', nombre: 'Reloj de arena' },
+  { id: 'pared', nombre: 'Reloj de pared' },
+]
 
 export default function PaginaDiseno() {
   return (
@@ -40,6 +47,25 @@ export default function PaginaDiseno() {
 
 function SeccionApariencia() {
   const { tema, setTema, reiniciarTema } = useTema()
+  const [textura, setTextura] = useState<'liso' | 'grano'>('liso')
+
+  useEffect(() => {
+    try {
+      const guardada = window.localStorage.getItem(CLAVE_TEXTURA)
+      if (guardada === 'grano') setTextura('grano')
+    } catch {
+      /* liso por defecto */
+    }
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.dataset.texture = textura === 'grano' ? 'grano' : ''
+    try {
+      window.localStorage.setItem(CLAVE_TEXTURA, textura)
+    } catch {
+      /* sigue funcionando en memoria */
+    }
+  }, [textura])
 
   return (
     <section className="space-y-5">
@@ -124,16 +150,27 @@ function SeccionApariencia() {
           onCambiar={(id) => setTema({ modo: id })}
         />
       </Campo>
+
+      <Campo etiqueta="Textura de fondo">
+        <SelectorPill
+          opciones={[
+            { id: 'liso', nombre: 'Liso' },
+            { id: 'grano', nombre: 'Con grano' },
+          ]}
+          valor={textura}
+          onCambiar={setTextura}
+        />
+      </Campo>
     </section>
   )
 }
 
 function SeccionPomodoro() {
-  const { configPomodoro, setConfigPomodoro } = useCronometro()
+  const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj } = useCronometro()
 
   return (
     <section className="space-y-4">
-      <h2 className="label-instrumento text-muted-foreground">Pomodoro</h2>
+      <h2 className="label-instrumento text-muted-foreground">Pomodoro y sesión enfocada</h2>
       <div className="bg-card flex flex-wrap items-center gap-6 rounded-xl border pad-card">
         <div className="space-y-1.5">
           <label htmlFor="pomodoro-trabajo" className="text-muted-foreground text-[12px]">
@@ -171,6 +208,14 @@ function SeccionPomodoro() {
           Se usa cuando elegís modo Pomodoro al iniciar una sesión desde Hoy.
         </p>
       </div>
+
+      <Campo etiqueta="Estilo de reloj en la ventana de sesión">
+        <SelectorPill
+          opciones={ESTILOS_RELOJ}
+          valor={estiloReloj}
+          onCambiar={setEstiloReloj}
+        />
+      </Campo>
     </section>
   )
 }
@@ -209,6 +254,13 @@ function SeccionIA() {
 
   async function borrar() {
     if (guardando) return
+    if (
+      !window.confirm(
+        'Vas a borrar tu clave de Gemini. Para usar la generación con IA de nuevo vas a tener que volver a pegarla acá. ¿Borrarla?',
+      )
+    ) {
+      return
+    }
     setGuardando(true)
     try {
       await borrarClaveAPI()

@@ -22,6 +22,7 @@ import {
 
 export type ModoSesion = 'libre' | 'pomodoro'
 export type FasePomodoro = 'trabajo' | 'descanso'
+export type EstiloReloj = 'cronometro' | 'arena' | 'pared'
 
 export interface ConfigPomodoro {
   trabajoMin: number
@@ -29,13 +30,16 @@ export interface ConfigPomodoro {
 }
 
 const CLAVE_CONFIG_POMODORO = 'flexgoal:pomodoro:v1'
+const CLAVE_ESTILO_RELOJ = 'flexgoal:estilo-reloj:v1'
 const CONFIG_DEFAULT: ConfigPomodoro = { trabajoMin: 25, descansoMin: 5 }
+const ESTILO_DEFAULT: EstiloReloj = 'cronometro'
 
 interface SesionActiva {
   sesionId: string
   tareaId: string
   modo: ModoSesion
   fase: FasePomodoro
+  pausada: boolean
   /** Segundos acumulados en la fase de trabajo actual — lo único que
    * termina como minutosReal al detener (los descansos no cuentan). */
   segundosTrabajo: number
@@ -48,7 +52,11 @@ interface ContextoCronometro {
   activa: SesionActiva | null
   configPomodoro: ConfigPomodoro
   setConfigPomodoro: (config: Partial<ConfigPomodoro>) => void
+  estiloReloj: EstiloReloj
+  setEstiloReloj: (estilo: EstiloReloj) => void
   iniciar: (sesionId: string, tareaId: string, modo: ModoSesion) => void
+  pausar: () => void
+  reanudar: () => void
   detener: () => { sesionId: string; minutos: number } | null
 }
 
@@ -57,12 +65,17 @@ const Ctx = createContext<ContextoCronometro | null>(null)
 export function ProveedorCronometro({ children }: { children: ReactNode }) {
   const [activa, setActiva] = useState<SesionActiva | null>(null)
   const [configPomodoro, setConfigEstado] = useState<ConfigPomodoro>(CONFIG_DEFAULT)
+  const [estiloReloj, setEstiloRelojEstado] = useState<EstiloReloj>(ESTILO_DEFAULT)
   const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     try {
       const crudo = window.localStorage.getItem(CLAVE_CONFIG_POMODORO)
       if (crudo) setConfigEstado({ ...CONFIG_DEFAULT, ...JSON.parse(crudo) })
+      const estilo = window.localStorage.getItem(CLAVE_ESTILO_RELOJ)
+      if (estilo === 'cronometro' || estilo === 'arena' || estilo === 'pared') {
+        setEstiloRelojEstado(estilo)
+      }
     } catch {
       /* config por defecto */
     }
@@ -80,15 +93,24 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const setEstiloReloj = useCallback((estilo: EstiloReloj) => {
+    setEstiloRelojEstado(estilo)
+    try {
+      window.localStorage.setItem(CLAVE_ESTILO_RELOJ, estilo)
+    } catch {
+      /* sigue funcionando en memoria */
+    }
+  }, [])
+
   useEffect(() => {
-    if (!activa) {
+    if (!activa || activa.pausada) {
       if (intervaloRef.current) clearInterval(intervaloRef.current)
       return
     }
 
     intervaloRef.current = setInterval(() => {
       setActiva((prev) => {
-        if (!prev) return prev
+        if (!prev || prev.pausada) return prev
         const segundosFaseActual = prev.segundosFaseActual + 1
         const segundosTrabajo =
           prev.fase === 'trabajo' ? prev.segundosTrabajo + 1 : prev.segundosTrabajo
@@ -114,7 +136,7 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       if (intervaloRef.current) clearInterval(intervaloRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(activa), configPomodoro.trabajoMin, configPomodoro.descansoMin])
+  }, [Boolean(activa), activa?.pausada, configPomodoro.trabajoMin, configPomodoro.descansoMin])
 
   const iniciar = useCallback((sesionId: string, tareaId: string, modo: ModoSesion) => {
     setActiva({
@@ -122,9 +144,18 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       tareaId,
       modo,
       fase: 'trabajo',
+      pausada: false,
       segundosTrabajo: 0,
       segundosFaseActual: 0,
     })
+  }, [])
+
+  const pausar = useCallback(() => {
+    setActiva((prev) => (prev ? { ...prev, pausada: true } : prev))
+  }, [])
+
+  const reanudar = useCallback(() => {
+    setActiva((prev) => (prev ? { ...prev, pausada: false } : prev))
   }, [])
 
   const detener = useCallback((): { sesionId: string; minutos: number } | null => {
@@ -136,7 +167,19 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
   }, [activa])
 
   return (
-    <Ctx.Provider value={{ activa, configPomodoro, setConfigPomodoro, iniciar, detener }}>
+    <Ctx.Provider
+      value={{
+        activa,
+        configPomodoro,
+        setConfigPomodoro,
+        estiloReloj,
+        setEstiloReloj,
+        iniciar,
+        pausar,
+        reanudar,
+        detener,
+      }}
+    >
       {children}
     </Ctx.Provider>
   )

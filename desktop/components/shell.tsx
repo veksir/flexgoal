@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useTema } from '@/lib/flexgoal/tema'
 import { Marca } from '@/components/marca'
+import { VentanaSesion } from '@/components/ventana-sesion'
 
 const RUTAS = [
   { href: '/', etiqueta: 'Hoy', Icono: Clock4 },
@@ -159,6 +160,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           })}
         </ul>
       </nav>
+
+      <VentanaSesion />
     </div>
   )
 }

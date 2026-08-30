@@ -109,14 +109,15 @@ export function TarjetaMeta({
               <button
                 type="button"
                 onClick={() => setEditando(true)}
-                className="hover:bg-accent/40 group mt-2.5 flex w-full items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors"
+                className="hover:bg-accent/40 hover:border-border group mt-2.5 flex w-full items-start gap-2 rounded-md border border-transparent px-1.5 py-1 text-left transition-colors"
+                aria-label="Editar por qué importa y horizonte de esta meta"
               >
                 <Quote className="text-muted-foreground mt-0.5 size-3.5 shrink-0" aria-hidden />
-                <p className="text-muted-foreground max-w-[58ch] text-[13px] leading-relaxed text-pretty italic">
+                <p className="text-muted-foreground max-w-[58ch] flex-1 text-[13px] leading-relaxed text-pretty italic">
                   {meta.porQue}
                 </p>
                 <Pencil
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/70 mt-0.5 size-3 shrink-0 transition-colors"
+                  className="text-muted-foreground/50 group-hover:text-muted-foreground mt-0.5 size-3.5 shrink-0 transition-colors"
                   aria-hidden
                 />
               </button>

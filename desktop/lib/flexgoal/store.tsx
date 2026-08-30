@@ -24,6 +24,7 @@ interface Acciones {
   estado: EstadoApp
   listo: boolean
   registrarSesion: (id: string, minutosReal: number) => void
+  reabrirSesion: (id: string) => void
   omitirSesion: (id: string) => void
   reprogramarSesion: (id: string, fecha: string) => void
   moverMinutos: (id: string, delta: number) => void
@@ -105,6 +106,19 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
                   ? 'parcial'
                   : 'hecha'
           }
+          return e
+        }),
+
+      // Contraparte de registrarSesion/omitirSesion: nada en esta app
+      // debería quedar "cerrado para siempre" sin salida — un click
+      // equivocado en "Hecha" o "No fue hoy" tiene que poder
+      // deshacerse. Vuelve la sesión a planificada; no borra el
+      // minutosReal anterior por si el usuario solo quiere seguir
+      // sumando tiempo, no empezar de cero.
+      reabrirSesion: (id) =>
+        mut((e) => {
+          const s = e.sesiones.find((x) => x.id === id)
+          if (s) s.estado = 'planificada'
           return e
         }),
 

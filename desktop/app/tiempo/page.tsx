@@ -46,6 +46,14 @@ export default function PaginaTiempo() {
   const alImportar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0]
     if (!archivo) return
+    if (
+      !window.confirm(
+        `Importar "${archivo.name}" va a reemplazar TODOS los datos que tenés ahora en flexgoal (ideas, metas, tareas, sesiones, disponibilidad) por lo que traiga ese archivo. No hay forma de deshacerlo después. ¿Seguro que exportaste una copia de lo actual si la querías guardar?`,
+      )
+    ) {
+      e.target.value = ''
+      return
+    }
     const texto = await archivo.text()
     const res = importar(texto)
     setAviso(
@@ -207,6 +215,13 @@ export default function PaginaTiempo() {
                 variant="ghost"
                 className="text-muted-foreground h-9"
                 onClick={() => {
+                  if (
+                    !window.confirm(
+                      'Esto borra TODO lo que cargaste en flexgoal (ideas, metas, objetivos, tareas, sesiones, disponibilidad) y lo reemplaza por los datos de ejemplo. No se puede deshacer. Si querés conservar lo que tenés, cancelá esto y usá "Exportar copia" primero.\n\n¿Reiniciar de verdad?',
+                    )
+                  ) {
+                    return
+                  }
                   reiniciar()
                   setAviso({ ok: true, texto: 'Volvimos a los datos de ejemplo.' })
                 }}

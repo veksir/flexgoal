@@ -10,6 +10,7 @@ import {
   Play,
   Plus,
   Square,
+  Undo2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -26,7 +27,7 @@ export function FilaSesion({
   siguienteFecha: string
 }) {
   const { sesion, tarea, objetivo, meta } = ctx
-  const { registrarSesion, omitirSesion, reprogramarSesion, moverMinutos } =
+  const { registrarSesion, reabrirSesion, omitirSesion, reprogramarSesion, moverMinutos } =
     useFlexgoal()
   const { activa, configPomodoro, iniciar, detener } = useCronometro()
   const [abierto, setAbierto] = useState(false)
@@ -230,6 +231,31 @@ export function FilaSesion({
           >
             <CircleSlash className="size-4" aria-hidden />
             No fue hoy
+          </Button>
+        </div>
+      )}
+
+      {cerrada && (
+        <div className="border-t px-[var(--pad-card)] py-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              const teniaProgreso = (sesion.minutosReal ?? 0) > 0
+              if (
+                teniaProgreso &&
+                !window.confirm(
+                  `¿Reabrir "${tarea.titulo}"? Vas a poder seguir cronometrando o corregir el tiempo. Lo que ya registraste (${formatoMin(sesion.minutosReal ?? 0)}) no se pierde, pero la sesión deja de contar como cerrada.`,
+                )
+              ) {
+                return
+              }
+              reabrirSesion(sesion.id)
+            }}
+            className="text-muted-foreground h-8 text-[12px]"
+          >
+            <Undo2 className="size-3.5" aria-hidden />
+            Reabrir
           </Button>
         </div>
       )}
