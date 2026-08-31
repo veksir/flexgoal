@@ -35,16 +35,46 @@ export const MODOS = [
   { id: 'sistema', nombre: 'Sistema' },
 ] as const
 
+export const TIPOGRAFIAS = [
+  { id: 'sans', nombre: 'Sans (por defecto)' },
+  { id: 'serif', nombre: 'Serif' },
+  { id: 'redondeada', nombre: 'Redondeada' },
+] as const
+
+export const TAMANOS_TEXTO = [
+  { id: 'pequeno', nombre: 'Pequeño' },
+  { id: 'normal', nombre: 'Normal' },
+  { id: 'grande', nombre: 'Grande' },
+] as const
+
+export const ESTILOS_TARJETA = [
+  { id: 'plano', nombre: 'Plano (solo borde)' },
+  { id: 'sombra', nombre: 'Con sombra' },
+] as const
+
+export const ANIMACIONES = [
+  { id: 'activadas', nombre: 'Activadas' },
+  { id: 'reducidas', nombre: 'Reducidas' },
+] as const
+
 export type Acento = (typeof ACENTOS)[number]['id'] | 'personalizado'
 export type Densidad = (typeof DENSIDADES)[number]['id']
 export type Radio = (typeof RADIOS)[number]['id']
 export type Modo = (typeof MODOS)[number]['id']
+export type Tipografia = (typeof TIPOGRAFIAS)[number]['id']
+export type TamanoTexto = (typeof TAMANOS_TEXTO)[number]['id']
+export type EstiloTarjeta = (typeof ESTILOS_TARJETA)[number]['id']
+export type Animaciones = (typeof ANIMACIONES)[number]['id']
 
 export interface Tema {
   acento: Acento
   densidad: Densidad
   radio: Radio
   modo: Modo
+  tipografia: Tipografia
+  tamanoTexto: TamanoTexto
+  tarjetas: EstiloTarjeta
+  animaciones: Animaciones
   /** Hex (#rrggbb). Solo se usa cuando acento === 'personalizado'. */
   colorPersonalizado?: string
 }
@@ -53,6 +83,10 @@ export const TEMA_POR_DEFECTO: Tema = {
   acento: 'salvia',
   densidad: 'media',
   radio: 'suave',
+  tipografia: 'sans',
+  tamanoTexto: 'normal',
+  tarjetas: 'plano',
+  animaciones: 'activadas',
   modo: 'claro',
 }
 
@@ -80,6 +114,10 @@ export function aplicarTema(tema: Tema) {
   raiz.dataset.accent = tema.acento
   raiz.dataset.density = tema.densidad
   raiz.dataset.radius = tema.radio
+  raiz.dataset.font = tema.tipografia
+  raiz.dataset.textSize = tema.tamanoTexto
+  raiz.dataset.cards = tema.tarjetas
+  raiz.dataset.motion = tema.animaciones
   const oscuro =
     tema.modo === 'oscuro' ||
     (tema.modo === 'sistema' &&

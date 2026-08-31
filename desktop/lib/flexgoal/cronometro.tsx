@@ -19,7 +19,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { reproducirTonoCambioFase } from './sonido'
+import { reproducirTonoCambioFase, type SonidoFase } from './sonido'
 import { notificarCambioFase, pedirPermisoNotificaciones } from './notificaciones'
 
 export type ModoSesion = 'libre' | 'pomodoro'
@@ -73,8 +73,8 @@ interface ContextoCronometro {
   setConfigPomodoro: (config: Partial<ConfigPomodoro>) => void
   estiloReloj: EstiloReloj
   setEstiloReloj: (estilo: EstiloReloj) => void
-  sonidoActivo: boolean
-  setSonidoActivo: (activo: boolean) => void
+  sonido: SonidoFase
+  setSonido: (sonido: SonidoFase) => void
   iniciar: (sesionId: string, tareaId: string, modo: ModoSesion) => void
   pausar: () => void
   reanudar: () => void
@@ -91,9 +91,9 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
   const [activa, setActiva] = useState<SesionActiva | null>(null)
   const [configPomodoro, setConfigEstado] = useState<ConfigPomodoro>(CONFIG_DEFAULT)
   const [estiloReloj, setEstiloRelojEstado] = useState<EstiloReloj>(ESTILO_DEFAULT)
-  const [sonidoActivo, setSonidoActivoEstado] = useState(true)
+  const [sonido, setSonidoEstado] = useState<SonidoFase>('campanita')
   const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const sonidoActivoRef = useRef(true)
+  const sonidoRef = useRef<SonidoFase>('campanita')
 
   useEffect(() => {
     try {
@@ -103,21 +103,26 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       if (estilo === 'cronometro' || estilo === 'arena' || estilo === 'pared') {
         setEstiloRelojEstado(estilo)
       }
-      const sonido = window.localStorage.getItem(CLAVE_SONIDO)
-      if (sonido === '0') {
-        setSonidoActivoEstado(false)
-        sonidoActivoRef.current = false
+      const sonidoGuardado = window.localStorage.getItem(CLAVE_SONIDO)
+      if (
+        sonidoGuardado === 'campanita' ||
+        sonidoGuardado === 'suave' ||
+        sonidoGuardado === 'xilofono' ||
+        sonidoGuardado === 'ninguno'
+      ) {
+        setSonidoEstado(sonidoGuardado)
+        sonidoRef.current = sonidoGuardado
       }
     } catch {
       /* config por defecto */
     }
   }, [])
 
-  const setSonidoActivo = useCallback((activo: boolean) => {
-    setSonidoActivoEstado(activo)
-    sonidoActivoRef.current = activo
+  const setSonido = useCallback((valor: SonidoFase) => {
+    setSonidoEstado(valor)
+    sonidoRef.current = valor
     try {
-      window.localStorage.setItem(CLAVE_SONIDO, activo ? '1' : '0')
+      window.localStorage.setItem(CLAVE_SONIDO, valor)
     } catch {
       /* sigue funcionando en memoria */
     }
@@ -167,7 +172,9 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
             // se note aunque la app no esté en primer plano). El
             // cambio real de fase lo dispara confirmarCambioFase(),
             // cuando el usuario toca "Aceptar".
-            if (sonidoActivoRef.current) reproducirTonoCambioFase(prev.fase === 'trabajo' ? 'descanso' : 'trabajo')
+            if (sonidoRef.current !== 'ninguno') {
+              reproducirTonoCambioFase(prev.fase === 'trabajo' ? 'descanso' : 'trabajo', sonidoRef.current)
+            }
             notificarCambioFase(prev.fase)
             return {
               ...prev,
@@ -247,8 +254,8 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
         setConfigPomodoro,
         estiloReloj,
         setEstiloReloj,
-        sonidoActivo,
-        setSonidoActivo,
+        sonido,
+        setSonido,
         iniciar,
         pausar,
         reanudar,

@@ -65,44 +65,57 @@ export function RelojArena({ segundos, progreso, pausada }: PropsReloj) {
   // la fase.
   const cicloSeg = 300
   const fraccion = progreso ?? (segundos % cicloSeg) / cicloSeg
-  const alturaArriba = 34 * (1 - fraccion)
-  const alturaAbajo = 34 * fraccion
+
+  // Geometría: UNA sola silueta continua (un solo path, un solo Z),
+  // no dos triángulos separados — la versión anterior dejaba un hueco
+  // real entre el trapecio de arriba (que cerraba en y=48) y el de
+  // abajo (que arrancaba en y=72): nada se dibujaba en el medio. Acá
+  // el cuello (x 46–54, y 58–62) es parte de la misma figura, así que
+  // no puede volver a aparecer un hueco.
+  const alturaCamara = 46 // alto útil de cada cámara (12→58 y 62→108)
+  const alturaArriba = alturaCamara * (1 - fraccion)
+  const alturaAbajo = alturaCamara * fraccion
 
   return (
     <div className="flex flex-col items-center gap-3">
       <svg viewBox="0 0 100 120" className="size-28 shrink-0">
+        {/* silueta completa: fondo + borde, una sola figura */}
         <path
-          d="M22 8 H78 V8 C78 30 58 40 50 48 C42 40 22 30 22 8 Z
-             M22 112 H78 V112 C78 90 58 80 50 72 C42 80 22 90 22 112 Z"
+          d="M22 12 L78 12 L54 58 L54 62 L78 108 L22 108 L46 62 L46 58 Z"
           className="fill-muted/50 stroke-muted-foreground/40"
           strokeWidth="2"
+          strokeLinejoin="round"
         />
-        {/* arena arriba */}
-        <clipPath id="clipArriba">
-          <rect x="22" y={12 + (34 - alturaArriba)} width="56" height={alturaArriba + 2} />
+
+        {/* arena arriba: mismo trapecio superior, recortado por altura */}
+        <clipPath id="clipArenaArriba">
+          <rect x="22" y={12 + (alturaCamara - alturaArriba)} width="56" height={alturaArriba + 2} />
         </clipPath>
         <path
-          d="M22 8 H78 V8 C78 30 58 40 50 48 C42 40 22 30 22 8 Z"
+          d="M22 12 L78 12 L54 58 L46 58 Z"
           className="fill-primary/70 transition-all duration-1000 ease-linear"
-          clipPath="url(#clipArriba)"
+          clipPath="url(#clipArenaArriba)"
         />
-        {/* arena abajo */}
-        <clipPath id="clipAbajo">
-          <rect x="22" y={112 - 12 - alturaAbajo} width="56" height={alturaAbajo + 2} />
+
+        {/* arena abajo: mismo trapecio inferior, recortado por altura */}
+        <clipPath id="clipArenaAbajo">
+          <rect x="22" y={108 - alturaCamara - alturaAbajo} width="56" height={alturaAbajo + 2} />
         </clipPath>
         <path
-          d="M22 112 H78 V112 C78 90 58 80 50 72 C42 80 22 90 22 112 Z"
+          d="M46 62 L54 62 L78 108 L22 108 Z"
           className="fill-primary/70 transition-all duration-1000 ease-linear"
-          clipPath="url(#clipAbajo)"
+          clipPath="url(#clipArenaAbajo)"
         />
-        {/* granito cayendo por el cuello — animación de POSICIÓN real
-            (no scale), con transform-box: fill-box para que el origen
-            de la transformación sea el propio granito y no el viewport */}
+
+        {/* granito cayendo por el cuello (único tramo angosto de la
+            figura, x 46–54, y 58–62) — animación de POSICIÓN real
+            (no scale), con transform-box: fill-box para que el
+            origen de la transformación sea el propio granito */}
         {!pausada && alturaArriba > 1 && (
           <circle
             cx="50"
-            cy="50"
-            r="1.3"
+            cy="60"
+            r="1.4"
             className="fill-primary"
             style={{
               transformBox: 'fill-box',

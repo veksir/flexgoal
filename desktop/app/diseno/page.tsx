@@ -7,12 +7,17 @@ import { Encabezado } from '@/components/encabezado'
 import { cn } from '@/lib/utils'
 import {
   ACENTOS,
+  ANIMACIONES,
   DENSIDADES,
+  ESTILOS_TARJETA,
   MODOS,
   RADIOS,
+  TAMANOS_TEXTO,
+  TIPOGRAFIAS,
   useTema,
 } from '@/lib/flexgoal/tema'
 import { useCronometro, type EstiloReloj } from '@/lib/flexgoal/cronometro'
+import { reproducirTonoCambioFase } from '@/lib/flexgoal/sonido'
 import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 import {
   borrarClaveAPI,
@@ -152,6 +157,38 @@ function SeccionApariencia() {
         />
       </Campo>
 
+      <Campo etiqueta="Tipografía">
+        <SelectorPill
+          opciones={TIPOGRAFIAS}
+          valor={tema.tipografia}
+          onCambiar={(id) => setTema({ tipografia: id })}
+        />
+      </Campo>
+
+      <Campo etiqueta="Tamaño de texto">
+        <SelectorPill
+          opciones={TAMANOS_TEXTO}
+          valor={tema.tamanoTexto}
+          onCambiar={(id) => setTema({ tamanoTexto: id })}
+        />
+      </Campo>
+
+      <Campo etiqueta="Estilo de tarjetas">
+        <SelectorPill
+          opciones={ESTILOS_TARJETA}
+          valor={tema.tarjetas}
+          onCambiar={(id) => setTema({ tarjetas: id })}
+        />
+      </Campo>
+
+      <Campo etiqueta="Animaciones">
+        <SelectorPill
+          opciones={ANIMACIONES}
+          valor={tema.animaciones}
+          onCambiar={(id) => setTema({ animaciones: id })}
+        />
+      </Campo>
+
       <Campo etiqueta="Textura de fondo">
         <SelectorPill
           opciones={[
@@ -167,7 +204,7 @@ function SeccionApariencia() {
 }
 
 function SeccionPomodoro() {
-  const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj, sonidoActivo, setSonidoActivo } =
+  const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj, sonido, setSonido } =
     useCronometro()
 
   return (
@@ -220,14 +257,27 @@ function SeccionPomodoro() {
       </Campo>
 
       <Campo etiqueta="Sonido al cambiar de enfoque a descanso (y viceversa)">
-        <SelectorPill
-          opciones={[
-            { id: 'on', nombre: 'Activado' },
-            { id: 'off', nombre: 'Silenciado' },
-          ]}
-          valor={sonidoActivo ? 'on' : 'off'}
-          onCambiar={(v) => setSonidoActivo(v === 'on')}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <SelectorPill
+            opciones={[
+              { id: 'campanita', nombre: 'Campanita' },
+              { id: 'suave', nombre: 'Suave' },
+              { id: 'xilofono', nombre: 'Xilófono' },
+              { id: 'ninguno', nombre: 'Silenciado' },
+            ]}
+            valor={sonido}
+            onCambiar={setSonido}
+          />
+          {sonido !== 'ninguno' && (
+            <button
+              type="button"
+              onClick={() => reproducirTonoCambioFase('trabajo', sonido)}
+              className="text-muted-foreground hover:text-foreground text-[12px] underline underline-offset-2"
+            >
+              Probar
+            </button>
+          )}
+        </div>
       </Campo>
     </section>
   )

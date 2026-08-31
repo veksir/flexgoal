@@ -179,6 +179,44 @@
   --radius: 1.1rem;
 }
 
+/* Tipografía — solo fuentes del sistema (nada de red en build ni en
+   runtime, consistente con la decisión de sacar next/font/google). */
+[data-font='serif'] {
+  --font-sans: ui-serif, Georgia, 'Times New Roman', serif;
+}
+[data-font='redondeada'] {
+  --font-sans:
+    ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Tamaño de texto global — multiplica el font-size raíz, todo lo que
+   está en rem/em en la app escala con esto. */
+[data-text-size='pequeno'] {
+  font-size: 92%;
+}
+[data-text-size='grande'] {
+  font-size: 113%;
+}
+
+/* Estilo de tarjeta: por defecto el diseño es plano (borde + fondo,
+   sin sombra) — esta opción agrega una sombra sutil a todo lo que use
+   la clase bg-card. */
+[data-cards='sombra'] .bg-card {
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 0.04),
+    0 2px 6px oklch(0 0 0 / 0.06);
+}
+
+/* Animaciones reducidas por elección del usuario (además de que ya
+   se respeta prefers-reduced-motion del sistema operativo más abajo) */
+[data-motion='reducidas'] *,
+[data-motion='reducidas'] *::before,
+[data-motion='reducidas'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

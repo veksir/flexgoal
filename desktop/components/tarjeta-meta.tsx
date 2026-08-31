@@ -287,6 +287,17 @@ export function TarjetaMeta({
                                   Ese día no tiene tiempo declarado en Tiempo.
                                 </p>
                               )}
+                            {fechaProgramar &&
+                              (() => {
+                                const d = estado.disponibilidad.find(
+                                  (x) => x.dia === indiceDia(fechaProgramar),
+                                )
+                                return d?.horaInicio && d?.horaFin ? (
+                                  <p className="text-muted-foreground text-[11px]">
+                                    Tu franja libre ese día: {d.horaInicio} a {d.horaFin}
+                                  </p>
+                                ) : null
+                              })()}
                           </div>
                         ) : (
                           <Button

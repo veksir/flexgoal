@@ -23,11 +23,15 @@ export function MedidorCapacidad({
   carga,
   segmentos,
   hrefDisponibilidad = '/tiempo',
+  horario,
 }: {
   carga: Carga
   /** Bloques del plan en orden, para leer la composición del día. */
   segmentos: { id: string; etiqueta: string; minutos: number }[]
   hrefDisponibilidad?: string
+  /** Franja horaria declarada para este día, si la hay (ver Tiempo →
+   * "¿A qué hora?"). Puramente informativo. */
+  horario?: { inicio: string; fin: string }
 }) {
   const copy = COPY_CARGA[carga.estado]
   const Icono = ICONO[carga.estado]
@@ -57,6 +61,12 @@ export function MedidorCapacidad({
               </span>
             )}
           </h2>
+          {horario && (
+            <p className="text-muted-foreground mt-1 text-[12px]">
+              Tu franja libre: <span className="tnum">{horario.inicio}</span> a{' '}
+              <span className="tnum">{horario.fin}</span>
+            </p>
+          )}
         </div>
 
         <div

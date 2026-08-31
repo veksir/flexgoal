@@ -28,7 +28,7 @@ export default function PaginaHoy() {
   const hoy = hoyISO()
   const [archivoAbierto, setArchivoAbierto] = useState(false)
 
-  const { sesiones, carga, sugerencias, pendientes, cerradas } = useMemo(() => {
+  const { sesiones, carga, sugerencias, pendientes, cerradas, disponibilidadHoy } = useMemo(() => {
     const delDia = sesionesDelDia(estado, hoy)
     const contextos = delDia
       .map((s) => contextoDeSesion(estado, s))
@@ -44,6 +44,7 @@ export default function PaginaHoy() {
       sugerencias: sugerirAjustes(estado),
       pendientes: contextos.filter((c) => c.sesion.estado === 'planificada'),
       cerradas: contextos.filter((c) => c.sesion.estado !== 'planificada'),
+      disponibilidadHoy: disponibilidad,
     }
   }, [estado, hoy])
 
@@ -66,6 +67,11 @@ export default function PaginaHoy() {
       <div className="mt-6 space-y-6">
         <MedidorCapacidad
           carga={carga}
+          horario={
+            disponibilidadHoy?.horaInicio && disponibilidadHoy?.horaFin
+              ? { inicio: disponibilidadHoy.horaInicio, fin: disponibilidadHoy.horaFin }
+              : undefined
+          }
           segmentos={sesiones
             .filter((c) => c.sesion.estado !== 'omitida')
             .map((c) => ({
