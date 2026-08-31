@@ -47,8 +47,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
         Saltar al contenido
       </a>
 
-      {/* Barra lateral — escritorio */}
-      <aside className="bg-card/60 hidden w-60 shrink-0 border-r lg:flex lg:flex-col">
+      {/* Barra lateral — escritorio. sticky + h-dvh: queda fija en
+          pantalla sin importar cuánto scrollee el contenido principal
+          (antes se estiraba junto con la página, había que volver a
+          scrollear arriba para ver la navegación). */}
+      <aside className="bg-card/60 sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r lg:flex">
         <div className="flex h-16 items-center border-b px-5">
           <Marca />
         </div>

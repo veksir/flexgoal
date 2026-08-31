@@ -13,6 +13,7 @@ import {
   useTema,
 } from '@/lib/flexgoal/tema'
 import { useCronometro, type EstiloReloj } from '@/lib/flexgoal/cronometro'
+import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 import {
   borrarClaveAPI,
   claveEstaCifrada,
@@ -233,6 +234,7 @@ function SeccionPomodoro() {
 }
 
 function SeccionIA() {
+  const confirmar = useConfirmacion()
   const [clave, setClave] = useState('')
   const [claveGuardada, setClaveGuardada] = useState(false)
   const [mostrar, setMostrar] = useState(false)
@@ -266,13 +268,13 @@ function SeccionIA() {
 
   async function borrar() {
     if (guardando) return
-    if (
-      !window.confirm(
-        'Vas a borrar tu clave de Gemini. Para usar la generación con IA de nuevo vas a tener que volver a pegarla acá. ¿Borrarla?',
-      )
-    ) {
-      return
-    }
+    const ok = await confirmar({
+      titulo: '¿Borrar la clave de Gemini?',
+      descripcion: 'Para usar la generación con IA de nuevo vas a tener que volver a pegarla acá.',
+      textoConfirmar: 'Sí, borrarla',
+      destructivo: true,
+    })
+    if (!ok) return
     setGuardando(true)
     try {
       await borrarClaveAPI()

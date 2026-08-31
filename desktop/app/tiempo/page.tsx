@@ -8,11 +8,14 @@ import { useFlexgoal } from '@/lib/flexgoal/store'
 import { formatoMin } from '@/lib/flexgoal/engine'
 import { DIAS_LARGOS } from '@/lib/flexgoal/types'
 import { Encabezado } from '@/components/encabezado'
+import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 
 const PASOS = [0, 15, 30, 45, 60, 90, 120, 150, 180]
 
 export default function PaginaTiempo() {
-  const { estado, actualizarDisponibilidad, reiniciar, importar } = useFlexgoal()
+  const { estado, actualizarDisponibilidad, actualizarHorarioDisponibilidad, reiniciar, importar } =
+    useFlexgoal()
+  const confirmar = useConfirmacion()
   const inputArchivo = useRef<HTMLInputElement>(null)
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null)
 
@@ -20,7 +23,14 @@ export default function PaginaTiempo() {
     () =>
       DIAS_LARGOS.map((nombre, dia) => {
         const d = estado.disponibilidad.find((x) => x.dia === dia)
-        return { dia, nombre, minutos: d?.minutos ?? 0, declarada: d?.declarada ?? false }
+        return {
+          dia,
+          nombre,
+          minutos: d?.minutos ?? 0,
+          declarada: d?.declarada ?? false,
+          horaInicio: d?.horaInicio ?? '',
+          horaFin: d?.horaFin ?? '',
+        }
       }),
     [estado.disponibilidad],
   )
@@ -46,11 +56,14 @@ export default function PaginaTiempo() {
   const alImportar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0]
     if (!archivo) return
-    if (
-      !window.confirm(
-        `Importar "${archivo.name}" va a reemplazar TODOS los datos que tenés ahora en flexgoal (ideas, metas, tareas, sesiones, disponibilidad) por lo que traiga ese archivo. No hay forma de deshacerlo después. ¿Seguro que exportaste una copia de lo actual si la querías guardar?`,
-      )
-    ) {
+    const ok = await confirmar({
+      titulo: `¿Importar "${archivo.name}"?`,
+      descripcion:
+        'Va a reemplazar TODOS los datos que tenés ahora en flexgoal (ideas, metas, tareas, sesiones, disponibilidad) por lo que traiga ese archivo. No hay forma de deshacerlo después. Si querías guardar lo actual, cancelá y usá "Exportar copia" primero.',
+      textoConfirmar: 'Sí, importar y reemplazar',
+      destructivo: true,
+    })
+    if (!ok) {
       e.target.value = ''
       return
     }
@@ -98,7 +111,7 @@ export default function PaginaTiempo() {
           </h2>
 
           <ul className="space-y-2">
-            {dias.map(({ dia, nombre, minutos, declarada }) => (
+            {dias.map(({ dia, nombre, minutos, declarada, horaInicio, horaFin }) => (
               <li
                 key={dia}
                 className={cn(
@@ -161,6 +174,14 @@ export default function PaginaTiempo() {
                       esPersonalizado={!PASOS.includes(minutos)}
                       onAplicar={(valor) => actualizarDisponibilidad(dia, valor, true)}
                     />
+                    <ControlHorario
+                      dia={dia}
+                      horaInicio={horaInicio}
+                      horaFin={horaFin}
+                      onCambiar={(inicio, fin) =>
+                        actualizarHorarioDisponibilidad(dia, inicio || null, fin || null)
+                      }
+                    />
                   </div>
                 )}
               </li>
@@ -214,14 +235,15 @@ export default function PaginaTiempo() {
                 size="sm"
                 variant="ghost"
                 className="text-muted-foreground h-9"
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      'Esto borra TODO lo que cargaste en flexgoal (ideas, metas, objetivos, tareas, sesiones, disponibilidad) y lo reemplaza por los datos de ejemplo. No se puede deshacer. Si querés conservar lo que tenés, cancelá esto y usá "Exportar copia" primero.\n\n¿Reiniciar de verdad?',
-                    )
-                  ) {
-                    return
-                  }
+                onClick={async () => {
+                  const ok = await confirmar({
+                    titulo: '¿Restaurar los datos de ejemplo?',
+                    descripcion:
+                      'Esto borra TODO lo que cargaste en flexgoal (ideas, metas, objetivos, tareas, sesiones, disponibilidad) y lo reemplaza por los datos de ejemplo. No se puede deshacer. Si querés conservar lo que tenés, cancelá esto y usá "Exportar copia" primero.',
+                    textoConfirmar: 'Sí, reiniciar',
+                    destructivo: true,
+                  })
+                  if (!ok) return
                   reiniciar()
                   setAviso({ ok: true, texto: 'Volvimos a los datos de ejemplo.' })
                 }}
@@ -312,6 +334,61 @@ function ControlPersonalizado({
           Actual: {formatoMin(minutosActuales)} (personalizado)
         </span>
       )}
+    </div>
+  )
+}
+
+function ControlHorario({
+  dia,
+  horaInicio,
+  horaFin,
+  onCambiar,
+}: {
+  dia: number
+  horaInicio: string
+  horaFin: string
+  onCambiar: (inicio: string, fin: string) => void
+}) {
+  const [inicio, setInicio] = useState(horaInicio)
+  const [fin, setFin] = useState(horaFin)
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 border-t pt-2">
+      <span className="text-muted-foreground text-[11.5px]">¿A qué hora? (opcional):</span>
+      <input
+        type="time"
+        value={inicio}
+        onChange={(e) => setInicio(e.target.value)}
+        onBlur={() => onCambiar(inicio, fin)}
+        className="tnum focus-visible:ring-ring h-8 rounded-md border bg-transparent px-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+        aria-label={`Hora de inicio, día ${dia}`}
+      />
+      <span className="text-muted-foreground text-[12px]">a</span>
+      <input
+        type="time"
+        value={fin}
+        onChange={(e) => setFin(e.target.value)}
+        onBlur={() => onCambiar(inicio, fin)}
+        className="tnum focus-visible:ring-ring h-8 rounded-md border bg-transparent px-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+        aria-label={`Hora de fin, día ${dia}`}
+      />
+      {(inicio || fin) && (
+        <button
+          type="button"
+          onClick={() => {
+            setInicio('')
+            setFin('')
+            onCambiar('', '')
+          }}
+          className="text-muted-foreground hover:text-foreground text-[11.5px] underline underline-offset-2"
+        >
+          Quitar horario
+        </button>
+      )}
+      <span className="text-muted-foreground w-full text-[11px] leading-relaxed">
+        Es solo para que sepas en qué franja mirar ese día — la carga se sigue
+        calculando por minutos totales, no cambia nada del cálculo.
+      </span>
     </div>
   )
 }

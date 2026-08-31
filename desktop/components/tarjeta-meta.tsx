@@ -8,6 +8,7 @@ import { calcularCarga, estimacionEfectiva, fechaLegible, formatoMin, indiceDia 
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import type { Meta, Objetivo, Tarea } from '@/lib/flexgoal/types'
 import { EtiquetaEstadoMeta, EtiquetaEstadoTarea } from '@/components/etiqueta-estado'
+import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 
 export function TarjetaMeta({
   meta,
@@ -25,6 +26,7 @@ export function TarjetaMeta({
   }
 }) {
   const { estado, alternarTarea, alternarEstadoMeta, editarMeta, agregarSesion } = useFlexgoal()
+  const confirmar = useConfirmacion()
   const [abierto, setAbierto] = useState(meta.estado === 'activa')
   const [editando, setEditando] = useState(false)
   const [porQueBorrador, setPorQueBorrador] = useState(meta.porQue)
@@ -44,7 +46,7 @@ export function TarjetaMeta({
     return estado.sesiones.some((s) => s.tareaId === tareaId)
   }
 
-  function confirmarProgramacion(tarea: Tarea) {
+  async function confirmarProgramacion(tarea: Tarea) {
     if (!fechaProgramar) return
     const minutosTarea = estimacionEfectiva(tarea)
     const minutosYaEseDia = estado.sesiones
@@ -56,13 +58,12 @@ export function TarjetaMeta({
     const cargaDestino = calcularCarga(minutosYaEseDia + minutosTarea, disponibilidadDestino)
 
     if (cargaDestino.estado === 'excedido') {
-      if (
-        !window.confirm(
-          `Ese día queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Agendarla igual?`,
-        )
-      ) {
-        return
-      }
+      const seguir = await confirmar({
+        titulo: 'Ese día queda sobrecargado',
+        descripcion: `Queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}.`,
+        textoConfirmar: 'Agendarla igual',
+      })
+      if (!seguir) return
     }
 
     agregarSesion(tarea.id, fechaProgramar, minutosTarea)

@@ -11,6 +11,7 @@ import {
   type ContextoSesion,
 } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
+import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 
 export function ColumnaDia({
   fecha,
@@ -28,8 +29,9 @@ export function ColumnaDia({
   carga: Carga
 }) {
   const { estado, reprogramarSesion } = useFlexgoal()
+  const confirmar = useConfirmacion()
 
-  function moverSesion(sesion: ContextoSesion['sesion'], tareaTitulo: string, fechaDestino: string) {
+  async function moverSesion(sesion: ContextoSesion['sesion'], tareaTitulo: string, fechaDestino: string) {
     const minutosYaEnDestino = estado.sesiones
       .filter((s) => s.fecha === fechaDestino && s.id !== sesion.id)
       .reduce((acc, s) => acc + s.minutosPlan, 0)
@@ -42,14 +44,19 @@ export function ColumnaDia({
     )
 
     if (cargaDestino.estado === 'excedido') {
-      const seguir = window.confirm(
-        `Mover "${tareaTitulo}" a ese día lo deja en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Moverla igual?`,
-      )
+      const seguir = await confirmar({
+        titulo: 'Ese día queda sobrecargado',
+        descripcion: `Mover "${tareaTitulo}" ahí lo deja en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}.`,
+        textoConfirmar: 'Moverla igual',
+      })
       if (!seguir) return
     } else if (!cargaDestino.declarada) {
-      const seguir = window.confirm(
-        `Ese día no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga. ¿Moverla igual?`,
-      )
+      const seguir = await confirmar({
+        titulo: 'Día sin tiempo declarado',
+        descripcion:
+          'Ese día no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga.',
+        textoConfirmar: 'Moverla igual',
+      })
       if (!seguir) return
     }
 

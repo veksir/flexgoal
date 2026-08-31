@@ -62,6 +62,14 @@ export interface Disponibilidad {
   minutos: number
   /** Falso = la persona no declaró nada. Sin dato NO es sobrecarga. */
   declarada: boolean
+  /** Rango horario dentro del cual está ese tiempo libre — opcional,
+   * "HH:MM". Si no se especifica, solo se sabe CUÁNTO tiempo hay ese
+   * día, no A QUÉ HORA. Ninguna parte del motor de cálculo depende de
+   * esto (la carga se sigue calculando por minutos totales) — es
+   * puramente informativo, para saber en qué franja conviene mirar
+   * ese día. */
+  horaInicio?: string
+  horaFin?: string
 }
 
 export interface EstadoApp {

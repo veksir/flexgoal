@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { calcularCarga, formatoMin, indiceDia, type ContextoSesion } from '@/lib/flexgoal/engine'
 import { useFlexgoal } from '@/lib/flexgoal/store'
 import { formatearCronometro, useCronometro, type ModoSesion } from '@/lib/flexgoal/cronometro'
+import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 import { EtiquetaEstadoSesion } from '@/components/etiqueta-estado'
 
 export function FilaSesion({
@@ -31,13 +32,16 @@ export function FilaSesion({
   const {
     estado,
     registrarSesion,
+    registrarProgreso,
     reabrirSesion,
     quitarSesion,
     omitirSesion,
     reprogramarSesion,
     moverMinutos,
   } = useFlexgoal()
-  const { activa, configPomodoro, iniciar, detener } = useCronometro()
+  const { activa, configPomodoro, iniciar, pausar, reanudar, confirmarCambioFase, detener } =
+    useCronometro()
+  const confirmar = useConfirmacion()
   const [abierto, setAbierto] = useState(false)
   const [real, setReal] = useState(sesion.minutosPlan)
   const [modoElegido, setModoElegido] = useState<ModoSesion>('libre')
@@ -53,7 +57,15 @@ export function FilaSesion({
     if (resultado) registrarSesion(resultado.sesionId, resultado.minutos)
   }
 
-  function moverAManana() {
+  // "Sigo después" en vez de "terminé": guarda el tiempo real pero NO
+  // cierra la sesión — no hace falta ir a buscarla al archivo de
+  // cerradas para continuarla, se queda en "Por hacer".
+  function guardarYSeguirDespues() {
+    const resultado = detener()
+    if (resultado) registrarProgreso(resultado.sesionId, resultado.minutos)
+  }
+
+  async function moverAManana() {
     const minutosYaEnDestino = estado.sesiones
       .filter((s) => s.fecha === siguienteFecha && s.id !== sesion.id)
       .reduce((acc, s) => acc + s.minutosPlan, 0)
@@ -66,21 +78,20 @@ export function FilaSesion({
     )
 
     if (cargaDestino.estado === 'excedido') {
-      if (
-        !window.confirm(
-          `Mañana queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}. ¿Moverla igual?`,
-        )
-      ) {
-        return
-      }
+      const seguir = await confirmar({
+        titulo: 'Mañana queda sobrecargado',
+        descripcion: `Mañana queda en ${formatoMin(cargaDestino.minutosPlan)} planificados sobre ${formatoMin(cargaDestino.minutosDisponibles)} disponibles — se excede por ${formatoMin(cargaDestino.minutosPlan - cargaDestino.minutosDisponibles)}.`,
+        textoConfirmar: 'Moverla igual',
+      })
+      if (!seguir) return
     } else if (!cargaDestino.declarada) {
-      if (
-        !window.confirm(
-          'Mañana no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga. ¿Moverla igual?',
-        )
-      ) {
-        return
-      }
+      const seguir = await confirmar({
+        titulo: 'Mañana sin tiempo declarado',
+        descripcion:
+          'Mañana no tiene tiempo declarado en Tiempo, así que no podemos avisarte si se sobrecarga.',
+        textoConfirmar: 'Moverla igual',
+      })
+      if (!seguir) return
     }
 
     reprogramarSesion(sesion.id, siguienteFecha)
@@ -281,15 +292,15 @@ export function FilaSesion({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
+            onClick={async () => {
               const teniaProgreso = (sesion.minutosReal ?? 0) > 0
-              if (
-                teniaProgreso &&
-                !window.confirm(
-                  `¿Reabrir "${tarea.titulo}"? Vas a poder seguir cronometrando o corregir el tiempo. Lo que ya registraste (${formatoMin(sesion.minutosReal ?? 0)}) no se pierde, pero la sesión deja de contar como cerrada.`,
-                )
-              ) {
-                return
+              if (teniaProgreso) {
+                const ok = await confirmar({
+                  titulo: `¿Reabrir "${tarea.titulo}"?`,
+                  descripcion: `Vas a poder seguir cronometrando o corregir el tiempo. Lo que ya registraste (${formatoMin(sesion.minutosReal ?? 0)}) no se pierde, pero la sesión deja de contar como cerrada.`,
+                  textoConfirmar: 'Reabrir',
+                })
+                if (!ok) return
               }
               reabrirSesion(sesion.id)
             }}
@@ -301,14 +312,15 @@ export function FilaSesion({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => {
-              if (
-                !window.confirm(
-                  `Eliminar el registro de "${tarea.titulo}" de este día. Esto borra la sesión (y el tiempo real que hayas cargado) — no se puede deshacer. La tarea en sí sigue existiendo en Metas.`,
-                )
-              ) {
-                return
-              }
+            onClick={async () => {
+              const ok = await confirmar({
+                titulo: `¿Eliminar "${tarea.titulo}" de este día?`,
+                descripcion:
+                  'Esto borra la sesión (y el tiempo real que hayas cargado) — no se puede deshacer. La tarea en sí sigue existiendo en Metas.',
+                textoConfirmar: 'Eliminar',
+                destructivo: true,
+              })
+              if (!ok) return
               quitarSesion(sesion.id)
             }}
             className="text-muted-foreground hover:text-destructive h-9"

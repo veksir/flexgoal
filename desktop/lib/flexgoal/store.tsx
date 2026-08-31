@@ -24,6 +24,10 @@ interface Acciones {
   estado: EstadoApp
   listo: boolean
   registrarSesion: (id: string, minutosReal: number) => void
+  /** Como registrarSesion, pero NO cierra la sesión (queda
+   * 'planificada'). Para "guardo lo que llevo y sigo después" sin
+   * tener que ir a buscarla al archivo de cerradas. */
+  registrarProgreso: (id: string, minutosReal: number) => void
   reabrirSesion: (id: string) => void
   omitirSesion: (id: string) => void
   reprogramarSesion: (id: string, fecha: string) => void
@@ -46,6 +50,14 @@ interface Acciones {
   ) => void
   descartarIdea: (id: string) => void
   actualizarDisponibilidad: (dia: number, minutos: number, declarada: boolean) => void
+  /** Rango horario opcional (puramente informativo, ver comentario en
+   * el tipo Disponibilidad). Pasar null en ambos para borrar el
+   * rango sin tocar los minutos declarados. */
+  actualizarHorarioDisponibilidad: (
+    dia: number,
+    horaInicio: string | null,
+    horaFin: string | null,
+  ) => void
   alternarEstadoMeta: (id: string) => void
   editarMeta: (id: string, cambios: Partial<Pick<Meta, 'titulo' | 'porQue' | 'horizonte'>>) => void
   reiniciar: () => void
@@ -106,6 +118,13 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
                   ? 'parcial'
                   : 'hecha'
           }
+          return e
+        }),
+
+      registrarProgreso: (id, minutosReal) =>
+        mut((e) => {
+          const s = e.sesiones.find((x) => x.id === id)
+          if (s) s.minutosReal = minutosReal
           return e
         }),
 
@@ -331,6 +350,24 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
             d.declarada = declarada
           } else {
             e.disponibilidad.push({ dia, minutos, declarada })
+          }
+          return e
+        }),
+
+      actualizarHorarioDisponibilidad: (dia, horaInicio, horaFin) =>
+        mut((e) => {
+          const d = e.disponibilidad.find((x) => x.dia === dia)
+          if (d) {
+            d.horaInicio = horaInicio ?? undefined
+            d.horaFin = horaFin ?? undefined
+          } else {
+            e.disponibilidad.push({
+              dia,
+              minutos: 0,
+              declarada: false,
+              horaInicio: horaInicio ?? undefined,
+              horaFin: horaFin ?? undefined,
+            })
           }
           return e
         }),

@@ -20,6 +20,7 @@ import {
   type ReactNode,
 } from 'react'
 import { reproducirTonoCambioFase } from './sonido'
+import { notificarCambioFase, pedirPermisoNotificaciones } from './notificaciones'
 
 export type ModoSesion = 'libre' | 'pomodoro'
 export type FasePomodoro = 'trabajo' | 'descanso'
@@ -42,12 +43,28 @@ interface SesionActiva {
   modo: ModoSesion
   fase: FasePomodoro
   pausada: boolean
+  /** Verdadero cuando se cumplió el tiempo de la fase y se está
+   * esperando que el usuario confirme el cambio (ver
+   * esperandoConfirmacionFase / confirmarCambioFase). Mientras es
+   * true, el cronómetro deja de avanzar — no es "aviso y sigue solo",
+   * es "aviso y espera". */
+  esperandoConfirmacionFase: boolean
   /** Segundos acumulados en la fase de trabajo actual — lo único que
    * termina como minutosReal al detener (los descansos no cuentan). */
   segundosTrabajo: number
   /** Segundos transcurridos en la fase actual, para mostrar el
-   * cronómetro y saber cuándo cambiar de fase en modo Pomodoro. */
+   * cronómetro y saber cuándo cambiar de fase en modo Pomodoro. Se
+   * reinicia en cada cambio de fase — a propósito, representa
+   * progreso DENTRO de la fase. */
   segundosFaseActual: number
+  /** Segundos desde que se inició la sesión, sin reiniciarse nunca
+   * (ni al pausar, ni al cambiar de fase). Es lo que usa el reloj de
+   * pared: un reloj de pared no "vuelve para atrás" cada vez que
+   * cambia de fase, sigue su curso — a diferencia del cronómetro y
+   * el reloj de arena, que sí representan el progreso de la fase
+   * actual y por eso reinician (comportamiento correcto, distinto,
+   * no un bug). */
+  segundosTotales: number
 }
 
 interface ContextoCronometro {
@@ -61,6 +78,10 @@ interface ContextoCronometro {
   iniciar: (sesionId: string, tareaId: string, modo: ModoSesion) => void
   pausar: () => void
   reanudar: () => void
+  /** El usuario acepta pasar de la fase que se cumplió a la
+   * siguiente. Antes de esto, el tiempo queda congelado en el
+   * límite — no cambia de fase solo. */
+  confirmarCambioFase: () => void
   detener: () => { sesionId: string; minutos: number } | null
 }
 
@@ -124,34 +145,41 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!activa || activa.pausada) {
+    if (!activa || activa.pausada || activa.esperandoConfirmacionFase) {
       if (intervaloRef.current) clearInterval(intervaloRef.current)
       return
     }
 
     intervaloRef.current = setInterval(() => {
       setActiva((prev) => {
-        if (!prev || prev.pausada) return prev
+        if (!prev || prev.pausada || prev.esperandoConfirmacionFase) return prev
         const segundosFaseActual = prev.segundosFaseActual + 1
         const segundosTrabajo =
           prev.fase === 'trabajo' ? prev.segundosTrabajo + 1 : prev.segundosTrabajo
+        const segundosTotales = prev.segundosTotales + 1
 
         if (prev.modo === 'pomodoro') {
           const limiteSeg =
             (prev.fase === 'trabajo' ? configPomodoro.trabajoMin : configPomodoro.descansoMin) * 60
           if (segundosFaseActual >= limiteSeg) {
-            const nuevaFase = prev.fase === 'trabajo' ? 'descanso' : 'trabajo'
-            if (sonidoActivoRef.current) reproducirTonoCambioFase(nuevaFase)
+            // No cambia de fase solo: se congela en el límite y avisa
+            // (sonido + notificación del sistema operativo, para que
+            // se note aunque la app no esté en primer plano). El
+            // cambio real de fase lo dispara confirmarCambioFase(),
+            // cuando el usuario toca "Aceptar".
+            if (sonidoActivoRef.current) reproducirTonoCambioFase(prev.fase === 'trabajo' ? 'descanso' : 'trabajo')
+            notificarCambioFase(prev.fase)
             return {
               ...prev,
-              fase: nuevaFase,
-              segundosFaseActual: 0,
+              segundosFaseActual: limiteSeg,
               segundosTrabajo,
+              segundosTotales,
+              esperandoConfirmacionFase: true,
             }
           }
         }
 
-        return { ...prev, segundosFaseActual, segundosTrabajo }
+        return { ...prev, segundosFaseActual, segundosTrabajo, segundosTotales }
       })
     }, 1000)
 
@@ -159,17 +187,26 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       if (intervaloRef.current) clearInterval(intervaloRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(activa), activa?.pausada, configPomodoro.trabajoMin, configPomodoro.descansoMin])
+  }, [
+    Boolean(activa),
+    activa?.pausada,
+    activa?.esperandoConfirmacionFase,
+    configPomodoro.trabajoMin,
+    configPomodoro.descansoMin,
+  ])
 
   const iniciar = useCallback((sesionId: string, tareaId: string, modo: ModoSesion) => {
+    pedirPermisoNotificaciones()
     setActiva({
       sesionId,
       tareaId,
       modo,
       fase: 'trabajo',
       pausada: false,
+      esperandoConfirmacionFase: false,
       segundosTrabajo: 0,
       segundosFaseActual: 0,
+      segundosTotales: 0,
     })
   }, [])
 
@@ -179,6 +216,19 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
 
   const reanudar = useCallback(() => {
     setActiva((prev) => (prev ? { ...prev, pausada: false } : prev))
+  }, [])
+
+  const confirmarCambioFase = useCallback(() => {
+    setActiva((prev) =>
+      prev
+        ? {
+            ...prev,
+            fase: prev.fase === 'trabajo' ? 'descanso' : 'trabajo',
+            segundosFaseActual: 0,
+            esperandoConfirmacionFase: false,
+          }
+        : prev,
+    )
   }, [])
 
   const detener = useCallback((): { sesionId: string; minutos: number } | null => {
@@ -202,6 +252,7 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
         iniciar,
         pausar,
         reanudar,
+        confirmarCambioFase,
         detener,
       }}
     >
