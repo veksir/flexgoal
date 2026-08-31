@@ -10,6 +10,13 @@ import type { Meta, Objetivo, Tarea } from '@/lib/flexgoal/types'
 import { EtiquetaEstadoMeta, EtiquetaEstadoTarea } from '@/components/etiqueta-estado'
 import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 
+function formatearMomento(iso: string): string {
+  const fecha = new Date(iso)
+  const fechaTexto = fecha.toLocaleDateString('es-419', { day: 'numeric', month: 'short' })
+  const horaTexto = fecha.toLocaleTimeString('es-419', { hour: '2-digit', minute: '2-digit' })
+  return `${fechaTexto}, ${horaTexto}`
+}
+
 export function TarjetaMeta({
   meta,
   objetivos,
@@ -25,7 +32,15 @@ export function TarjetaMeta({
     minutosInvertidos: number
   }
 }) {
-  const { estado, alternarTarea, alternarEstadoMeta, editarMeta, agregarSesion } = useFlexgoal()
+  const {
+    estado,
+    alternarTarea,
+    cambiarEstadoMeta,
+    editarMeta,
+    agregarSesion,
+    agregarObjetivo,
+    agregarTarea,
+  } = useFlexgoal()
   const confirmar = useConfirmacion()
   const [abierto, setAbierto] = useState(meta.estado === 'activa')
   const [editando, setEditando] = useState(false)
@@ -33,6 +48,13 @@ export function TarjetaMeta({
   const [horizonteBorrador, setHorizonteBorrador] = useState(meta.horizonte)
   const [programandoId, setProgramandoId] = useState<string | null>(null)
   const [fechaProgramar, setFechaProgramar] = useState('')
+  const [historialAbierto, setHistorialAbierto] = useState<string | null>(null)
+  const [agregandoObjetivo, setAgregandoObjetivo] = useState(false)
+  const [nuevoObjTitulo, setNuevoObjTitulo] = useState('')
+  const [nuevoObjCriterio, setNuevoObjCriterio] = useState('')
+  const [agregandoTareaEn, setAgregandoTareaEn] = useState<string | null>(null)
+  const [nuevaTareaTitulo, setNuevaTareaTitulo] = useState('')
+  const [nuevaTareaMin, setNuevaTareaMin] = useState('30')
 
   function guardarEdicion() {
     editarMeta(meta.id, {
@@ -144,14 +166,78 @@ export function TarjetaMeta({
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground h-9 shrink-0"
-            onClick={() => alternarEstadoMeta(meta.id)}
-          >
-            {meta.estado === 'activa' ? 'Pausar' : 'Reactivar'}
-          </Button>
+          <div className="flex shrink-0 gap-1.5">
+            {meta.estado === 'activa' && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'completada')}
+                >
+                  Completar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'pausada')}
+                >
+                  Pausar
+                </Button>
+              </>
+            )}
+            {meta.estado === 'pausada' && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'activa')}
+                >
+                  Reactivar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'completada')}
+                >
+                  Completar
+                </Button>
+              </>
+            )}
+            {meta.estado === 'completada' && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'activa')}
+                >
+                  Reabrir
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-9"
+                  onClick={() => cambiarEstadoMeta(meta.id, 'archivada')}
+                >
+                  Archivar
+                </Button>
+              </>
+            )}
+            {meta.estado === 'archivada' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground h-9"
+                onClick={() => cambiarEstadoMeta(meta.id, 'activa')}
+              >
+                Restaurar
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Instrumentos */}
@@ -310,11 +396,145 @@ export function TarjetaMeta({
                           </Button>
                         ))}
                     </div>
+
+                    {(() => {
+                      const registros = estado.sesiones
+                        .filter((s) => s.tareaId === tarea.id && s.minutosReal !== null)
+                        .sort((a, b) => (b.registradoEn ?? '').localeCompare(a.registradoEn ?? ''))
+                      if (registros.length === 0) return null
+                      const abierto = historialAbierto === tarea.id
+                      return (
+                        <div className="pl-2">
+                          <button
+                            type="button"
+                            onClick={() => setHistorialAbierto(abierto ? null : tarea.id)}
+                            className="text-muted-foreground hover:text-foreground text-[11px] underline underline-offset-2"
+                          >
+                            {abierto ? 'Ocultar historial' : `Historial (${registros.length})`}
+                          </button>
+                          {abierto && (
+                            <ul className="text-muted-foreground mt-1 space-y-0.5 text-[11px]">
+                              {registros.map((r) => (
+                                <li key={r.id} className="tnum flex justify-between gap-3">
+                                  <span>{r.registradoEn ? formatearMomento(r.registradoEn) : '—'}</span>
+                                  <span>{formatoMin(r.minutosReal ?? 0)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </li>
                 ))}
               </ul>
+
+              {agregandoTareaEn === objetivo.id ? (
+                <div className="mt-2 space-y-2 pl-3">
+                  <input
+                    type="text"
+                    value={nuevaTareaTitulo}
+                    onChange={(e) => setNuevaTareaTitulo(e.target.value)}
+                    placeholder="Título de la tarea"
+                    autoFocus
+                    className="placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-md border bg-transparent px-2.5 py-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={5}
+                      value={nuevaTareaMin}
+                      onChange={(e) => setNuevaTareaMin(e.target.value)}
+                      className="tnum focus-visible:ring-ring h-8 w-20 rounded-md border bg-transparent px-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+                    />
+                    <span className="text-muted-foreground text-[12px]">min estimados</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="h-8"
+                      disabled={!nuevaTareaTitulo.trim()}
+                      onClick={() => {
+                        agregarTarea(objetivo.id, nuevaTareaTitulo.trim(), Number(nuevaTareaMin) || 30)
+                        setNuevaTareaTitulo('')
+                        setNuevaTareaMin('30')
+                        setAgregandoTareaEn(null)
+                      }}
+                    >
+                      Agregar tarea
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8"
+                      onClick={() => setAgregandoTareaEn(null)}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAgregandoTareaEn(objetivo.id)}
+                  className="text-muted-foreground hover:text-foreground mt-1.5 pl-3 text-[12px] underline underline-offset-2"
+                >
+                  + Agregar tarea
+                </button>
+              )}
             </section>
           ))}
+
+          {agregandoObjetivo ? (
+            <div className="space-y-2 rounded-md border p-3">
+              <input
+                type="text"
+                value={nuevoObjTitulo}
+                onChange={(e) => setNuevoObjTitulo(e.target.value)}
+                placeholder="Título del objetivo"
+                autoFocus
+                className="placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-md border bg-transparent px-2.5 py-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+              />
+              <input
+                type="text"
+                value={nuevoObjCriterio}
+                onChange={(e) => setNuevoObjCriterio(e.target.value)}
+                placeholder="Listo cuando… (criterio de éxito)"
+                className="placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-md border bg-transparent px-2.5 py-2 text-[13px] focus-visible:ring-2 focus-visible:outline-none"
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="h-8"
+                  disabled={!nuevoObjTitulo.trim()}
+                  onClick={() => {
+                    agregarObjetivo(meta.id, nuevoObjTitulo.trim(), nuevoObjCriterio.trim())
+                    setNuevoObjTitulo('')
+                    setNuevoObjCriterio('')
+                    setAgregandoObjetivo(false)
+                  }}
+                >
+                  Agregar objetivo
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8"
+                  onClick={() => setAgregandoObjetivo(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAgregandoObjetivo(true)}
+              className="text-muted-foreground hover:text-foreground text-[12.5px] underline underline-offset-2"
+            >
+              + Agregar objetivo
+            </button>
+          )}
         </div>
       )}
     </article>

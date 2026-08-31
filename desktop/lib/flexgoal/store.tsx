@@ -59,6 +59,10 @@ interface Acciones {
     horaFin: string | null,
   ) => void
   alternarEstadoMeta: (id: string) => void
+  /** Mueve una meta a cualquiera de los 4 estados posibles — el tipo
+   * de datos ya soportaba 'completada'/'archivada' desde siempre,
+   * solo faltaba una acción (y una interfaz) para llegar ahí. */
+  cambiarEstadoMeta: (id: string, estado: Meta['estado']) => void
   editarMeta: (id: string, cambios: Partial<Pick<Meta, 'titulo' | 'porQue' | 'horizonte'>>) => void
   reiniciar: () => void
   importar: (json: string) => { ok: boolean; error?: string }
@@ -109,14 +113,29 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
       registrarSesion: (id, minutosReal) =>
         mut((e) => {
           const s = e.sesiones.find((x) => x.id === id)
-          if (s) {
-            s.minutosReal = minutosReal
-            s.estado =
-              minutosReal === 0
-                ? 'omitida'
-                : minutosReal < s.minutosPlan * 0.8
-                  ? 'parcial'
-                  : 'hecha'
+          if (!s) return e
+          s.minutosReal = minutosReal
+          s.registradoEn = s.registradoEn ?? new Date().toISOString()
+          s.estado =
+            minutosReal === 0
+              ? 'omitida'
+              : minutosReal < s.minutosPlan * 0.8
+                ? 'parcial'
+                : 'hecha'
+
+          // Bug reportado: marcar "Terminé" en Hoy no se reflejaba en
+          // Metas (el checkbox de la tarea seguía sin tildar). Se
+          // sincroniza acá — pero solo si esta era la ÚLTIMA sesión
+          // pendiente de esa tarea, para no cerrar una tarea que
+          // todavía tiene trabajo planificado en otro día.
+          if (s.estado === 'hecha') {
+            const quedanPendientes = e.sesiones.some(
+              (otra) => otra.tareaId === s.tareaId && otra.id !== s.id && otra.estado === 'planificada',
+            )
+            if (!quedanPendientes) {
+              const t = e.tareas.find((x) => x.id === s.tareaId)
+              if (t) t.estado = 'hecha'
+            }
           }
           return e
         }),
@@ -124,7 +143,10 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
       registrarProgreso: (id, minutosReal) =>
         mut((e) => {
           const s = e.sesiones.find((x) => x.id === id)
-          if (s) s.minutosReal = minutosReal
+          if (s) {
+            s.minutosReal = minutosReal
+            s.registradoEn = s.registradoEn ?? new Date().toISOString()
+          }
           return e
         }),
 
@@ -137,7 +159,11 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
       reabrirSesion: (id) =>
         mut((e) => {
           const s = e.sesiones.find((x) => x.id === id)
-          if (s) s.estado = 'planificada'
+          if (s) {
+            s.estado = 'planificada'
+            const t = e.tareas.find((x) => x.id === s.tareaId)
+            if (t && t.estado === 'hecha') t.estado = 'en_progreso'
+          }
           return e
         }),
 
@@ -376,6 +402,13 @@ export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
         mut((e) => {
           const m = e.metas.find((x) => x.id === id)
           if (m) m.estado = m.estado === 'activa' ? 'pausada' : 'activa'
+          return e
+        }),
+
+      cambiarEstadoMeta: (id, estado) =>
+        mut((e) => {
+          const m = e.metas.find((x) => x.id === id)
+          if (m) m.estado = estado
           return e
         }),
 

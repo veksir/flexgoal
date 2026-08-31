@@ -86,7 +86,7 @@ export default function PaginaHoy() {
         <section aria-labelledby="titulo-pendientes" className="space-y-3">
           <h2
             id="titulo-pendientes"
-            className="label-instrumento text-muted-foreground"
+            className="border-b pb-2 text-[15px] font-semibold"
           >
             Por hacer
           </h2>
@@ -117,11 +117,13 @@ export default function PaginaHoy() {
               type="button"
               onClick={() => setArchivoAbierto((v) => !v)}
               aria-expanded={archivoAbierto}
-              className="label-instrumento text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+              className="hover:bg-accent/40 -mx-2 flex w-full items-center justify-between gap-3 rounded-lg border-b px-2 pb-2 transition-colors"
             >
-              <span id="titulo-cerradas">Ya registrado ({cerradas.length})</span>
+              <span id="titulo-cerradas" className="text-[15px] font-semibold">
+                Ya registrado <span className="text-muted-foreground tnum font-normal">({cerradas.length})</span>
+              </span>
               <ChevronDown
-                className={cn('size-3.5 transition-transform', archivoAbierto && 'rotate-180')}
+                className={cn('text-muted-foreground size-4 transition-transform', archivoAbierto && 'rotate-180')}
                 aria-hidden
               />
             </button>

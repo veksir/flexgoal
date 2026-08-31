@@ -54,6 +54,11 @@ export interface Sesion {
   minutosReal: number | null
   estado: EstadoSesion
   nota?: string
+  /** Momento exacto (fecha + hora) en que se registró el tiempo real
+   * — no es lo mismo que `fecha` (el día para el que estaba
+   * planificada). Se completa solo la primera vez que se registra
+   * tiempo; sirve para el historial compacto por tarea. */
+  registradoEn?: string
 }
 
 export interface Disponibilidad {
