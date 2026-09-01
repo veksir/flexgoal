@@ -15,7 +15,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { estadoInicial } from './seed'
+import { estadoInicial, estadoVacio } from './seed'
 import type { EstadoApp, Idea, Meta, Objetivo, Sesion, Tarea } from './types'
 
 const CLAVE = 'flexgoal:estado:v1'
@@ -71,20 +71,20 @@ interface Acciones {
 const Ctx = createContext<Acciones | null>(null)
 
 function leer(): EstadoApp {
-  if (typeof window === 'undefined') return estadoInicial()
+  if (typeof window === 'undefined') return estadoVacio()
   try {
     const crudo = window.localStorage.getItem(CLAVE)
-    if (!crudo) return estadoInicial()
+    if (!crudo) return estadoVacio()
     const parseado = JSON.parse(crudo) as EstadoApp
-    if (!parseado?.metas) return estadoInicial()
+    if (!parseado?.metas) return estadoVacio()
     return parseado
   } catch {
-    return estadoInicial()
+    return estadoVacio()
   }
 }
 
 export function ProveedorFlexgoal({ children }: { children: ReactNode }) {
-  const [estado, setEstado] = useState<EstadoApp>(() => estadoInicial())
+  const [estado, setEstado] = useState<EstadoApp>(() => estadoVacio())
   const [listo, setListo] = useState(false)
 
   useEffect(() => {

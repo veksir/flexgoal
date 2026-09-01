@@ -2,6 +2,28 @@ import { hoyISO, sumarDias, indiceDia } from './engine'
 import type { EstadoApp, Sesion } from './types'
 
 /**
+ * Estado realmente en blanco — ni una idea, ni una meta, ni un
+ * minuto de disponibilidad declarado. Es lo que ve alguien que clona
+ * el repo y corre la app por primera vez: nada de datos de ejemplo
+ * mezclados con los suyos. `estadoInicial()` (más abajo) es el
+ * dataset de demostración — solo se usa cuando alguien toca
+ * explícitamente "Restaurar ejemplo" en Tiempo, nunca en el primer
+ * arranque.
+ */
+export function estadoVacio(): EstadoApp {
+  return {
+    version: 1,
+    ideas: [],
+    metas: [],
+    objetivos: [],
+    tareas: [],
+    sesiones: [],
+    disponibilidad: [],
+    sugerenciasDescartadas: [],
+  }
+}
+
+/**
  * Datos de arranque. Existen para que la app se pueda leer el primer día,
  * no para simular éxito: incluyen sesiones parciales y omitidas a propósito.
  */
