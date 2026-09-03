@@ -52,8 +52,19 @@ export function VentanaSesion() {
 
   const limiteFaseSeg =
     activa.modo === 'pomodoro'
-      ? (activa.fase === 'trabajo' ? configPomodoro.trabajoMin : configPomodoro.descansoMin) * 60
+      ? (activa.fase === 'trabajo'
+          ? configPomodoro.trabajoMin
+          : activa.esDescansoLargo
+            ? configPomodoro.descansoLargoMin
+            : configPomodoro.descansoMin) * 60
       : null
+  // Mientras se espera la confirmación para pasar de trabajo a
+  // descanso, todavía no se decidió esDescansoLargo (eso pasa recién
+  // al confirmar) — se anticipa acá para poder avisar en el banner.
+  const proximoDescansoEsLargo =
+    activa.modo === 'pomodoro' &&
+    configPomodoro.ciclosParaDescansoLargo > 0 &&
+    (activa.ciclosTrabajoCompletados + 1) % configPomodoro.ciclosParaDescansoLargo === 0
   const progresoFase = limiteFaseSeg ? Math.min(1, activa.segundosFaseActual / limiteFaseSeg) : null
   // El reloj de pared usa segundosTotales (nunca se reinicia, como un
   // reloj de pared real). Cronómetro y arena usan el progreso DENTRO
@@ -141,13 +152,18 @@ export function VentanaSesion() {
                 {activa.fase === 'trabajo' ? 'Tiempo de enfoque cumplido' : 'Descanso cumplido'}
               </p>
               <p className="text-muted-foreground mt-1 text-[13px]">
-                {activa.fase === 'trabajo' ? '¿Pasás a descanso?' : '¿Volvés a enfocarte?'}
+                {activa.fase === 'trabajo'
+                  ? proximoDescansoEsLargo
+                    ? `¿Pasás a un descanso largo (${configPomodoro.descansoLargoMin} min)?`
+                    : '¿Pasás a descanso?'
+                  : '¿Volvés a enfocarte?'}
               </p>
             </div>
             <Button onClick={confirmarCambioFase} className="h-10 w-full max-w-[220px]">
               {activa.fase === 'trabajo' ? (
                 <>
-                  <Coffee className="size-4" aria-hidden /> Pasar a descanso
+                  <Coffee className="size-4" aria-hidden />{' '}
+                  {proximoDescansoEsLargo ? 'Pasar a descanso largo' : 'Pasar a descanso'}
                 </>
               ) : (
                 <>
@@ -167,7 +183,7 @@ export function VentanaSesion() {
                     : 'bg-muted text-muted-foreground',
                 )}
               >
-                {activa.fase === 'trabajo' ? 'Enfoque' : 'Descanso'}
+                {activa.fase === 'trabajo' ? 'Enfoque' : activa.esDescansoLargo ? 'Descanso largo' : 'Descanso'}
               </span>
             )}
 

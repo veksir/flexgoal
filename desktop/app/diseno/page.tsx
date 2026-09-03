@@ -16,7 +16,7 @@ import {
   TIPOGRAFIAS,
   useTema,
 } from '@/lib/flexgoal/tema'
-import { useCronometro, type EstiloReloj } from '@/lib/flexgoal/cronometro'
+import { useCronometro, type ConfigPomodoro, type EstiloReloj } from '@/lib/flexgoal/cronometro'
 import { reproducirTonoCambioFase } from '@/lib/flexgoal/sonido'
 import { useConfirmacion } from '@/lib/flexgoal/confirmacion'
 import {
@@ -207,9 +207,46 @@ function SeccionPomodoro() {
   const { configPomodoro, setConfigPomodoro, estiloReloj, setEstiloReloj, sonido, setSonido } =
     useCronometro()
 
+  const PRESETS_POMODORO: Array<{
+    etiqueta: string
+    detalle: string
+    config: ConfigPomodoro
+  }> = [
+    {
+      etiqueta: 'Clásico',
+      detalle: '25 min · descanso largo de 15 min cada 4 ciclos',
+      config: { trabajoMin: 25, descansoMin: 5, ciclosParaDescansoLargo: 4, descansoLargoMin: 15 },
+    },
+    {
+      etiqueta: 'Extendido',
+      detalle: '50 min · descanso largo de 30 min cada 2 ciclos',
+      config: { trabajoMin: 50, descansoMin: 10, ciclosParaDescansoLargo: 2, descansoLargoMin: 30 },
+    },
+    {
+      etiqueta: 'Ultra-productivo',
+      detalle: '90 min · descanso largo de 30 min cada 2 ciclos',
+      config: { trabajoMin: 90, descansoMin: 20, ciclosParaDescansoLargo: 2, descansoLargoMin: 30 },
+    },
+  ]
+
   return (
     <section className="space-y-4">
       <h2 className="label-instrumento text-muted-foreground">Pomodoro y sesión enfocada</h2>
+
+      <div className="flex flex-wrap gap-2">
+        {PRESETS_POMODORO.map((preset) => (
+          <button
+            key={preset.etiqueta}
+            type="button"
+            onClick={() => setConfigPomodoro(preset.config)}
+            title={preset.detalle}
+            className="hover:bg-accent focus-visible:ring-ring rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+          >
+            {preset.etiqueta}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-card flex flex-wrap items-center gap-6 rounded-xl border pad-card">
         <div className="space-y-1.5">
           <label htmlFor="pomodoro-trabajo" className="text-muted-foreground text-[12px]">
@@ -243,8 +280,43 @@ function SeccionPomodoro() {
             className="tnum focus-visible:ring-ring h-9 w-20 rounded-md border bg-transparent px-2.5 text-[14px] focus-visible:ring-2 focus-visible:outline-none"
           />
         </div>
+        <div className="space-y-1.5">
+          <label htmlFor="pomodoro-ciclos-descanso-largo" className="text-muted-foreground text-[12px]">
+            Cada cuántos ciclos
+          </label>
+          <input
+            id="pomodoro-ciclos-descanso-largo"
+            type="number"
+            min={1}
+            max={12}
+            value={configPomodoro.ciclosParaDescansoLargo}
+            onChange={(e) =>
+              setConfigPomodoro({
+                ciclosParaDescansoLargo: Math.max(1, Number(e.target.value) || 1),
+              })
+            }
+            className="tnum focus-visible:ring-ring h-9 w-20 rounded-md border bg-transparent px-2.5 text-[14px] focus-visible:ring-2 focus-visible:outline-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor="pomodoro-descanso-largo" className="text-muted-foreground text-[12px]">
+            Descanso largo (min)
+          </label>
+          <input
+            id="pomodoro-descanso-largo"
+            type="number"
+            min={1}
+            max={90}
+            value={configPomodoro.descansoLargoMin}
+            onChange={(e) =>
+              setConfigPomodoro({ descansoLargoMin: Math.max(1, Number(e.target.value) || 1) })
+            }
+            className="tnum focus-visible:ring-ring h-9 w-20 rounded-md border bg-transparent px-2.5 text-[14px] focus-visible:ring-2 focus-visible:outline-none"
+          />
+        </div>
         <p className="text-muted-foreground max-w-[28ch] text-[12px] leading-relaxed">
-          Se usa cuando elegís modo Pomodoro al iniciar una sesión desde Hoy.
+          Se usa cuando elegís modo Pomodoro al iniciar una sesión desde Hoy. Tras completar la
+          cantidad de ciclos de trabajo indicada, el siguiente descanso pasa a ser el largo.
         </p>
       </div>
 

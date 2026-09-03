@@ -29,12 +29,23 @@ export type EstiloReloj = 'cronometro' | 'arena' | 'pared'
 export interface ConfigPomodoro {
   trabajoMin: number
   descansoMin: number
+  /** Cada cuántos ciclos de trabajo completos toca el descanso largo
+   * (p. ej. 4 en el Pomodoro clásico: descanso largo tras 4 bloques
+   * de trabajo). */
+  ciclosParaDescansoLargo: number
+  /** Duración del descanso largo, en minutos. */
+  descansoLargoMin: number
 }
 
 const CLAVE_CONFIG_POMODORO = 'flexgoal:pomodoro:v1'
 const CLAVE_ESTILO_RELOJ = 'flexgoal:estilo-reloj:v1'
 const CLAVE_SONIDO = 'flexgoal:sonido-fase:v1'
-const CONFIG_DEFAULT: ConfigPomodoro = { trabajoMin: 25, descansoMin: 5 }
+const CONFIG_DEFAULT: ConfigPomodoro = {
+  trabajoMin: 25,
+  descansoMin: 5,
+  ciclosParaDescansoLargo: 4,
+  descansoLargoMin: 15,
+}
 const ESTILO_DEFAULT: EstiloReloj = 'cronometro'
 
 interface SesionActiva {
@@ -65,6 +76,14 @@ interface SesionActiva {
    * actual y por eso reinician (comportamiento correcto, distinto,
    * no un bug). */
   segundosTotales: number
+  /** Cuántos bloques de trabajo se completaron en esta sesión
+   * (arranca en 1 apenas empieza el primero). Se usa para decidir
+   * cuándo toca el descanso largo. */
+  ciclosTrabajoCompletados: number
+  /** Verdadero si la fase de descanso actual es la larga (cada
+   * ciclosParaDescansoLargo bloques de trabajo). No aplica a la fase
+   * de trabajo. */
+  esDescansoLargo: boolean
 }
 
 interface ContextoCronometro {
@@ -165,7 +184,11 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
 
         if (prev.modo === 'pomodoro') {
           const limiteSeg =
-            (prev.fase === 'trabajo' ? configPomodoro.trabajoMin : configPomodoro.descansoMin) * 60
+            (prev.fase === 'trabajo'
+              ? configPomodoro.trabajoMin
+              : prev.esDescansoLargo
+                ? configPomodoro.descansoLargoMin
+                : configPomodoro.descansoMin) * 60
           if (segundosFaseActual >= limiteSeg) {
             // No cambia de fase solo: se congela en el límite y avisa
             // (sonido + notificación del sistema operativo, para que
@@ -200,6 +223,7 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
     activa?.esperandoConfirmacionFase,
     configPomodoro.trabajoMin,
     configPomodoro.descansoMin,
+    configPomodoro.descansoLargoMin,
   ])
 
   const iniciar = useCallback((sesionId: string, tareaId: string, modo: ModoSesion) => {
@@ -214,6 +238,8 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
       segundosTrabajo: 0,
       segundosFaseActual: 0,
       segundosTotales: 0,
+      ciclosTrabajoCompletados: 0,
+      esDescansoLargo: false,
     })
   }, [])
 
@@ -226,17 +252,37 @@ export function ProveedorCronometro({ children }: { children: ReactNode }) {
   }, [])
 
   const confirmarCambioFase = useCallback(() => {
-    setActiva((prev) =>
-      prev
-        ? {
-            ...prev,
-            fase: prev.fase === 'trabajo' ? 'descanso' : 'trabajo',
-            segundosFaseActual: 0,
-            esperandoConfirmacionFase: false,
-          }
-        : prev,
-    )
-  }, [])
+    setActiva((prev) => {
+      if (!prev) return prev
+
+      if (prev.fase === 'trabajo') {
+        // Se completó un bloque de trabajo: cuenta para decidir si el
+        // descanso que arranca ahora es el largo.
+        const ciclosTrabajoCompletados = prev.ciclosTrabajoCompletados + 1
+        const tocaDescansoLargo =
+          configPomodoro.ciclosParaDescansoLargo > 0 &&
+          ciclosTrabajoCompletados % configPomodoro.ciclosParaDescansoLargo === 0
+        return {
+          ...prev,
+          fase: 'descanso',
+          segundosFaseActual: 0,
+          esperandoConfirmacionFase: false,
+          ciclosTrabajoCompletados,
+          esDescansoLargo: tocaDescansoLargo,
+        }
+      }
+
+      // De descanso (corto o largo) se vuelve siempre a un bloque de
+      // trabajo normal.
+      return {
+        ...prev,
+        fase: 'trabajo',
+        segundosFaseActual: 0,
+        esperandoConfirmacionFase: false,
+        esDescansoLargo: false,
+      }
+    })
+  }, [configPomodoro.ciclosParaDescansoLargo])
 
   const detener = useCallback((): { sesionId: string; minutos: number } | null => {
     if (!activa) return null

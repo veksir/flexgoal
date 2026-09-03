@@ -11,12 +11,70 @@
 // protección que expo-secure-store le daba a la app móvil. Nunca se
 // guarda en texto plano ni en localStorage.
 
-const { app, BrowserWindow, ipcMain, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, safeStorage, protocol, net } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const { pathToFileURL } = require('node:url');
 
 const ES_DEV = !app.isPackaged;
 const ARCHIVO_CLAVE = () => path.join(app.getPath('userData'), 'gemini.key');
+const DIR_OUT = path.join(__dirname, '..', 'out');
+
+// ---------------------------------------------------------------------
+// Protocolo "app://" — sirve el export estático de Next.js con un
+// origen real (app://local), en vez de cargarlo vía file://.
+//
+// Por qué: Next genera rutas de navegación cliente (los .txt de RSC
+// que usa cada <Link> para no recargar la página) como rutas
+// absolutas ("/metas/index.txt"). Bajo file://, una ruta absoluta
+// resuelve contra la raíz del sistema de archivos, no contra la
+// carpeta out/, así que el fetch falla en silencio al cambiar de
+// pestaña y la ventana queda en negro. Con un esquema privilegiado
+// que tiene origen propio, esas rutas absolutas sí resuelven contra
+// out/ correctamente, igual que en un servidor http normal.
+// ---------------------------------------------------------------------
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
+    },
+  },
+]);
+
+function registrarProtocoloApp() {
+  protocol.handle('app', (request) => {
+    const url = new URL(request.url);
+    let rutaRelativa = decodeURIComponent(url.pathname);
+
+    let rutaArchivo = path.normalize(path.join(DIR_OUT, rutaRelativa));
+
+    // Evita salir de out/ (path traversal) por una URL maliciosa.
+    if (!rutaArchivo.startsWith(DIR_OUT)) {
+      rutaArchivo = path.join(DIR_OUT, 'index.html');
+    }
+
+    if (rutaRelativa === '/' || rutaRelativa === '') {
+      rutaArchivo = path.join(DIR_OUT, 'index.html');
+    } else if (!path.extname(rutaArchivo)) {
+      // Rutas de página sin extensión ("/metas") -> su carpeta con
+      // index.html (export con trailingSlash) o el .html plano.
+      const comoCarpeta = path.join(rutaArchivo, 'index.html');
+      const comoHtml = `${rutaArchivo}.html`;
+      if (fs.existsSync(comoCarpeta)) {
+        rutaArchivo = comoCarpeta;
+      } else if (fs.existsSync(comoHtml)) {
+        rutaArchivo = comoHtml;
+      }
+    }
+
+    return net.fetch(pathToFileURL(rutaArchivo).toString());
+  });
+}
 
 function crearVentana() {
   const ventana = new BrowserWindow({
@@ -43,13 +101,23 @@ function crearVentana() {
     ventana.loadURL('http://localhost:3000');
     ventana.webContents.openDevTools({ mode: 'detach' });
   } else {
-    ventana.loadFile(path.join(__dirname, '..', 'out', 'index.html'));
+    ventana.loadURL('app://local/');
   }
+
+  // La página exportada trae su propio <title> ("flexgoal — ...")
+  // que Electron adopta automáticamente como título de ventana en
+  // cuanto termina de cargar. Lo forzamos de vuelta a "flexgoal" para
+  // que la barra de título no muestre el subtítulo largo.
+  ventana.on('page-title-updated', (evento) => {
+    evento.preventDefault();
+    ventana.setTitle('flexgoal');
+  });
 
   return ventana;
 }
 
 app.whenReady().then(() => {
+  registrarProtocoloApp();
   crearVentana();
 
   app.on('activate', () => {

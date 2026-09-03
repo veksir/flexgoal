@@ -48,15 +48,15 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "public/apple-icon.png"
+      "icon": "build/icon.png"
     },
     "win": {
       "target": "nsis",
-      "icon": "public/icon-dark-32x32.png"
+      "icon": "build/icon.ico"
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/icon-dark-32x32.png",
+      "icon": "build/icon.png",
       "category": "Office"
     }
   },

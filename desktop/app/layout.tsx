@@ -14,7 +14,7 @@ import './globals.css'
 // sistema (ui-sans-serif, ui-monospace); alcanza con no pisarlas.
 
 export const metadata: Metadata = {
-  title: 'flexgoal — planificador adaptativo local-first',
+  title: 'flexgoal',
   description:
     'Convierte ideas en metas, objetivos y tareas con estimaciones que se ajustan a tu tiempo real. Todo queda guardado en tu dispositivo.',
   applicationName: 'flexgoal',

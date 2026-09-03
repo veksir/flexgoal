@@ -187,7 +187,7 @@ export function FilaSesion({
                       : 'bg-muted text-muted-foreground',
                   )}
                 >
-                  {activa.fase === 'trabajo' ? 'Trabajo' : 'Descanso'}
+                  {activa.fase === 'trabajo' ? 'Trabajo' : activa.esDescansoLargo ? 'Descanso largo' : 'Descanso'}
                 </span>
               )}
               <span className="tnum text-2xl font-semibold tabular-nums">
@@ -222,6 +222,7 @@ export function FilaSesion({
               type="button"
               onClick={() => setModoElegido('pomodoro')}
               aria-pressed={modoElegido === 'pomodoro'}
+              title={`Trabajo ${configPomodoro.trabajoMin} min · descanso ${configPomodoro.descansoMin} min · descanso largo ${configPomodoro.descansoLargoMin} min cada ${configPomodoro.ciclosParaDescansoLargo} ciclos`}
               className={cn(
                 'rounded px-2.5 py-1.5 text-[12px] font-medium transition-colors',
                 modoElegido === 'pomodoro' ? 'bg-background shadow-sm' : 'text-muted-foreground',
